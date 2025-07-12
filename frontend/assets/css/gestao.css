@@ -1,0 +1,174 @@
+/* =================================================================== */
+/* CSS ESPECÍFICO PARA A PÁGINA DE GESTÃO DE APROVAÇÕES
+/* Contém apenas estilos que adicionam ou modificam o global.css
+/* =================================================================== */
+
+/* Define o fundo específico para esta página */
+body {
+    background-color: #f8f9fa; 
+}
+
+/* =================================================================== */
+/* ============= NAVEGAÇÃO POR ABAS (TABS) ============= */
+/* Componente específico desta página
+/* =================================================================== */
+
+.nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #6c757d;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: -2px;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+    border-bottom-color: #e9ecef;
+    color: #343a40;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+    border-bottom: 3px solid var(--inprout-green-dark, #2a8a65);
+    background-color: transparent;
+    color: var(--inprout-green-dark, #2a8a65);
+    font-weight: 600;
+}
+
+/* =================================================================== */
+/* ============= LAYOUT DE CARDS ============= */
+/* Componente específico desta página
+/* =================================================================== */
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+}
+
+.card-header {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.card-title-modern {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #343a40;
+    display: flex;
+    align-items: center;
+}
+
+/* =================================================================== */
+/* ============= SOBRESCRITAS DA TABELA (.modern-table) ============= */
+/* Estilos que modificam ou especializam o .modern-table do global.css
+/* =================================================================== */
+
+/* Garante que a tabela dentro do card ocupe 100% da largura */
+.card-body .modern-table {
+    width: 100%;
+    /* Remove min-width do global.css para esta tabela específica */
+    min-width: auto; 
+}
+
+/* Estilo específico para o cabeçalho da tabela nesta página */
+.modern-table thead th {
+    background-color: #fff; 
+    color: #6c757d; 
+    text-align: left; /* Altera o alinhamento do global.css */
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem;
+    border-bottom: 2px solid #e9ecef; 
+    
+    /* Mantém a funcionalidade de cabeçalho fixo */
+    position: sticky; 
+    top: 0;
+    z-index: 10;
+}
+
+/* Estilo específico para o corpo da tabela nesta página */
+.modern-table tbody td {
+    padding: 1rem;
+    text-align: left; /* Altera o alinhamento do global.css */
+    border-top: 1px solid #f0f0f0;
+    /* Remove a borda lateral do global.css para um look mais limpo */
+    border-right: none;
+}
+
+/* Centraliza o texto apenas na coluna de ações */
+.modern-table th.text-center,
+.modern-table td.text-center {
+    text-align: center !important;
+}
+
+
+/* Classe de Destaque para Linhas */
+.modern-table tbody tr.linha-destaque {
+    background-color: var(--bs-warning-bg-subtle, #fff3cd) !important;
+    color: var(--bs-warning-text-emphasis, #664d03) !important;
+    font-weight: 500;
+}
+
+.modern-table tbody tr.linha-destaque:hover {
+    background-color: #ffe5b0 !important;
+}
+
+/* =================================================================== */
+/* ============= ESTILOS RESPONSIVOS (MOBILE) ============= */
+/* Bloco inteiro é específico para o layout de cards desta página
+/* =================================================================== */
+
+@media (max-width: 768px) {
+    .modern-table thead {
+        display: none;
+    }
+
+    .modern-table tbody,
+    .modern-table tr,
+    .modern-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .modern-table tbody tr {
+        margin-bottom: 1rem;
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        box-shadow: none;
+    }
+
+    .modern-table td {
+        padding-left: 50%; 
+        position: relative;
+        text-align: right;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .modern-table tr td:first-child {
+        padding-top: 1rem;
+    }
+    
+    .modern-table tr td:last-child {
+        border-bottom: none;
+        padding-bottom: 1rem;
+    }
+
+    .modern-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1.25rem;
+        width: calc(50% - 2rem);
+        text-align: left;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+    }
+}
