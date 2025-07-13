@@ -11,4 +11,6 @@ public interface PrazoService {
      * @return A data final do prazo.
      */
     LocalDate calcularPrazoEmDiasUteis(LocalDate dataInicial, int diasUteis);
+
+    LocalDate getDiaUtilAnterior(LocalDate dataReferencia);
 }

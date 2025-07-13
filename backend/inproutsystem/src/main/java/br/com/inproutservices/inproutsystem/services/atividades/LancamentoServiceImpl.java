@@ -1,10 +1,13 @@
 package br.com.inproutservices.inproutsystem.services.atividades;
 
+import br.com.inproutservices.inproutsystem.dtos.atividades.AcaoControllerDTO;
 import br.com.inproutservices.inproutsystem.dtos.atividades.AcaoCoordenadorDTO;
 import br.com.inproutservices.inproutsystem.dtos.atividades.LancamentoRequestDTO;
 import br.com.inproutservices.inproutsystem.entities.atividades.Comentario;
 import br.com.inproutservices.inproutsystem.entities.atividades.Lancamento;
+import br.com.inproutservices.inproutsystem.entities.index.EtapaDetalhada;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
+import br.com.inproutservices.inproutsystem.entities.index.Prestador;
 import br.com.inproutservices.inproutsystem.entities.os.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
@@ -12,13 +15,16 @@ import br.com.inproutservices.inproutsystem.exceptions.materiais.BusinessExcepti
 import br.com.inproutservices.inproutsystem.repositories.atividades.ComentarioRepository;
 import br.com.inproutservices.inproutsystem.repositories.atividades.LancamentoRepository;
 import br.com.inproutservices.inproutsystem.repositories.atividades.OsRepository;
+import br.com.inproutservices.inproutsystem.repositories.index.EtapaDetalhadaRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.LpuRepository;
+import br.com.inproutservices.inproutsystem.repositories.index.PrestadorRepository;
 import br.com.inproutservices.inproutsystem.repositories.usuarios.UsuarioRepository;
 import br.com.inproutservices.inproutsystem.services.config.PrazoService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,34 +38,73 @@ public class LancamentoServiceImpl implements LancamentoService {
     private final UsuarioRepository usuarioRepository;
     private final PrazoService prazoService;
     private final ComentarioRepository comentarioRepository;
+    private final PrestadorRepository prestadorRepository;
+    private final EtapaDetalhadaRepository etapaDetalhadaRepository;
 
     public LancamentoServiceImpl(LancamentoRepository lancamentoRepository, OsRepository osRepository,
                                  LpuRepository lpuRepository, UsuarioRepository usuarioRepository,
-                                 PrazoService prazoService, ComentarioRepository comentarioRepository) {
+                                 PrazoService prazoService, ComentarioRepository comentarioRepository,
+                                 PrestadorRepository prestadorRepository,
+                                 EtapaDetalhadaRepository etapaDetalhadaRepository) {
         this.lancamentoRepository = lancamentoRepository;
         this.osRepository = osRepository;
         this.lpuRepository = lpuRepository;
         this.usuarioRepository = usuarioRepository;
         this.prazoService = prazoService;
         this.comentarioRepository = comentarioRepository;
+        this.prestadorRepository = prestadorRepository;
+        this.etapaDetalhadaRepository = etapaDetalhadaRepository;
     }
 
     @Override
     @Transactional
     public Lancamento criarLancamento(LancamentoRequestDTO dto, Long managerId) {
+        // 1. Validação da Data da Atividade (lógica que já tínhamos)
+        LocalDate hoje = LocalDate.now();
+        LocalDate dataMinimaPermitida;
+
+        if (hoje.getDayOfWeek() == DayOfWeek.MONDAY) {
+            dataMinimaPermitida = hoje.minusDays(3);
+        } else {
+            dataMinimaPermitida = prazoService.getDiaUtilAnterior(hoje);
+        }
+
+        if (dto.dataAtividade().isBefore(dataMinimaPermitida)) {
+            throw new BusinessException(
+                    "Não é permitido criar lançamentos para datas anteriores a " +
+                            dataMinimaPermitida.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            );
+        }
+
+        // 2. Busca de TODAS as entidades relacionadas pelos IDs recebidos no DTO
         OS os = osRepository.findById(dto.osId())
                 .orElseThrow(() -> new EntityNotFoundException("OS não encontrada com o ID: " + dto.osId()));
 
         Usuario manager = usuarioRepository.findById(managerId)
                 .orElseThrow(() -> new EntityNotFoundException("Manager não encontrado com o ID: " + managerId));
 
+        Prestador prestador = prestadorRepository.findById(dto.prestadorId())
+                .orElseThrow(() -> new EntityNotFoundException("Prestador não encontrado com o ID: " + dto.prestadorId()));
+
+        EtapaDetalhada etapaDetalhada = etapaDetalhadaRepository.findById(dto.etapaDetalhadaId())
+                .orElseThrow(() -> new EntityNotFoundException("Etapa Detalhada não encontrada com o ID: " + dto.etapaDetalhadaId()));
+
+
+        // 3. Criação e Mapeamento da nova entidade Lancamento
         Lancamento lancamento = new Lancamento();
+
+        // Associa as entidades completas que buscamos
         lancamento.setOs(os);
         lancamento.setManager(manager);
+        lancamento.setPrestador(prestador);
+        lancamento.setEtapaDetalhada(etapaDetalhada);
+
+        // Define os status e datas iniciais do fluxo
+        lancamento.setDataAtividade(dto.dataAtividade());
         lancamento.setSituacaoAprovacao(SituacaoAprovacao.RASCUNHO);
         lancamento.setUltUpdate(LocalDateTime.now());
 
-        // Mapeando os outros dados do DTO para a entidade
+        // Mapeia os outros dados do DTO que são campos simples
         lancamento.setEquipe(dto.equipe());
         lancamento.setVistoria(dto.vistoria());
         lancamento.setPlanoVistoria(dto.planoVistoria());
@@ -71,14 +116,11 @@ public class LancamentoServiceImpl implements LancamentoService {
         lancamento.setPlanoAtivacao(dto.planoAtivacao());
         lancamento.setDocumentacao(dto.documentacao());
         lancamento.setPlanoDocumentacao(dto.planoDocumentacao());
-        lancamento.setEtapaGeral(dto.etapaGeral());
-        lancamento.setEtapaDetalhada(dto.etapaDetalhada());
         lancamento.setStatus(dto.status());
         lancamento.setDetalheDiario(dto.detalheDiario());
-        lancamento.setCodigoPrestador(dto.codigoPrestador());
-        lancamento.setPrestador(dto.prestador());
         lancamento.setValor(dto.valor());
 
+        // 4. Salva o novo lançamento no banco de dados
         return lancamentoRepository.save(lancamento);
     }
 
@@ -222,31 +264,48 @@ public class LancamentoServiceImpl implements LancamentoService {
 
     @Override
     @Transactional
-    public Lancamento rejeitarExtensaoPrazo(Long lancamentoId, Long controllerId, String motivoRejeicao) {
+    public Lancamento rejeitarExtensaoPrazo(Long lancamentoId, AcaoControllerDTO dto) {
         Lancamento lancamento = lancamentoRepository.findById(lancamentoId)
                 .orElseThrow(() -> new EntityNotFoundException("Lançamento não encontrado com ID: " + lancamentoId));
 
-        Usuario controller = usuarioRepository.findById(controllerId)
-                .orElseThrow(() -> new EntityNotFoundException("Controller não encontrado com ID: " + controllerId));
+        Usuario controller = usuarioRepository.findById(dto.controllerId())
+                .orElseThrow(() -> new EntityNotFoundException("Controller não encontrado com ID: " + dto.controllerId()));
 
+        // Validações
         if (lancamento.getSituacaoAprovacao() != SituacaoAprovacao.AGUARDANDO_EXTENSAO_PRAZO) {
             throw new BusinessException("Este lançamento não está aguardando uma decisão sobre o prazo.");
         }
+        if (dto.motivoRejeicao() == null || dto.motivoRejeicao().isBlank()) {
+            throw new BusinessException("O motivo da rejeição da extensão de prazo é obrigatório.");
+        }
+        if (dto.novaDataPrazo() == null) {
+            throw new BusinessException("Uma nova data de prazo definida pelo Controller é obrigatória ao rejeitar a solicitação.");
+        }
 
-        // Limpa a data proposta
+        // Limpa a data que o Coordenador havia proposto
         lancamento.setDataPrazoProposta(null);
-        // Devolve para a fila do Coordenador, mantendo o prazo original
+
+        // ATUALIZA o prazo oficial com a data definida pelo Controller
+        lancamento.setDataPrazo(dto.novaDataPrazo());
+
+        // Devolve o lançamento para a fila do Coordenador
         lancamento.setSituacaoAprovacao(SituacaoAprovacao.PENDENTE_COORDENADOR);
 
         // Adiciona o comentário explicando a recusa da extensão
         Comentario comentarioRecusa = new Comentario();
         comentarioRecusa.setLancamento(lancamento);
         comentarioRecusa.setAutor(controller);
-        comentarioRecusa.setTexto("Solicitação de novo prazo rejeitada. Motivo: " + motivoRejeicao);
+        comentarioRecusa.setTexto("Solicitação de novo prazo rejeitada. Motivo: " + dto.motivoRejeicao());
         lancamento.getComentarios().add(comentarioRecusa);
 
         lancamento.setUltUpdate(LocalDateTime.now());
 
         return lancamentoRepository.save(lancamento);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Lancamento> getAllLancamentos() {
+        return lancamentoRepository.findAllWithDetails();
     }
 }

@@ -8,9 +8,12 @@ import java.util.Optional;
 
 @Repository
 public interface PrestadorRepository extends JpaRepository<Prestador, Long> {
-    Optional<Prestador> findByCodigoPrestador(Long codigoPrestador);
-    List<Prestador> findByAtivoTrue();
-    List<Prestador> findByAtivoFalse();
-    boolean existsByCodigoPrestador(Long codigoPrestador);
 
+    Optional<Prestador> findByCodigoPrestador(String codigoPrestador);
+
+    boolean existsByCodigoPrestador(String codigoPrestador);
+
+    List<Prestador> findByAtivoTrue();
+
+    List<Prestador> findByAtivoFalse();
 }

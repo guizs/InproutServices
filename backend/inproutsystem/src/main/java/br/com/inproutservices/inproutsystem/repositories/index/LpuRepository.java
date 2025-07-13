@@ -20,7 +20,7 @@ public interface LpuRepository extends JpaRepository<Lpu, Long> {
      * @param ativo O status de ativação (true, false) ou null.
      * @return Uma lista de LPUs filtrada.
      */
-    @Query("SELECT l FROM Lpu l WHERE :ativo IS NULL OR l.ativo = :ativo")
+    @Query("SELECT l FROM Lpu l WHERE :ativo IS NULL OR l.ativo = :ativo ORDER BY l.id ASC")
     List<Lpu> findByStatus(@Param("ativo") Boolean ativo);
 
 

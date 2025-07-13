@@ -17,7 +17,6 @@ public interface ContratoRepository extends JpaRepository<Contrato, Long> {
      * @return Um Optional contendo o Contrato se encontrado.
      */
     Optional<Contrato> findByNome(String nome);
+    List<Contrato> findAllByOrderByNomeAsc();
 
-    List<Contrato> findAllByAtivoTrue();
-    List<Contrato> findAllByAtivoFalse();
 }

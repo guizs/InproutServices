@@ -5,7 +5,7 @@ import br.com.inproutservices.inproutsystem.repositories.index.PrestadorReposito
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Importe esta anotação
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,12 +28,16 @@ public class PrestadorService {
         return prestadorRepository.findByAtivoFalse();
     }
 
-    public Optional<Prestador> buscarPorCodigo(Long codigo) {
+    // --- CORRIGIDO ---
+    // O parâmetro 'codigo' agora é String.
+    public Optional<Prestador> buscarPorCodigo(String codigo) {
         return prestadorRepository.findByCodigoPrestador(codigo);
     }
 
     @Transactional
     public Prestador salvar(Prestador prestador) {
+        // Esta chamada agora funciona, pois getCodigoPrestador() retorna String
+        // e o repositório (que também devemos corrigir) espera uma String.
         if (prestadorRepository.existsByCodigoPrestador(prestador.getCodigoPrestador())) {
             throw new RuntimeException("Já existe um prestador com esse código!");
         }
@@ -45,8 +49,10 @@ public class PrestadorService {
         return prestadorRepository.findById(id);
     }
 
+    // --- CORRIGIDO ---
+    // O parâmetro 'codigo' agora é String.
     @Transactional
-    public void desativar(Long codigo) {
+    public void desativar(String codigo) {
         Prestador prestador = prestadorRepository.findByCodigoPrestador(codigo)
                 .orElseThrow(() -> new RuntimeException("Prestador não encontrado"));
 
@@ -54,8 +60,10 @@ public class PrestadorService {
         prestadorRepository.save(prestador);
     }
 
+    // --- CORRIGIDO ---
+    // O parâmetro 'codigo' agora é String.
     @Transactional
-    public void ativar(Long codigo) {
+    public void ativar(String codigo) {
         Prestador prestador = prestadorRepository.findByCodigoPrestador(codigo)
                 .orElseThrow(() -> new RuntimeException("Prestador não encontrado"));
 
@@ -63,41 +71,24 @@ public class PrestadorService {
         prestadorRepository.save(prestador);
     }
 
-    // --- MÉTODO DE ATUALIZAÇÃO ADICIONADO ---
-
-    /**
-     * Atualiza um prestador existente no banco de dados.
-     * @param id O ID (chave primária) do prestador a ser atualizado.
-     * @param dadosNovos Um objeto Prestador contendo os novos dados.
-     * @return O objeto Prestador após ser salvo com as atualizações.
-     */
     @Transactional
     public Prestador atualizar(Long id, Prestador dadosNovos) {
-        // 1. Busca o prestador pelo ID (chave primária) para garantir que estamos alterando o correto.
         Prestador prestadorExistente = prestadorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Prestador não encontrado com o ID: " + id));
 
-        // 2. VALIDAÇÃO: Verifica se o novo 'codigoPrestador' (se foi alterado) já não está em uso por OUTRO prestador.
+        // Esta chamada agora funciona, pois getCodigoPrestador() retorna String
+        // e o repositório espera uma String.
         Optional<Prestador> prestadorComMesmoCodigo = prestadorRepository.findByCodigoPrestador(dadosNovos.getCodigoPrestador());
         if (prestadorComMesmoCodigo.isPresent() && !prestadorComMesmoCodigo.get().getId().equals(prestadorExistente.getId())) {
-            // Se encontrou um prestador com o mesmo código, E o ID desse prestador é diferente do que estamos editando,
-            // então lança um erro para evitar códigos duplicados.
             throw new RuntimeException("O código de prestador '" + dadosNovos.getCodigoPrestador() + "' já está em uso por outro prestador.");
         }
 
-        // 3. Atualiza os dados do objeto que veio do banco com os novos dados.
         atualizarDados(prestadorExistente, dadosNovos);
-
-        // 4. Salva as alterações. O JPA fará um UPDATE.
         return prestadorRepository.save(prestadorExistente);
     }
 
-    /**
-     * Método auxiliar para copiar apenas os campos permitidos do objeto com novos dados
-     * para o objeto existente (que veio do banco).
-     */
     private void atualizarDados(Prestador existente, Prestador novosDados) {
-        // O campo 'codigoPrestador' também pode ser atualizado, desde que passe na validação acima.
+        // Esta chamada está correta pois ambos são String.
         existente.setCodigoPrestador(novosDados.getCodigoPrestador());
         existente.setPrestador(novosDados.getPrestador());
         existente.setRazaoSocial(novosDados.getRazaoSocial());

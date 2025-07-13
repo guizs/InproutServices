@@ -12,6 +12,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/lancamentos")
@@ -84,7 +85,20 @@ public class LancamentoController {
 
     @PostMapping("/{id}/prazo/rejeitar")
     public ResponseEntity<LancamentoResponseDTO> rejeitarExtensaoPrazo(@PathVariable Long id, @RequestBody AcaoControllerDTO dto) {
-        Lancamento lancamento = lancamentoService.rejeitarExtensaoPrazo(id, dto.controllerId(), dto.motivoRejeicao());
+        Lancamento lancamento = lancamentoService.rejeitarExtensaoPrazo(id, dto);
         return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<LancamentoResponseDTO>> getAllLancamentos() {
+        // 1. Busca a lista de entidades no serviço
+        List<Lancamento> lancamentos = lancamentoService.getAllLancamentos();
+
+        // 2. Converte a lista de entidades para uma lista de DTOs
+        List<LancamentoResponseDTO> responseList = lancamentos.stream()
+                .map(LancamentoResponseDTO::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseList);
     }
 }

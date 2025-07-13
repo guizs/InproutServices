@@ -1,5 +1,8 @@
 package br.com.inproutservices.inproutsystem.entities.atividades;
 
+import br.com.inproutservices.inproutsystem.entities.index.EtapaDetalhada;
+import br.com.inproutservices.inproutsystem.entities.index.Lpu;
+import br.com.inproutservices.inproutsystem.entities.index.Prestador;
 import br.com.inproutservices.inproutsystem.entities.os.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
@@ -26,7 +29,7 @@ public class Lancamento {
     @JsonIgnore
     private OS os;
 
-    // --- CAMPOS ADICIONADOS PARA O FLUXO DE APROVAÇÃO ---
+    // --- CAMPOS DO FLUXO DE APROVAÇÃO ---
     @Enumerated(EnumType.STRING)
     @Column(name = "situacao_aprovacao", length = 30)
     private SituacaoAprovacao situacaoAprovacao;
@@ -42,12 +45,24 @@ public class Lancamento {
     private LocalDate dataPrazo;
 
     @Column(name = "data_prazo_proposta")
-    private LocalDate dataPrazoProposta; // Armazena a data sugerida pelo Coordenador
+    private LocalDate dataPrazoProposta;
 
     @OneToMany(mappedBy = "lancamento", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios = new ArrayList<>();
 
-    // --- SEUS CAMPOS EXISTENTES ---
+    // --- CAMPOS REFATORADOS PARA RELACIONAMENTOS ---
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "prestador_id")
+    private Prestador prestador;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "etapa_detalhada_id")
+    private EtapaDetalhada etapaDetalhada;
+
+    // --- DEMAIS CAMPOS DO LANÇAMENTO ---
+    @Column(name = "data_atividade", nullable = false)
+    private LocalDate dataAtividade;
+
     private String equipe;
     private String vistoria;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
@@ -64,32 +79,28 @@ public class Lancamento {
     private String documentacao;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate planoDocumentacao;
-    private String etapaGeral;
-    private String etapaDetalhada;
     private String status;
     private String detalheDiario;
-    private String codigoPrestador;
-    private String prestador;
     private BigDecimal valor;
-    private String coordenador;
-    private String situacao;
+    private String coordenador; // Este campo pode ser revisto/removido no futuro
+    private String situacao;    // Este campo pode ser revisto/removido no futuro
     private LocalDateTime ultUpdate;
 
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
+
+    // Construtor padrão exigido pelo JPA
     public Lancamento() {
     }
 
     /**
-     * Este método com a anotação @PrePersist garante que o campo
-     * dataCriacao seja preenchido automaticamente apenas uma vez,
-     * no momento em que o lançamento é criado no banco.
+     * Este método garante que a data de criação e a situação inicial
+     * sejam definidas automaticamente ao criar um novo lançamento.
      */
     @PrePersist
     protected void onCreate() {
         this.dataCriacao = LocalDateTime.now();
-        // Define um estado inicial padrão sempre que um novo lançamento é criado
         if (this.situacaoAprovacao == null) {
             this.situacaoAprovacao = SituacaoAprovacao.RASCUNHO;
         }
@@ -143,12 +154,44 @@ public class Lancamento {
         this.dataPrazo = dataPrazo;
     }
 
+    public LocalDate getDataPrazoProposta() {
+        return dataPrazoProposta;
+    }
+
+    public void setDataPrazoProposta(LocalDate dataPrazoProposta) {
+        this.dataPrazoProposta = dataPrazoProposta;
+    }
+
     public List<Comentario> getComentarios() {
         return comentarios;
     }
 
     public void setComentarios(List<Comentario> comentarios) {
         this.comentarios = comentarios;
+    }
+
+    public Prestador getPrestador() {
+        return prestador;
+    }
+
+    public void setPrestador(Prestador prestador) {
+        this.prestador = prestador;
+    }
+
+    public EtapaDetalhada getEtapaDetalhada() {
+        return etapaDetalhada;
+    }
+
+    public void setEtapaDetalhada(EtapaDetalhada etapaDetalhada) {
+        this.etapaDetalhada = etapaDetalhada;
+    }
+
+    public LocalDate getDataAtividade() {
+        return dataAtividade;
+    }
+
+    public void setDataAtividade(LocalDate dataAtividade) {
+        this.dataAtividade = dataAtividade;
     }
 
     public String getEquipe() {
@@ -239,22 +282,6 @@ public class Lancamento {
         this.planoDocumentacao = planoDocumentacao;
     }
 
-    public String getEtapaGeral() {
-        return etapaGeral;
-    }
-
-    public void setEtapaGeral(String etapaGeral) {
-        this.etapaGeral = etapaGeral;
-    }
-
-    public String getEtapaDetalhada() {
-        return etapaDetalhada;
-    }
-
-    public void setEtapaDetalhada(String etapaDetalhada) {
-        this.etapaDetalhada = etapaDetalhada;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -269,22 +296,6 @@ public class Lancamento {
 
     public void setDetalheDiario(String detalheDiario) {
         this.detalheDiario = detalheDiario;
-    }
-
-    public String getCodigoPrestador() {
-        return codigoPrestador;
-    }
-
-    public void setCodigoPrestador(String codigoPrestador) {
-        this.codigoPrestador = codigoPrestador;
-    }
-
-    public String getPrestador() {
-        return prestador;
-    }
-
-    public void setPrestador(String prestador) {
-        this.prestador = prestador;
     }
 
     public BigDecimal getValor() {
@@ -325,13 +336,5 @@ public class Lancamento {
 
     public void setDataCriacao(LocalDateTime dataCriacao) {
         this.dataCriacao = dataCriacao;
-    }
-
-    public LocalDate getDataPrazoProposta() {
-        return dataPrazoProposta;
-    }
-
-    public void setDataPrazoProposta(LocalDate dataPrazoProposta) {
-        this.dataPrazoProposta = dataPrazoProposta;
     }
 }

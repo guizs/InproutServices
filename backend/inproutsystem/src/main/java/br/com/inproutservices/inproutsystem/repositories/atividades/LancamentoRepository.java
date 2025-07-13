@@ -30,4 +30,7 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
      */
     @Query("SELECT l FROM Lancamento l LEFT JOIN FETCH l.manager LEFT JOIN FETCH l.os LEFT JOIN FETCH l.comentarios c LEFT JOIN FETCH c.autor WHERE l.id = :id")
     Optional<Lancamento> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("SELECT l FROM Lancamento l LEFT JOIN FETCH l.manager LEFT JOIN FETCH l.os")
+    List<Lancamento> findAllWithDetails();
 }

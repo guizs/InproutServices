@@ -28,7 +28,6 @@ public class PrestadorController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Prestador> buscarPorId(@PathVariable Long id) {
-        // Você precisará de um método 'buscarPorId' no seu service
         return prestadorService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -41,7 +40,7 @@ public class PrestadorController {
     }
 
     @PutMapping("/desativar/{codigo}")
-    public ResponseEntity<Void> desativar(@PathVariable Long codigo) {
+    public ResponseEntity<Void> desativar(@PathVariable String codigo) {
         prestadorService.desativar(codigo);
         return ResponseEntity.ok().build();
     }
@@ -53,13 +52,13 @@ public class PrestadorController {
     }
 
     @PutMapping("/ativar/{codigo}")
-    public ResponseEntity<Void> ativar(@PathVariable Long codigo) {
+    public ResponseEntity<Void> ativar(@PathVariable String codigo) {
         prestadorService.ativar(codigo);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/por-codigo/{codigo}")
-    public ResponseEntity<Prestador> buscarPorCodigo(@PathVariable Long codigo) {
+    public ResponseEntity<Prestador> buscarPorCodigo(@PathVariable String codigo) {
         return prestadorService.buscarPorCodigo(codigo)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

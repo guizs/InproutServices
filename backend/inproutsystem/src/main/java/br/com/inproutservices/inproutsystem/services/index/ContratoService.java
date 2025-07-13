@@ -42,7 +42,7 @@ public class ContratoService {
      */
     @Transactional(readOnly = true)
     public List<Contrato> listarContratosAtivos() {
-        return contratoRepository.findAllByAtivoTrue();
+        return contratoRepository.findAllByOrderByNomeAsc();
     }
 
     /**

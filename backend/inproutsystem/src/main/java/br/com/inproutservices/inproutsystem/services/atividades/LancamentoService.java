@@ -1,8 +1,11 @@
 package br.com.inproutservices.inproutsystem.services.atividades;
 
+import br.com.inproutservices.inproutsystem.dtos.atividades.AcaoControllerDTO;
 import br.com.inproutservices.inproutsystem.dtos.atividades.AcaoCoordenadorDTO;
 import br.com.inproutservices.inproutsystem.dtos.atividades.LancamentoRequestDTO;
 import br.com.inproutservices.inproutsystem.entities.atividades.Lancamento;
+
+import java.util.List;
 
 public interface LancamentoService {
 
@@ -16,7 +19,7 @@ public interface LancamentoService {
 
     Lancamento solicitarNovoPrazo(Long lancamentoId, AcaoCoordenadorDTO dto);
     Lancamento aprovarExtensaoPrazo(Long lancamentoId, Long controllerId);
-    Lancamento rejeitarExtensaoPrazo(Long lancamentoId, Long controllerId, String motivoRejeicao);
+    Lancamento rejeitarExtensaoPrazo(Long lancamentoId, AcaoControllerDTO dto);
     /**
      * Busca todos os lançamentos em RASCUNHO e os submete para aprovação do Coordenador.
      * Este método será chamado pela tarefa agendada.
@@ -39,4 +42,6 @@ public interface LancamentoService {
     Lancamento rejeitarPeloController(Long lancamentoId, Long controllerId, String motivoRejeicao);
 
     Lancamento getLancamentoById(Long id);
+
+    List<Lancamento> getAllLancamentos();
 }

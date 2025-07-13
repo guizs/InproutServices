@@ -8,10 +8,14 @@ import java.time.LocalDate;
  * A estrutura deste record deve corresponder ao JSON enviado pelo frontend.
  */
 public record LancamentoRequestDTO(
-        // ID da OS à qual este lançamento pertence
+
         Long osId,
 
-        // Campos preenchidos pelo Manager no formulário
+        LocalDate dataAtividade,
+
+        Long prestadorId,
+        Long etapaDetalhadaId,
+
         String equipe,
         String vistoria,
         LocalDate planoVistoria,
@@ -23,12 +27,8 @@ public record LancamentoRequestDTO(
         LocalDate planoAtivacao,
         String documentacao,
         LocalDate planoDocumentacao,
-        String etapaGeral,
-        String etapaDetalhada,
         String status, // O status da execução (OK, NOK), não o da aprovação
         String detalheDiario,
-        String codigoPrestador,
-        String prestador,
         BigDecimal valor
 ) {
 }

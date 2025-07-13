@@ -12,7 +12,7 @@ public class Prestador {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private Long codigoPrestador;
+    private String codigoPrestador;
 
     private String prestador;
     private String razaoSocial;
@@ -49,11 +49,11 @@ public class Prestador {
         this.id = id;
     }
 
-    public Long getCodigoPrestador() {
+    public String getCodigoPrestador() {
         return codigoPrestador;
     }
 
-    public void setCodigoPrestador(Long codigoPrestador) {
+    public void setCodigoPrestador(String codigoPrestador) {
         this.codigoPrestador = codigoPrestador;
     }
 
