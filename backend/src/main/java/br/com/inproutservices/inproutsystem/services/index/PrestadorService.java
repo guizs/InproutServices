@@ -109,4 +109,12 @@ public class PrestadorService {
         existente.setChavePix(novosDados.getChavePix());
         existente.setObservacoes(novosDados.getObservacoes());
     }
+
+    @Transactional(readOnly = true)
+    public List<Prestador> buscarPorTermo(String termo) {
+        if (termo == null || termo.isBlank()) {
+            return List.of();
+        }
+        return prestadorRepository.buscarPorTermo(termo);
+    }
 }

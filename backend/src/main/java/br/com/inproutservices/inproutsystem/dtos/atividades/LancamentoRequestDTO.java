@@ -1,33 +1,48 @@
 package br.com.inproutservices.inproutsystem.dtos.atividades;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
  * DTO para receber os dados de criação de um novo Lançamento.
- * A estrutura deste record deve corresponder ao JSON enviado pelo frontend.
  */
 public record LancamentoRequestDTO(
-
         Long osId,
-
-        LocalDate dataAtividade,
-
         Long prestadorId,
         Long etapaDetalhadaId,
 
+        // CORREÇÃO: O backend agora espera o formato dd/MM/yyyy
+        @JsonFormat(pattern = "dd/MM/yyyy")
+        LocalDate dataAtividade,
+
         String equipe,
         String vistoria,
+
+        @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate planoVistoria,
+
         String desmobilizacao,
+
+        @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate planoDesmobilizacao,
+
         String instalacao,
+
+        @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate planoInstalacao,
+
         String ativacao,
+
+        @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate planoAtivacao,
+
         String documentacao,
+
+        @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate planoDocumentacao,
-        String status, // O status da execução (OK, NOK), não o da aprovação
+
+        String status,
         String detalheDiario,
         BigDecimal valor
 ) {

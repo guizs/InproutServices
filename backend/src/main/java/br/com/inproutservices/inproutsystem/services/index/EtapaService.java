@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EtapaService {
@@ -33,21 +34,26 @@ public class EtapaService {
         return etapaRepository.findAll();
     }
 
+    /**
+     * MÉTODO ATUALIZADO
+     * Agora passa o ID da etapa ao criar o EtapaDTO.
+     */
     public List<EtapaDTO> listarEtapasComDetalhes() {
         List<Etapa> etapas = etapaRepository.buscarComDetalhadasOrdenadas();
 
         return etapas.stream().map(etapa ->
                 new EtapaDTO(
+                        etapa.getId(), // <-- AQUI ESTÁ A MUDANÇA
                         etapa.getCodigo(),
                         etapa.getNome(),
                         etapa.getEtapasDetalhadas().stream()
                                 .map(d -> new EtapaDetalhadaDTO(
-                                        d.getId(), // <-- ADICIONE d.getId() AQUI
+                                        d.getId(),
                                         d.getIndice(),
                                         d.getNome(),
                                         d.getStatus()
-                                )).toList()
+                                )).collect(Collectors.toList())
                 )
-        ).toList();
+        ).collect(Collectors.toList());
     }
 }
