@@ -13,10 +13,12 @@
   <!-- Flatpickr CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_green.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
   <!-- Styles  -->
   <link rel="stylesheet" href="assets/css/root.css" />
   <link rel="stylesheet" href="assets/css/global.css" />
   <link rel="stylesheet" href="assets/css/index.css" />
+  
 </head>
 
 <body>
@@ -46,57 +48,72 @@
 
   <div class="container-fluid my-4">
 
-    <div class="overview-banner mb-4">
-      <div class="d-flex align-items-center gap-3">
-        <i class="bi bi-speedometer2 icon"></i>
-        <h1 class="mb-1">Visão Geral das Atividades</h1>
+    <div class="card overview-card shadow-sm mb-4">
+
+      <div class="card-header bg-white p-0">
+
+        <a href="#collapseDashboardCards" data-bs-toggle="collapse" role="button" aria-expanded="false"
+          aria-controls="collapseDashboardCards"
+          class="d-flex justify-content-between align-items-center w-100 p-3 text-decoration-none text-dark">
+
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-speedometer2 text-success"></i>
+            <h5 class="mb-0">Visão geral de lançamentos</h5>
+          </div>
+
+          <i class="bi bi-chevron-down text-secondary"></i>
+        </a>
       </div>
 
-      <div class="d-flex flex-wrap gap-2 dashboard-cards mt-3">
-        <div class="card card-stat bg-success">
-          <div class="card-body">
-            <h5>Pendente atualização</h5>
-            <p>15</p>
-          </div>
-        </div>
+      <div class="collapse" id="collapseDashboardCards">
+        <div class="card-body">
+          <div class="d-flex flex-wrap gap-2 dashboard-cards">
+            <div class="card card-stat bg-success">
+              <div class="card-body">
+                <h5>Pendente atualização</h5>
+                <p>15</p>
+              </div>
+            </div>
 
-        <div class="card card-stat bg-success">
-          <div class="card-body">
-            <h5>Pendente documentação</h5>
-            <p>5</p>
-          </div>
-        </div>
+            <div class="card card-stat bg-success">
+              <div class="card-body">
+                <h5>Pendente documentação</h5>
+                <p>5</p>
+              </div>
+            </div>
 
-        <div class="card card-stat bg-secondary">
-          <div class="card-body">
-            <h5>Atividades em andamento</h5>
-            <p>20</p>
-          </div>
-        </div>
+            <div class="card card-stat bg-secondary">
+              <div class="card-body">
+                <h5>Atividades em andamento</h5>
+                <p>20</p>
+              </div>
+            </div>
 
-        <div class="card card-stat bg-secondary">
-          <div class="card-body">
-            <h5>Atividades paralisadas</h5>
-            <p>20</p>
-          </div>
-        </div>
+            <div class="card card-stat bg-secondary">
+              <div class="card-body">
+                <h5>Atividades paralisadas</h5>
+                <p>20</p>
+              </div>
+            </div>
 
-        <div class="card card-stat bg-warning">
-          <div class="card-body">
-            <h5>Atividades iniciadas hoje</h5>
-            <p>8</p>
-          </div>
-        </div>
+            <div class="card card-stat bg-warning">
+              <div class="card-body">
+                <h5>Atividades iniciadas hoje</h5>
+                <p>8</p>
+              </div>
+            </div>
 
-        <div class="card card-stat bg-success">
-          <div class="card-body">
-            <h5>Atividades concluídas hoje</h5>
-            <p>5</p>
+            <div class="card card-stat bg-success">
+              <div class="card-body">
+                <h5>Atividades concluídas hoje</h5>
+                <p>5</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
-
 
     <div class="toolbar d-flex align-items-center justify-content-between gap-3 mb-3">
 
@@ -109,9 +126,24 @@
           <button class="btn btn-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-filter-circle me-1"></i> Filtros
           </button>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item active" href="#">Em Aberto</a></li>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <h6 class="dropdown-header">Filtrar por Status</h6>
+            </li>
+            <li><a class="dropdown-item" href="#">Em Aberto</a></li>
             <li><a class="dropdown-item" href="#">Todas</a></li>
+
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <h6 class="dropdown-header">Filtrar por Período</h6>
+            </li>
+
+            <li><a class="dropdown-item" href="#">Hoje</a></li>
+            <li><a class="dropdown-item" href="#">Ontem</a></li>
+            <li><a class="dropdown-item" href="#">Última Semana</a></li>
           </ul>
         </div>
       </div>
@@ -152,16 +184,76 @@
 
     </div>
 
-    <div class="table-responsive custom-scroll">
+    <ul class="nav nav-tabs mb-3" id="lancamentosTab" role="tablist">
 
-      <table class="table modern-table align-middle">
-        <thead> <!-- cabeçalho javascript --></thead>
-        <tbody id="table-body">
-          <!-- conteúdo javascript -->
-        </tbody>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="lancamentos-tab" data-bs-toggle="tab" data-bs-target="#lancamentos-pane"
+          type="button" role="tab" aria-controls="lancamentos-pane" aria-selected="true">
+          Lançamentos
+        </button>
+      </li>
 
-      </table>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pendentes-tab" data-bs-toggle="tab" data-bs-target="#pendentes-pane" type="button"
+          role="tab" aria-controls="pendentes-pane" aria-selected="false">
+          Pendente aprovação
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico-pane" type="button"
+          role="tab" aria-controls="historico-pane" aria-selected="false">
+          Histórico
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="lancamentosTabContent">
+
+      <div class="tab-pane fade show active" id="lancamentos-pane" role="tabpanel" aria-labelledby="lancamentos-tab"
+        tabindex="0">
+
+        <div class="table-responsive custom-scroll">
+
+          <table class="table modern-table align-middle">
+            <thead> <!-- cabeçalho javascript --></thead>
+            <tbody id="tbody-lancamentos">
+              <!-- conteúdo javascript -->
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
+
+      <div class="tab-pane fade" id="pendentes-pane" role="tabpanel" aria-labelledby="pendentes-tab" tabindex="0">
+        <div class="table-responsive custom-scroll">
+
+          <table class="table modern-table align-middle">
+            <thead> <!-- cabeçalho javascript --></thead>
+            <tbody id="tbody-pendentes">
+              <!-- conteúdo javascript -->
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="historico-pane" role="tabpanel" aria-labelledby="historico-tab" tabindex="0">
+        <div class="table-responsive custom-scroll">
+
+          <table class="table modern-table align-middle">
+            <thead> <!-- cabeçalho javascript --></thead>
+            <tbody id="tbody-historico">
+              <!-- conteúdo javascript -->
+            </tbody>
+
+          </table>
+        </div>
+      </div>
     </div>
+
+
   </div>
 
   <!-- Modal adicionar nova atividade-->
@@ -177,36 +269,56 @@
         </div>
 
         <div class="modal-body">
-          <form id="formAdicionar">
+          <form id="formAdicionar" novalidate>
 
-            <!-- Dados Gerais -->
             <h6 class="section-title">Dados Gerais</h6>
             <div class="row g-3 mb-3">
-              <div class="col-md-3"><label class="form-label">OS</label><input type="text" class="form-control" id="os">
+              <div class="col-md-6">
+                <label for="osId" class="form-label">Ordem de Serviço (OS)</label>
+                <select class="form-select" id="osId" required>
+                  <option value="" selected disabled>Selecione uma OS...</option>
+                </select>
               </div>
-              <div class="col-md-3"><label class="form-label">SITE</label><input type="text" class="form-control"
-                  id="site"></div>
-              <div class="col-md-3"><label class="form-label">SEGMENTO</label><input type="text" class="form-control"
-                  id="segmento"></div>
-              <div class="col-md-3"><label class="form-label">PROJETO</label><input type="text" class="form-control"
-                  id="projeto"></div>
+              <div class="col-md-6">
+                <label for="dataAtividade" class="form-label">Data da Atividade</label>
+                <input type="date" class="form-control" id="dataAtividade" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">SITE</label>
+                <input type="text" class="form-control" id="site" readonly>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">SEGMENTO</label>
+                <input type="text" class="form-control" id="segmento" readonly>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">PROJETO</label>
+                <input type="text" class="form-control" id="projeto" readonly>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">CONTRATO</label>
+                <input type="text" class="form-control" id="contrato" readonly>
+              </div>
             </div>
 
-            <!-- Responsáveis -->
             <h6 class="section-title">Responsáveis</h6>
             <div class="row g-3 mb-3">
-              <div class="col-md-4"><label class="form-label">GESTOR TIM</label><input type="text" class="form-control"
-                  id="gestorTim"></div>
-              <div class="col-md-4"><label class="form-label">REGIONAL</label><input type="text" class="form-control"
-                  id="regional"></div>
-              <div class="col-md-4"><label class="form-label">EQUIPE</label><input type="text" class="form-control"
-                  id="equipe"></div>
+              <div class="col-md-4">
+                <label class="form-label">GESTOR TIM</label>
+                <input type="text" class="form-control" id="gestorTim" readonly>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">REGIONAL</label>
+                <input type="text" class="form-control" id="regional" readonly>
+              </div>
+              <div class="col-md-4">
+                <label for="equipe" class="form-label">EQUIPE</label>
+                <input type="text" class="form-control" id="equipe">
+              </div>
             </div>
 
-            <!-- Execução -->
             <h6 class="section-title">Execução</h6>
             <div class="etapas-scroll">
-              <!-- Vistoria -->
               <div class="card etapa-card">
                 <h6>Vistoria</h6>
                 <label class="form-label">Status</label>
@@ -218,71 +330,56 @@
                 <label class="form-label mt-2">Plano (Data)</label>
                 <input type="date" class="form-control" id="planoVistoria">
               </div>
-
-              <!-- Desmobilização -->
               <div class="card etapa-card">
-                <h6>Desmobilização</h6>
-                <label class="form-label">Status</label>
-                <select class="form-select" id="desmobilizacao">
+                <h6>Desmobilização</h6><label class="form-label">Status</label><select class="form-select"
+                  id="desmobilizacao">
                   <option>OK</option>
                   <option>NOK</option>
                   <option selected>N/A</option>
-                </select>
-                <label class="form-label mt-2">Plano (Data)</label>
-                <input type="date" class="form-control" id="planoDesmobilizacao">
+                </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
+                  id="planoDesmobilizacao">
               </div>
-
-              <!-- Instalação -->
               <div class="card etapa-card">
-                <h6>Instalação</h6>
-                <label class="form-label">Status</label>
-                <select class="form-select" id="instalacao">
+                <h6>Instalação</h6><label class="form-label">Status</label><select class="form-select" id="instalacao">
                   <option>OK</option>
                   <option>NOK</option>
                   <option selected>N/A</option>
-                </select>
-                <label class="form-label mt-2">Plano (Data)</label>
-                <input type="date" class="form-control" id="planoInstalacao">
+                </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
+                  id="planoInstalacao">
               </div>
-
-              <!-- Ativação -->
               <div class="card etapa-card">
-                <h6>Ativação</h6>
-                <label class="form-label">Status</label>
-                <select class="form-select" id="ativacao">
+                <h6>Ativação</h6><label class="form-label">Status</label><select class="form-select" id="ativacao">
                   <option>OK</option>
                   <option>NOK</option>
                   <option selected>N/A</option>
-                </select>
-                <label class="form-label mt-2">Plano (Data)</label>
-                <input type="date" class="form-control" id="planoAtivacao">
+                </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
+                  id="planoAtivacao">
               </div>
-
-              <!-- Documentação -->
               <div class="card etapa-card">
-                <h6>Documentação</h6>
-                <label class="form-label">Status</label>
-                <select class="form-select" id="documentacao">
+                <h6>Documentação</h6><label class="form-label">Status</label><select class="form-select"
+                  id="documentacao">
                   <option>OK</option>
                   <option>NOK</option>
                   <option selected>N/A</option>
-                </select>
-                <label class="form-label mt-2">Plano (Data)</label>
-                <input type="date" class="form-control" id="planoDocumentacao">
+                </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
+                  id="planoDocumentacao">
               </div>
             </div>
 
-            <div class="scroll-indicator">
-              <i class="bi bi-arrow-right-circle-fill"></i>
-            </div>
-
-            <!-- Etapas -->
             <h6 class="section-title">Etapas</h6>
             <div class="row g-3 mb-3">
-              <div class="col-md-4"><label class="form-label">ETAPA GERAL</label><input type="text" class="form-control"
-                  id="etapaGeral"></div>
-              <div class="col-md-4"><label class="form-label">ETAPA DETALHADA</label><input type="text"
-                  class="form-control" id="etapaDetalhada"></div>
+              <div class="col-md-4">
+                <label for="etapaGeralSelect" class="form-label">ETAPA GERAL</label>
+                <select class="form-select" id="etapaGeralSelect" required>
+                  <option value="" selected disabled>Selecione uma etapa geral...</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="etapaDetalhadaId" class="form-label">ETAPA DETALHADA</label>
+                <select class="form-select" id="etapaDetalhadaId" required disabled>
+                  <option value="" selected disabled>Primeiro, selecione a etapa geral</option>
+                </select>
+              </div>
               <div class="col-md-4">
                 <label class="form-label">STATUS</label>
                 <select class="form-select" id="status">
@@ -295,31 +392,27 @@
               </div>
             </div>
 
-            <!-- Observações -->
-            <h6 class="section-title">Observações</h6>
             <div class="mb-3">
               <label class="form-label">DETALHE DIÁRIO</label>
-              <textarea class="form-control" id="detalheDiario" rows="2"></textarea>
+              <textarea class="form-control" id="detalheDiario" rows="2" required></textarea>
             </div>
 
-            <!-- Financeiro -->
             <h6 class="section-title">Financeiro</h6>
             <div class="row g-3 mb-3">
-              <div class="col-md-4"><label class="form-label">CÓDIGO DO PRESTADOR</label><input type="text"
-                  class="form-control" id="codigoPrestador"></div>
-              <div class="col-md-4"><label class="form-label">PRESTADOR</label><input type="text" class="form-control"
-                  id="prestador"></div>
+              <div class="col-md-8">
+                <label for="prestadorId" class="form-label">PRESTADOR</label>
+                <select class="form-select" id="prestadorId" required>
+                  <option value="" selected disabled>Selecione um prestador...</option>
+                </select>
+              </div>
               <div class="col-md-4">
                 <label class="form-label">VALOR DA ATIVIDADE</label>
                 <div class="input-group">
                   <span class="input-group-text">R$</span>
-                  <input type="text" class="form-control" id="valorAtividade" inputmode="numeric" />
+                  <input type="text" class="form-control" id="valor" inputmode="numeric" />
                 </div>
               </div>
             </div>
-
-            <!-- Coordenador preenchido automático -->
-            <input type="hidden" id="coordenador" value="Usuário Logado">
 
           </form>
         </div>
@@ -329,7 +422,7 @@
             <i class="bi bi-x-circle"></i> Cancelar
           </button>
           <button type="submit" form="formAdicionar" class="btn btn-success">
-            <i class="bi bi-check-circle"></i> Salvar
+            <i class="bi bi-check-circle"></i> Salvar Lançamento
           </button>
         </div>
 
@@ -859,6 +952,7 @@
   <script src="assets/js/general/tables.js"></script>
   <script src="assets/js/index/postTable.js"></script>
   <script src="assets/js/index/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
 </body>
 
