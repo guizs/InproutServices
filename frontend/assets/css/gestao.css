@@ -62,60 +62,18 @@ body {
     align-items: center;
 }
 
-/* =================================================================== */
-/* ============= SOBRESCRITAS DA TABELA (.modern-table) ============= */
-/* Estilos que modificam ou especializam o .modern-table do global.css
-/* =================================================================== */
-
-/* Garante que a tabela dentro do card ocupe 100% da largura */
-.card-body .modern-table {
-    width: 100%;
-    /* Remove min-width do global.css para esta tabela específica */
-    min-width: auto; 
-}
-
-/* Estilo específico para o cabeçalho da tabela nesta página */
-.modern-table thead th {
-    background-color: #fff; 
-    color: #6c757d; 
-    text-align: left; /* Altera o alinhamento do global.css */
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 1rem;
-    border-bottom: 2px solid #e9ecef; 
-    
-    /* Mantém a funcionalidade de cabeçalho fixo */
-    position: sticky; 
-    top: 0;
-    z-index: 10;
-}
-
-/* Estilo específico para o corpo da tabela nesta página */
-.modern-table tbody td {
-    padding: 1rem;
-    text-align: left; /* Altera o alinhamento do global.css */
-    border-top: 1px solid #f0f0f0;
-    /* Remove a borda lateral do global.css para um look mais limpo */
-    border-right: none;
-}
-
-/* Centraliza o texto apenas na coluna de ações */
-.modern-table th.text-center,
-.modern-table td.text-center {
-    text-align: center !important;
-}
-
-
-/* Classe de Destaque para Linhas */
-.modern-table tbody tr.linha-destaque {
-    background-color: var(--bs-warning-bg-subtle, #fff3cd) !important;
-    color: var(--bs-warning-text-emphasis, #664d03) !important;
-    font-weight: 500;
-}
-
-.modern-table tbody tr.linha-destaque:hover {
-    background-color: #ffe5b0 !important;
+.overlay-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease; /* Adiciona uma transição suave */
 }
 
 /* =================================================================== */
