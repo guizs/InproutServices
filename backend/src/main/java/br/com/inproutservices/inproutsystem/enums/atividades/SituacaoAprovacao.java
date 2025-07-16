@@ -6,5 +6,6 @@ public enum SituacaoAprovacao {
     AGUARDANDO_EXTENSAO_PRAZO,// Coordenador solicitou novo prazo, aguardando Controller.
     PENDENTE_CONTROLLER,      // Aguardando ação do Controller.
     APROVADO,                 // Fluxo finalizado com sucesso.
-    REJEITADO;                // Rejeitado pelo Controller, voltou para o Coordenador.
+    RECUSADO_COORDENADOR,
+    RECUSADO_CONTROLLER
 }

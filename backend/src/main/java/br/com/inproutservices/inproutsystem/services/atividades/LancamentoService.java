@@ -9,37 +9,27 @@ import java.util.List;
 
 public interface LancamentoService {
 
-    /**
-     * Cria um novo lançamento no estado RASCUNHO.
-     * @param dto Os dados do lançamento vindos do frontend.
-     * @param managerId O ID do usuário (Manager) que está criando.
-     * @return O lançamento salvo.
-     */
+    Lancamento rejeitarPeloCoordenador(Long lancamentoId, AcaoCoordenadorDTO dto);
+
+    Lancamento rejeitarPeloController(Long lancamentoId, AcaoControllerDTO dto);
+
+    Lancamento reenviarParaAprovacao(Long lancamentoId, Long managerId);
+
     Lancamento criarLancamento(LancamentoRequestDTO dto, Long managerId);
 
-    Lancamento solicitarNovoPrazo(Long lancamentoId, AcaoCoordenadorDTO dto);
-    Lancamento aprovarExtensaoPrazo(Long lancamentoId, Long controllerId);
-    Lancamento rejeitarExtensaoPrazo(Long lancamentoId, AcaoControllerDTO dto);
-    /**
-     * Busca todos os lançamentos em RASCUNHO e os submete para aprovação do Coordenador.
-     * Este método será chamado pela tarefa agendada.
-     */
     void submeterLancamentosDiarios();
 
-    /**
-     * Coordenador aprova um lançamento, movendo-o para a fila do Controller.
-     */
     Lancamento aprovarPeloCoordenador(Long lancamentoId, Long coordenadorId);
 
-    /**
-     * Controller aprova um lançamento, finalizando o fluxo.
-     */
+    // Assinatura padronizada para receber o DTO
+    Lancamento solicitarNovoPrazo(Long lancamentoId, AcaoCoordenadorDTO dto);
+
     Lancamento aprovarPeloController(Long lancamentoId, Long controllerId);
 
-    /**
-     * Controller rejeita um lançamento, devolvendo-o para a fila do Coordenador com um comentário.
-     */
-    Lancamento rejeitarPeloController(Long lancamentoId, Long controllerId, String motivoRejeicao);
+    Lancamento aprovarExtensaoPrazo(Long lancamentoId, Long controllerId);
+
+    // Assinatura padronizada para receber o DTO
+    Lancamento rejeitarExtensaoPrazo(Long lancamentoId, AcaoControllerDTO dto);
 
     Lancamento getLancamentoById(Long id);
 

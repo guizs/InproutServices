@@ -1,5 +1,7 @@
 package br.com.inproutservices.inproutsystem.dtos.atividades;
 
+import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;
+import br.com.inproutservices.inproutsystem.enums.index.StatusEtapa;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,7 +44,8 @@ public record LancamentoRequestDTO(
         @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate planoDocumentacao,
 
-        String status,
+        StatusEtapa status,
+        SituacaoOperacional situacao,
         String detalheDiario,
         BigDecimal valor
 ) {

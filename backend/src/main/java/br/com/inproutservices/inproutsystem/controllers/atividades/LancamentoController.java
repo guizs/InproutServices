@@ -60,14 +60,6 @@ public class LancamentoController {
     @PostMapping("/{id}/controller-aprovar")
     public ResponseEntity<LancamentoResponseDTO> aprovarPeloController(@PathVariable Long id, @RequestBody AcaoControllerDTO dto) {
         Lancamento lancamento = lancamentoService.aprovarPeloController(id, dto.controllerId());
-        // Converte para DTO antes de retornar
-        return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
-    }
-
-    @PostMapping("/{id}/controller-rejeitar")
-    public ResponseEntity<LancamentoResponseDTO> rejeitarPeloController(@PathVariable Long id, @RequestBody AcaoControllerDTO dto) {
-        Lancamento lancamento = lancamentoService.rejeitarPeloController(id, dto.controllerId(), dto.motivoRejeicao());
-        // Converte para DTO antes de retornar
         return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
     }
 
@@ -100,5 +92,27 @@ public class LancamentoController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responseList);
+    }
+
+    @PostMapping("/{id}/coordenador-rejeitar")
+    public ResponseEntity<LancamentoResponseDTO> rejeitarPeloCoordenador(@PathVariable Long id, @RequestBody AcaoCoordenadorDTO dto) {
+        Lancamento lancamento = lancamentoService.rejeitarPeloCoordenador(id, dto);
+        return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
+    }
+
+    // Endpoint para Controller Rejeitar (já existe, mas agora usará a nova lógica)
+    @PostMapping("/{id}/controller-rejeitar")
+    public ResponseEntity<LancamentoResponseDTO> rejeitarPeloController(@PathVariable Long id, @RequestBody AcaoControllerDTO dto) {
+        Lancamento lancamento = lancamentoService.rejeitarPeloController(id, dto);
+        return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
+    }
+
+    // Endpoint para Gestor Reenviar
+    @PostMapping("/{id}/reenviar")
+    public ResponseEntity<LancamentoResponseDTO> reenviarParaAprovacao(@PathVariable Long id) {
+        // Id do manager pode ser pego do token de autenticação no futuro
+        Long managerId = 1L;
+        Lancamento lancamento = lancamentoService.reenviarParaAprovacao(id, managerId);
+        return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
     }
 }

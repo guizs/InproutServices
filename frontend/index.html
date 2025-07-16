@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="assets/css/root.css" />
   <link rel="stylesheet" href="assets/css/global.css" />
   <link rel="stylesheet" href="assets/css/index.css" />
-  
+
 </head>
 
 <body>
@@ -187,6 +187,18 @@
     <ul class="nav nav-tabs mb-3" id="lancamentosTab" role="tablist">
 
       <li class="nav-item" role="presentation">
+        <button class="nav-link position-relative" id="minhasPendencias-tab" data-bs-toggle="tab"
+          data-bs-target="#minhasPendencias-pane" type="button" role="tab" aria-controls="minhasPendencias-pane"
+          aria-selected="false">
+          Minhas pendências
+          <span id="notificacao-pendencias"
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            style="display: none;">
+          </span>
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
         <button class="nav-link active" id="lancamentos-tab" data-bs-toggle="tab" data-bs-target="#lancamentos-pane"
           type="button" role="tab" aria-controls="lancamentos-pane" aria-selected="true">
           Lançamentos
@@ -209,6 +221,17 @@
     </ul>
 
     <div class="tab-content" id="lancamentosTabContent">
+
+
+      <div class="tab-pane fade" id="minhasPendencias-pane" role="tabpanel" aria-labelledby="minhasPendencias-tab"
+        tabindex="0">
+        <div class="table-responsive custom-scroll">
+          <table class="table modern-table align-middle">
+            <thead> </thead>
+            <tbody id="tbody-minhas-pendencias"> </tbody>
+          </table>
+        </div>
+      </div>
 
       <div class="tab-pane fade show active" id="lancamentos-pane" role="tabpanel" aria-labelledby="lancamentos-tab"
         tabindex="0">
@@ -254,6 +277,27 @@
     </div>
 
 
+  </div>
+
+  <div class="modal fade" id="modalComentarios" tabindex="-1" aria-labelledby="modalComentariosLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalComentariosLabel">
+            <i class="bi bi-chat-left-text-fill"></i> Comentários do Lançamento
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body" id="modalComentariosBody">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Fechar
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Modal adicionar nova atividade-->
@@ -380,14 +424,13 @@
                   <option value="" selected disabled>Primeiro, selecione a etapa geral</option>
                 </select>
               </div>
+
               <div class="col-md-4">
                 <label class="form-label">STATUS</label>
                 <select class="form-select" id="status">
                   <option>Aguardando documentação</option>
                   <option>Paralisado</option>
                   <option>Em andamento</option>
-                  <option>Finalizado</option>
-                  <option selected>Não iniciado</option>
                 </select>
               </div>
             </div>
@@ -396,6 +439,17 @@
               <label class="form-label">DETALHE DIÁRIO</label>
               <textarea class="form-control" id="detalheDiario" rows="2" required></textarea>
             </div>
+
+            <label class="form-label">SITUAÇÃO</label>
+            <select class="form-select" id="situacao">
+              <option>Aguardando documentação</option>
+              <option>Paralisado</option>
+              <option>Em andamento</option>
+              <option>Finalizado</option>
+              <option selected>Não iniciado</option>
+            </select>
+
+
 
             <h6 class="section-title">Financeiro</h6>
             <div class="row g-3 mb-3">
@@ -421,7 +475,7 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="bi bi-x-circle"></i> Cancelar
           </button>
-          <button type="submit" form="formAdicionar" class="btn btn-success">
+          <button type="submit" id="btnSubmitAdicionar" form="formAdicionar" class="btn btn-success">
             <i class="bi bi-check-circle"></i> Salvar Lançamento
           </button>
         </div>
@@ -866,7 +920,6 @@
                     <option>Paralisado</option>
                     <option>Em andamento</option>
                     <option>Finalizado</option>
-                    <option selected>Não iniciado</option>
                   </select>
                 </div>
               </div>

@@ -6,6 +6,8 @@ import br.com.inproutservices.inproutsystem.entities.index.Prestador;
 import br.com.inproutservices.inproutsystem.entities.os.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
+import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;
+import br.com.inproutservices.inproutsystem.enums.index.StatusEtapa;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -79,11 +81,15 @@ public class Lancamento {
     private String documentacao;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate planoDocumentacao;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private StatusEtapa status;
     private String detalheDiario;
     private BigDecimal valor;
     private String coordenador; // Este campo pode ser revisto/removido no futuro
-    private String situacao;    // Este campo pode ser revisto/removido no futuro
+    @Enumerated(EnumType.STRING)
+    @Column(name = "situacao") // Mapeia para a coluna existente 'situacao'
+    private SituacaoOperacional situacao;    // Este campo pode ser revisto/removido no futuro
     private LocalDateTime ultUpdate;
 
     @Column(name = "data_criacao", nullable = false, updatable = false)
@@ -282,14 +288,6 @@ public class Lancamento {
         this.planoDocumentacao = planoDocumentacao;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getDetalheDiario() {
         return detalheDiario;
     }
@@ -314,13 +312,14 @@ public class Lancamento {
         this.coordenador = coordenador;
     }
 
-    public String getSituacao() {
+    public SituacaoOperacional getSituacao() {
         return situacao;
     }
 
-    public void setSituacao(String situacao) {
+    public void setSituacao(SituacaoOperacional situacao) {
         this.situacao = situacao;
     }
+
 
     public LocalDateTime getUltUpdate() {
         return ultUpdate;
@@ -336,5 +335,13 @@ public class Lancamento {
 
     public void setDataCriacao(LocalDateTime dataCriacao) {
         this.dataCriacao = dataCriacao;
+    }
+
+    public StatusEtapa getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusEtapa status) {
+        this.status = status;
     }
 }

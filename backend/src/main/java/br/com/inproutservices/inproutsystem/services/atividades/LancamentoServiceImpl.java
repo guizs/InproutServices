@@ -34,7 +34,6 @@ public class LancamentoServiceImpl implements LancamentoService {
 
     private final LancamentoRepository lancamentoRepository;
     private final OsRepository osRepository;
-    private final LpuRepository lpuRepository;
     private final UsuarioRepository usuarioRepository;
     private final PrazoService prazoService;
     private final ComentarioRepository comentarioRepository;
@@ -42,13 +41,11 @@ public class LancamentoServiceImpl implements LancamentoService {
     private final EtapaDetalhadaRepository etapaDetalhadaRepository;
 
     public LancamentoServiceImpl(LancamentoRepository lancamentoRepository, OsRepository osRepository,
-                                 LpuRepository lpuRepository, UsuarioRepository usuarioRepository,
-                                 PrazoService prazoService, ComentarioRepository comentarioRepository,
-                                 PrestadorRepository prestadorRepository,
+                                 UsuarioRepository usuarioRepository, PrazoService prazoService,
+                                 ComentarioRepository comentarioRepository, PrestadorRepository prestadorRepository,
                                  EtapaDetalhadaRepository etapaDetalhadaRepository) {
         this.lancamentoRepository = lancamentoRepository;
         this.osRepository = osRepository;
-        this.lpuRepository = lpuRepository;
         this.usuarioRepository = usuarioRepository;
         this.prazoService = prazoService;
         this.comentarioRepository = comentarioRepository;
@@ -119,6 +116,7 @@ public class LancamentoServiceImpl implements LancamentoService {
         lancamento.setStatus(dto.status());
         lancamento.setDetalheDiario(dto.detalheDiario());
         lancamento.setValor(dto.valor());
+        lancamento.setSituacao(dto.situacao());
 
         // 4. Salva o novo lançamento no banco de dados
         return lancamentoRepository.save(lancamento);
@@ -141,15 +139,17 @@ public class LancamentoServiceImpl implements LancamentoService {
     @Override
     @Transactional
     public Lancamento aprovarPeloCoordenador(Long lancamentoId, Long coordenadorId) {
-        Lancamento lancamento = lancamentoRepository.findById(lancamentoId)
-                .orElseThrow(() -> new EntityNotFoundException("Lançamento não encontrado com ID: " + lancamentoId));
+        Lancamento lancamento = getLancamentoById(lancamentoId);
 
         if (lancamento.getSituacaoAprovacao() != SituacaoAprovacao.PENDENTE_COORDENADOR) {
             throw new BusinessException("Este lançamento não está pendente de aprovação pelo Coordenador.");
         }
 
+        // A lógica da sequência agora usa o método correto e mais simples do repositório
         Lancamento maisAntigo = lancamentoRepository
-                .findFirstByOsIdAndSituacaoAprovacaoOrderByDataCriacaoAsc(lancamento.getOs().getId(), SituacaoAprovacao.PENDENTE_COORDENADOR)
+                .findFirstByOsIdAndSituacaoAprovacaoOrderByDataCriacaoAsc(
+                        lancamento.getOs().getId(),
+                        SituacaoAprovacao.PENDENTE_COORDENADOR)
                 .orElse(null);
 
         if (maisAntigo == null || !maisAntigo.getId().equals(lancamento.getId())) {
@@ -158,19 +158,15 @@ public class LancamentoServiceImpl implements LancamentoService {
 
         lancamento.setSituacaoAprovacao(SituacaoAprovacao.PENDENTE_CONTROLLER);
         lancamento.setUltUpdate(LocalDateTime.now());
-
         return lancamentoRepository.save(lancamento);
     }
 
     @Override
     @Transactional
     public Lancamento solicitarNovoPrazo(Long lancamentoId, AcaoCoordenadorDTO dto) {
-        Lancamento lancamento = lancamentoRepository.findById(lancamentoId)
-                .orElseThrow(() -> new EntityNotFoundException("Lançamento não encontrado com ID: " + lancamentoId));
-
+        Lancamento lancamento = getLancamentoById(lancamentoId);
         Usuario coordenador = usuarioRepository.findById(dto.coordenadorId())
                 .orElseThrow(() -> new EntityNotFoundException("Coordenador não encontrado com ID: " + dto.coordenadorId()));
-
         if (lancamento.getSituacaoAprovacao() != SituacaoAprovacao.PENDENTE_COORDENADOR) {
             throw new BusinessException("A solicitação de prazo só pode ser feita para lançamentos pendentes do Coordenador.");
         }
@@ -208,34 +204,6 @@ public class LancamentoServiceImpl implements LancamentoService {
     }
 
     @Override
-    @Transactional
-    public Lancamento rejeitarPeloController(Long lancamentoId, Long controllerId, String motivoRejeicao) {
-        Lancamento lancamento = lancamentoRepository.findById(lancamentoId)
-                .orElseThrow(() -> new EntityNotFoundException("Lançamento não encontrado com ID: " + lancamentoId));
-
-        Usuario controller = usuarioRepository.findById(controllerId)
-                .orElseThrow(() -> new EntityNotFoundException("Controller não encontrado com ID: " + controllerId));
-
-        if (lancamento.getSituacaoAprovacao() != SituacaoAprovacao.PENDENTE_CONTROLLER) {
-            throw new BusinessException("Este lançamento não está pendente de aprovação pelo Controller.");
-        }
-
-        Comentario comentarioRejeicao = new Comentario();
-        comentarioRejeicao.setLancamento(lancamento);
-        comentarioRejeicao.setAutor(controller);
-        comentarioRejeicao.setTexto(motivoRejeicao);
-        lancamento.getComentarios().add(comentarioRejeicao);
-
-        lancamento.setSituacaoAprovacao(SituacaoAprovacao.PENDENTE_COORDENADOR);
-
-        LocalDate novoPrazo = prazoService.calcularPrazoEmDiasUteis(LocalDate.now(), 3);
-        lancamento.setDataPrazo(novoPrazo);
-        lancamento.setUltUpdate(LocalDateTime.now());
-
-        return lancamentoRepository.save(lancamento);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Lancamento getLancamentoById(Long id) {
         return lancamentoRepository.findByIdWithDetails(id)
@@ -265,9 +233,7 @@ public class LancamentoServiceImpl implements LancamentoService {
     @Override
     @Transactional
     public Lancamento rejeitarExtensaoPrazo(Long lancamentoId, AcaoControllerDTO dto) {
-        Lancamento lancamento = lancamentoRepository.findById(lancamentoId)
-                .orElseThrow(() -> new EntityNotFoundException("Lançamento não encontrado com ID: " + lancamentoId));
-
+        Lancamento lancamento = getLancamentoById(lancamentoId);
         Usuario controller = usuarioRepository.findById(dto.controllerId())
                 .orElseThrow(() -> new EntityNotFoundException("Controller não encontrado com ID: " + dto.controllerId()));
 
@@ -307,5 +273,99 @@ public class LancamentoServiceImpl implements LancamentoService {
     @Transactional(readOnly = true)
     public List<Lancamento> getAllLancamentos() {
         return lancamentoRepository.findAllWithDetails();
+    }
+
+    @Override
+    @Transactional
+    public Lancamento rejeitarPeloCoordenador(Long lancamentoId, AcaoCoordenadorDTO dto) {
+        Lancamento lancamento = getLancamentoById(lancamentoId);
+        Usuario coordenador = usuarioRepository.findById(dto.coordenadorId())
+                .orElseThrow(() -> new EntityNotFoundException("Coordenador não encontrado com ID: " + dto.coordenadorId()));
+
+        if (lancamento.getSituacaoAprovacao() != SituacaoAprovacao.PENDENTE_COORDENADOR) {
+            throw new BusinessException("Este lançamento não pode ser rejeitado pelo Coordenador (Status atual: " + lancamento.getSituacaoAprovacao() + ").");
+        }
+        if (dto.comentario() == null || dto.comentario().isBlank()) {
+            throw new BusinessException("O motivo da rejeição é obrigatório.");
+        }
+
+        // Adiciona o comentário de rejeição
+        Comentario comentarioRejeicao = new Comentario();
+        comentarioRejeicao.setLancamento(lancamento);
+        comentarioRejeicao.setAutor(coordenador);
+        comentarioRejeicao.setTexto("Rejeitado pelo Coordenador. Motivo: " + dto.comentario());
+        lancamento.getComentarios().add(comentarioRejeicao);
+
+        // Define o novo status
+        lancamento.setSituacaoAprovacao(SituacaoAprovacao.RECUSADO_COORDENADOR);
+        lancamento.setUltUpdate(LocalDateTime.now());
+
+        return lancamentoRepository.save(lancamento);
+    }
+
+    @Override
+    @Transactional
+    public Lancamento rejeitarPeloController(Long lancamentoId, AcaoControllerDTO dto) {
+        Lancamento lancamento = getLancamentoById(lancamentoId);
+        Usuario controller = usuarioRepository.findById(dto.controllerId())
+                .orElseThrow(() -> new EntityNotFoundException("Controller não encontrado com ID: " + dto.controllerId()));
+
+        if (lancamento.getSituacaoAprovacao() != SituacaoAprovacao.PENDENTE_CONTROLLER) {
+            throw new BusinessException("Este lançamento não pode ser rejeitado pelo Controller (Status atual: " + lancamento.getSituacaoAprovacao() + ").");
+        }
+
+        // A validação do motivo no seu código original estava para prazo, vamos ajustar
+        if (dto.motivoRejeicao() == null || dto.motivoRejeicao().isBlank()) {
+            throw new BusinessException("O motivo da rejeição é obrigatório.");
+        }
+
+        Comentario comentarioRejeicao = new Comentario();
+        comentarioRejeicao.setLancamento(lancamento);
+        comentarioRejeicao.setAutor(controller);
+        comentarioRejeicao.setTexto("Rejeitado pelo Controller. Motivo: " + dto.motivoRejeicao());
+        lancamento.getComentarios().add(comentarioRejeicao);
+
+        // === MUDANÇA PRINCIPAL AQUI ===
+        // Antes: PENDENTE_COORDENADOR
+        // Agora: RECUSADO_CONTROLLER
+        lancamento.setSituacaoAprovacao(SituacaoAprovacao.RECUSADO_CONTROLLER);
+        lancamento.setUltUpdate(LocalDateTime.now());
+
+        // Removemos a lógica de prazo que estava aqui, pois este é um fluxo de rejeição simples
+        // lancamento.setDataPrazo(novoPrazo);
+
+        return lancamentoRepository.save(lancamento);
+    }
+
+    @Override
+    @Transactional
+    public Lancamento reenviarParaAprovacao(Long lancamentoId, Long managerId) {
+        Lancamento lancamento = getLancamentoById(lancamentoId);
+        Usuario manager = usuarioRepository.findById(managerId)
+                .orElseThrow(() -> new EntityNotFoundException("Manager não encontrado com ID: " + managerId));
+
+        // Valida se o lançamento está em um dos status de rejeição
+        if (lancamento.getSituacaoAprovacao() != SituacaoAprovacao.RECUSADO_COORDENADOR &&
+                lancamento.getSituacaoAprovacao() != SituacaoAprovacao.RECUSADO_CONTROLLER) {
+            throw new BusinessException("Este lançamento não está em status de rejeição e não pode ser reenviado.");
+        }
+
+        // Adiciona um comentário automático
+        Comentario comentarioReenvio = new Comentario();
+        comentarioReenvio.setLancamento(lancamento);
+        comentarioReenvio.setAutor(manager);
+        comentarioReenvio.setTexto("Lançamento corrigido e reenviado para aprovação.");
+        lancamento.getComentarios().add(comentarioReenvio);
+
+        // === MUDANÇA PRINCIPAL AQUI ===
+        // Define o status diretamente para a fila do Coordenador, pulando o Rascunho.
+        lancamento.setSituacaoAprovacao(SituacaoAprovacao.PENDENTE_COORDENADOR);
+        lancamento.setUltUpdate(LocalDateTime.now());
+
+        // Opcional: Recalcular o prazo para o coordenador
+        LocalDate novoPrazo = prazoService.calcularPrazoEmDiasUteis(LocalDate.now(), 3);
+        lancamento.setDataPrazo(novoPrazo);
+
+        return lancamentoRepository.save(lancamento);
     }
 }

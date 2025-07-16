@@ -7,6 +7,8 @@ import br.com.inproutservices.inproutsystem.entities.index.Prestador; // Importe
 import br.com.inproutservices.inproutsystem.entities.os.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
+import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;
+import br.com.inproutservices.inproutsystem.enums.index.StatusEtapa;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -41,7 +43,8 @@ public record LancamentoResponseDTO(
         @JsonFormat(pattern = "dd/MM/yyyy") LocalDate planoAtivacao,
         String documentacao,
         @JsonFormat(pattern = "dd/MM/yyyy") LocalDate planoDocumentacao,
-        String status,
+        StatusEtapa status,
+        SituacaoOperacional situacao,
         String detalheDiario,
         BigDecimal valor,
         List<ComentarioDTO> comentarios
@@ -72,6 +75,7 @@ public record LancamentoResponseDTO(
                 lancamento.getDocumentacao(),
                 lancamento.getPlanoDocumentacao(),
                 lancamento.getStatus(),
+                lancamento.getSituacao(),
                 lancamento.getDetalheDiario(),
                 lancamento.getValor(),
                 (lancamento.getComentarios() != null) ? lancamento.getComentarios().stream().map(ComentarioDTO::new).collect(Collectors.toList()) : null
