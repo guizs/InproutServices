@@ -11,6 +11,7 @@ import br.com.inproutservices.inproutsystem.entities.index.Prestador;
 import br.com.inproutservices.inproutsystem.entities.os.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
+import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;
 import br.com.inproutservices.inproutsystem.exceptions.materiais.BusinessException;
 import br.com.inproutservices.inproutsystem.repositories.atividades.ComentarioRepository;
 import br.com.inproutservices.inproutsystem.repositories.atividades.LancamentoRepository;
@@ -21,6 +22,7 @@ import br.com.inproutservices.inproutsystem.repositories.index.PrestadorReposito
 import br.com.inproutservices.inproutsystem.repositories.usuarios.UsuarioRepository;
 import br.com.inproutservices.inproutsystem.services.config.PrazoService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,11 +41,12 @@ public class LancamentoServiceImpl implements LancamentoService {
     private final ComentarioRepository comentarioRepository;
     private final PrestadorRepository prestadorRepository;
     private final EtapaDetalhadaRepository etapaDetalhadaRepository;
+    private final LpuRepository lpuRepository;
 
     public LancamentoServiceImpl(LancamentoRepository lancamentoRepository, OsRepository osRepository,
                                  UsuarioRepository usuarioRepository, PrazoService prazoService,
                                  ComentarioRepository comentarioRepository, PrestadorRepository prestadorRepository,
-                                 EtapaDetalhadaRepository etapaDetalhadaRepository) {
+                                 EtapaDetalhadaRepository etapaDetalhadaRepository, LpuRepository lpuRepository) {
         this.lancamentoRepository = lancamentoRepository;
         this.osRepository = osRepository;
         this.usuarioRepository = usuarioRepository;
@@ -51,6 +54,72 @@ public class LancamentoServiceImpl implements LancamentoService {
         this.comentarioRepository = comentarioRepository;
         this.prestadorRepository = prestadorRepository;
         this.etapaDetalhadaRepository = etapaDetalhadaRepository;
+        this.lpuRepository = lpuRepository;
+    }
+
+    @Override
+    @Transactional
+    public Lancamento submeterLancamentoManualmente(Long lancamentoId, Long managerId) {
+        // Id do manager pode ser usado para validação de permissão no futuro
+        Lancamento lancamento = getLancamentoById(lancamentoId);
+
+        if (lancamento.getSituacaoAprovacao() != SituacaoAprovacao.RASCUNHO) {
+            throw new BusinessException("Apenas lançamentos em Rascunho podem ser submetidos.");
+        }
+
+        LocalDate novoPrazo = prazoService.calcularPrazoEmDiasUteis(LocalDate.now(), 3);
+        lancamento.setSituacaoAprovacao(SituacaoAprovacao.PENDENTE_COORDENADOR);
+        lancamento.setDataSubmissao(LocalDateTime.now());
+        lancamento.setDataPrazo(novoPrazo);
+        lancamento.setUltUpdate(LocalDateTime.now());
+
+        return lancamentoRepository.save(lancamento);
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?") // Roda todo dia à meia-noite
+    @Transactional
+    public void criarLancamentosParaProjetosEmAndamento() {
+        // 1. Precisamos de uma forma de encontrar o último lançamento de cada projeto (OS/LPU)
+        // Esta é uma query complexa. A lógica simplificada seria:
+        List<OS> todasAsOs = osRepository.findAll(); // Busca todas as OS
+        for (OS os : todasAsOs) {
+            // Para cada OS, busca o lançamento mais recente
+            // O ideal é criar um método específico no repositório para isso. Ex: findTopByOsIdOrderByIdDesc(os.getId())
+            Lancamento ultimoLancamento = lancamentoRepository.findFirstByOsIdOrderByIdDesc(os.getId()).orElse(null);
+
+            if (ultimoLancamento != null && ultimoLancamento.getSituacao() == SituacaoOperacional.EM_ANDAMENTO) {
+                // 2. Se a situação for "Em andamento", cria uma cópia
+                Lancamento novoLancamento = new Lancamento();
+
+                novoLancamento.setOs(ultimoLancamento.getOs());
+                novoLancamento.setManager(ultimoLancamento.getManager());
+                novoLancamento.setPrestador(ultimoLancamento.getPrestador());
+                novoLancamento.setEtapaDetalhada(ultimoLancamento.getEtapaDetalhada());
+                novoLancamento.setEquipe(ultimoLancamento.getEquipe());
+                novoLancamento.setVistoria(ultimoLancamento.getVistoria());
+                novoLancamento.setPlanoVistoria(ultimoLancamento.getPlanoVistoria());
+                novoLancamento.setDesmobilizacao(ultimoLancamento.getDesmobilizacao());
+                novoLancamento.setPlanoDesmobilizacao(ultimoLancamento.getPlanoDesmobilizacao());
+                novoLancamento.setInstalacao(ultimoLancamento.getInstalacao());
+                novoLancamento.setPlanoInstalacao(ultimoLancamento.getPlanoInstalacao());
+                novoLancamento.setAtivacao(ultimoLancamento.getAtivacao());
+                novoLancamento.setPlanoAtivacao(ultimoLancamento.getPlanoAtivacao());
+                novoLancamento.setDocumentacao(ultimoLancamento.getDocumentacao());
+                novoLancamento.setPlanoDocumentacao(ultimoLancamento.getPlanoDocumentacao());
+                novoLancamento.setStatus(ultimoLancamento.getStatus());
+                novoLancamento.setValor(ultimoLancamento.getValor());
+
+                // Define um detalhe diário padrão para a nova atividade
+                novoLancamento.setDetalheDiario("Lançamento diário automático para atividade em andamento.");
+
+                // Define os novos valores para o lançamento do dia atual
+                novoLancamento.setDataAtividade(LocalDate.now()); // Data do dia atual
+                novoLancamento.setSituacao(SituacaoOperacional.EM_ANDAMENTO);
+                novoLancamento.setSituacaoAprovacao(SituacaoAprovacao.RASCUNHO);
+
+                lancamentoRepository.save(novoLancamento);
+            }
+        }
     }
 
     @Override
@@ -79,6 +148,9 @@ public class LancamentoServiceImpl implements LancamentoService {
 
         Usuario manager = usuarioRepository.findById(managerId)
                 .orElseThrow(() -> new EntityNotFoundException("Manager não encontrado com o ID: " + managerId));
+
+        Lpu lpu = lpuRepository.findById(dto.lpuId())
+                .orElseThrow(() -> new EntityNotFoundException("LPU não encontrada com o ID: " + dto.lpuId()));
 
         Prestador prestador = prestadorRepository.findById(dto.prestadorId())
                 .orElseThrow(() -> new EntityNotFoundException("Prestador não encontrado com o ID: " + dto.prestadorId()));
@@ -200,6 +272,15 @@ public class LancamentoServiceImpl implements LancamentoService {
         lancamento.setSituacaoAprovacao(SituacaoAprovacao.APROVADO);
         lancamento.setUltUpdate(LocalDateTime.now());
 
+        // Pega a LPU associada a este lançamento através da OS
+        Lpu lpuDoLancamento = lancamento.getOs().getLpu();
+        if (lpuDoLancamento != null) {
+            // Atualiza o campo 'situacaoProjeto' da LPU com a situação do lançamento aprovado
+            lpuDoLancamento.setSituacaoProjeto(lancamento.getSituacao());
+            // O LpuRepository precisa ser injetado no serviço para isso funcionar
+            // lpuRepository.save(lpuDoLancamento); // Descomente após injetar o LpuRepository
+        }
+
         return lancamentoRepository.save(lancamento);
     }
 
@@ -227,6 +308,60 @@ public class LancamentoServiceImpl implements LancamentoService {
 
         // TODO: Adicionar um comentário automático informando que o prazo foi aprovado pelo Controller.
 
+        return lancamentoRepository.save(lancamento);
+    }
+
+    @Override
+    @Transactional
+    public Lancamento atualizarLancamento(Long id, LancamentoRequestDTO dto) {
+        // 1. Busca o lançamento existente no banco
+        Lancamento lancamento = lancamentoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lançamento não encontrado com o ID: " + id));
+
+        // 2. Valida se o lançamento está em um status que permite edição
+        SituacaoAprovacao statusAtual = lancamento.getSituacaoAprovacao();
+        if (statusAtual != SituacaoAprovacao.RASCUNHO &&
+                statusAtual != SituacaoAprovacao.RECUSADO_COORDENADOR &&
+                statusAtual != SituacaoAprovacao.RECUSADO_CONTROLLER) {
+            throw new BusinessException("Este lançamento não pode ser editado. Status atual: " + statusAtual);
+        }
+
+        // 3. Busca as entidades relacionadas (Prestador e Etapa) para garantir que os novos IDs são válidos
+        Prestador prestador = prestadorRepository.findById(dto.prestadorId())
+                .orElseThrow(() -> new EntityNotFoundException("Prestador não encontrado com o ID: " + dto.prestadorId()));
+
+        EtapaDetalhada etapaDetalhada = etapaDetalhadaRepository.findById(dto.etapaDetalhadaId())
+                .orElseThrow(() -> new EntityNotFoundException("Etapa Detalhada não encontrada com o ID: " + dto.etapaDetalhadaId()));
+
+        // 4. Atualiza os campos do lançamento com os dados do DTO
+        lancamento.setPrestador(prestador);
+        lancamento.setEtapaDetalhada(etapaDetalhada);
+        lancamento.setEquipe(dto.equipe());
+        lancamento.setVistoria(dto.vistoria());
+        lancamento.setPlanoVistoria(dto.planoVistoria());
+        lancamento.setDesmobilizacao(dto.desmobilizacao());
+        lancamento.setPlanoDesmobilizacao(dto.planoDesmobilizacao());
+        lancamento.setInstalacao(dto.instalacao());
+        lancamento.setPlanoInstalacao(dto.planoInstalacao());
+        lancamento.setAtivacao(dto.ativacao());
+        lancamento.setPlanoAtivacao(dto.planoAtivacao());
+        lancamento.setDocumentacao(dto.documentacao());
+        lancamento.setPlanoDocumentacao(dto.planoDocumentacao());
+        lancamento.setStatus(dto.status());
+        lancamento.setSituacao(dto.situacao());
+        lancamento.setDetalheDiario(dto.detalheDiario());
+        lancamento.setValor(dto.valor());
+
+        lancamento.setSituacaoAprovacao(dto.situacaoAprovacao());
+
+        if(dto.situacaoAprovacao() == SituacaoAprovacao.PENDENTE_COORDENADOR){
+            lancamento.setDataSubmissao(LocalDateTime.now());
+            lancamento.setDataPrazo(prazoService.calcularPrazoEmDiasUteis(LocalDate.now(), 3));
+        }
+
+        lancamento.setUltUpdate(LocalDateTime.now());
+
+        // 6. Salva as alterações no banco de dados
         return lancamentoRepository.save(lancamento);
     }
 

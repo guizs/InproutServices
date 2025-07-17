@@ -22,4 +22,6 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
 
     @Query("SELECT DISTINCT l FROM Lancamento l LEFT JOIN FETCH l.manager LEFT JOIN FETCH l.os")
     List<Lancamento> findAllWithDetails();
+
+    Optional<Lancamento> findFirstByOsIdOrderByIdDesc(Long osId);
 }

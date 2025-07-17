@@ -126,24 +126,71 @@
           <button class="btn btn-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-filter-circle me-1"></i> Filtros
           </button>
-          <ul class="dropdown-menu dropdown-menu-end">
+
+          <ul class="dropdown-menu dropdown-menu-end p-3" style="width: 300px;">
             <li>
-              <h6 class="dropdown-header">Filtrar por Status</h6>
+              <h6 class="dropdown-header px-1">Filtrar por Período</h6>
             </li>
-            <li><a class="dropdown-item" href="#">Em Aberto</a></li>
-            <li><a class="dropdown-item" href="#">Todas</a></li>
+            <li><button class="dropdown-item" type="button" data-filter="periodo" data-value="hoje">Hoje</button></li>
+            <li><button class="dropdown-item" type="button" data-filter="periodo" data-value="ontem">Ontem</button></li>
+            <li><button class="dropdown-item" type="button" data-filter="periodo" data-value="semana">Última
+                Semana</button></li>
+            <li><button class="dropdown-item" type="button" data-filter="periodo" data-value="mes">Último Mês</button>
+            </li>
+            <li>
+              <div class="px-2 mt-2">
+                <label for="filtroDataCustom" class="form-label small">Período Customizado</label>
+                <input type="text" class="form-control form-control-sm" id="filtroDataCustom"
+                  placeholder="Selecione um período...">
+              </div>
+            </li>
 
             <li>
               <hr class="dropdown-divider">
             </li>
 
             <li>
-              <h6 class="dropdown-header">Filtrar por Período</h6>
+              <h6 class="dropdown-header px-1">Filtrar por Status</h6>
+            </li>
+            <li>
+              <div class="px-2">
+                <select id="filtroStatusAprovacao" class="form-select form-select-sm">
+                  <option value="">Todos os Status</option>
+                  <option value="PENDENTE_COORDENADOR">Pendente Coordenador</option>
+                  <option value="PENDENTE_CONTROLLER">Pendente Controller</option>
+                  <option value="RECUSADO_COORDENADOR">Recusado Coordenador</option>
+                  <option value="RECUSADO_CONTROLLER">Recusado Controller</option>
+                  <option value="APROVADO">Aprovado</option>
+                </select>
+              </div>
             </li>
 
-            <li><a class="dropdown-item" href="#">Hoje</a></li>
-            <li><a class="dropdown-item" href="#">Ontem</a></li>
-            <li><a class="dropdown-item" href="#">Última Semana</a></li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <h6 class="dropdown-header px-1">Filtrar por OS</h6>
+            </li>
+            <li>
+              <div class="px-2">
+                <select id="filtroOS" class="form-select form-select-sm">
+                  <option value="">Todas as OS</option>
+                </select>
+              </div>
+            </li>
+
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <div class="px-2 d-grid">
+                <button class="btn btn-sm btn-outline-danger" id="limparFiltros" type="button">
+                  <i class="bi bi-x-circle"></i> Limpar Todos os Filtros
+                </button>
+              </div>
+            </li>
           </ul>
         </div>
       </div>
@@ -213,6 +260,13 @@
       </li>
 
       <li class="nav-item" role="presentation">
+        <button class="nav-link" id="paralisados-tab" data-bs-toggle="tab" data-bs-target="#paralisados-pane"
+          type="button" role="tab" aria-controls="paralisados-pane" aria-selected="false">
+          Paralisados
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
         <button class="nav-link" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico-pane" type="button"
           role="tab" aria-controls="historico-pane" aria-selected="false">
           Histórico
@@ -258,6 +312,15 @@
               <!-- conteúdo javascript -->
             </tbody>
 
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="paralisados-pane" role="tabpanel" aria-labelledby="paralisados-tab" tabindex="0">
+        <div class="table-responsive custom-scroll">
+          <table class="table modern-table align-middle">
+            <thead> </thead>
+            <tbody id="tbody-paralisados"> </tbody>
           </table>
         </div>
       </div>
@@ -444,9 +507,8 @@
             <select class="form-select" id="situacao">
               <option>Aguardando documentação</option>
               <option>Paralisado</option>
-              <option>Em andamento</option>
+              <option selected>Em andamento</option>
               <option>Finalizado</option>
-              <option selected>Não iniciado</option>
             </select>
 
 
@@ -475,11 +537,49 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="bi bi-x-circle"></i> Cancelar
           </button>
+
           <button type="submit" id="btnSubmitAdicionar" form="formAdicionar" class="btn btn-success">
             <i class="bi bi-check-circle"></i> Salvar Lançamento
           </button>
+
+          <button type="button" id="btnSalvarRascunho" class="btn btn-primary" style="display: none;">
+            <i class="bi bi-save"></i> Salvar Alterações
+          </button>
+          <button type="button" id="btnSalvarEEnviar" class="btn btn-success" style="display: none;">
+            <i class="bi bi-send-check"></i> Salvar e Enviar
+          </button>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalConfirmarSubmissao" tabindex="-1" aria-labelledby="modalConfirmarSubmissaoLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalConfirmarSubmissaoLabel">
+            <i class="bi bi-shield-check"></i> Confirmação de Envio
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Tem certeza que deseja submeter este lançamento para a aprovação do coordenador?</p>
+
+          <div class="alert alert-light mt-3" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i> Após o envio, o lançamento entrará no fluxo de aprovação e não
+            poderá mais ser editado a não ser que o item seja rejeitado.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Cancelar
+          </button>
+          <button type="button" class="btn btn-success" id="btnConfirmarSubmissao">
+            <i class="bi bi-send-check"></i> Sim, Enviar
+          </button>
+        </div>
       </div>
     </div>
   </div>

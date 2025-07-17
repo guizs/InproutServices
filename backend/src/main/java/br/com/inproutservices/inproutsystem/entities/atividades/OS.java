@@ -13,7 +13,9 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "os")
@@ -26,6 +28,14 @@ public class OS {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "os_lpus", // Nome da tabela de junção
+            joinColumns = @JoinColumn(name = "os_id"),
+            inverseJoinColumns = @JoinColumn(name = "lpu_id")
+    )
+    private Set<Lpu> lpus = new HashSet<>();
+
     private String os;
     private String site;
     private String contrato;
@@ -34,9 +44,6 @@ public class OS {
     private String gestorTim;
     private String regional;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lpu_id")
-    private Lpu lpu;
     private String lote;
     private String boq;
     private String po;
@@ -74,6 +81,14 @@ public class OS {
 
     public Long getId() {
         return id;
+    }
+
+    public Set<Lpu> getLpus() {
+        return lpus;
+    }
+
+    public void setLpus(Set<Lpu> lpus) {
+        this.lpus = lpus;
     }
 
     public void setId(Long id) {
@@ -134,14 +149,6 @@ public class OS {
 
     public void setRegional(String regional) {
         this.regional = regional;
-    }
-
-    public Lpu getLpu() {
-        return lpu;
-    }
-
-    public void setLpu(Lpu lpu) {
-        this.lpu = lpu;
     }
 
     public String getLote() {

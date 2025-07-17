@@ -4,25 +4,49 @@ import br.com.inproutservices.inproutsystem.dtos.index.ContratoResponseDTO;
 import br.com.inproutservices.inproutsystem.dtos.index.LpuResponseDTO;
 import br.com.inproutservices.inproutsystem.entities.index.Contrato;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
+import br.com.inproutservices.inproutsystem.repositories.atividades.OsRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.ContratoRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.LpuRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.com.inproutservices.inproutsystem.entities.os.OS;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class LpuService {
 
     private final LpuRepository lpuRepository;
     private final ContratoRepository contratoRepository;
+    private final OsRepository osRepository;
 
-    public LpuService(LpuRepository lpuRepository, ContratoRepository contratoRepository) {
+    public LpuService(LpuRepository lpuRepository, ContratoRepository contratoRepository, OsRepository osRepository) {
         this.lpuRepository = lpuRepository;
         this.contratoRepository = contratoRepository;
+        this.osRepository = osRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<LpuResponseDTO> findLpusByOsId(Long osId) {
+        // 1. Busca a OS principal
+        OS os = osRepository.findById(osId)
+                .orElseThrow(() -> new EntityNotFoundException("OS não encontrada com o ID: " + osId));
+
+        // 2. Acessa a coleção de LPUs diretamente da entidade OS e converte para DTO
+        return os.getLpus().stream()
+                .map(lpu -> {
+                    // A lógica de conversão para DTO que você já tinha continua aqui...
+                    ContratoResponseDTO contratoDTO = new ContratoResponseDTO(lpu.getContrato().getId(), lpu.getContrato().getNome());
+                    return new LpuResponseDTO(
+                            lpu.getId(), lpu.getCodigoLpu(), lpu.getNomeLpu(), lpu.getUnidade(),
+                            lpu.getValorSemImposto(), lpu.getValorComImposto(), lpu.isAtivo(), contratoDTO
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     // --- NOVO MÉTODO PARA LISTAGEM FLEXÍVEL ---
@@ -70,20 +94,23 @@ public class LpuService {
      * Cria uma nova LPU no banco de dados.
      */
     @Transactional
-    public Lpu criarLpu(Lpu lpu, Long contratoId) {
+    public Lpu criarLpu(Lpu lpu, Long contratoId) { // <-- MUDANÇA: Removemos o osId daqui
 
+        // A validação de duplicidade por contrato continua correta
         lpuRepository.findByCodigoLpuAndContratoId(lpu.getCodigoLpu(), contratoId).ifPresent(l -> {
-            // A mensagem de erro agora pode ser mais clara.
             throw new IllegalArgumentException(
                     "Já existe uma LPU com o código: " + lpu.getCodigoLpu() + " para este contrato."
             );
         });
 
+        // A associação com o Contrato também continua correta
         Contrato contrato = contratoRepository.findById(contratoId)
                 .orElseThrow(() -> new EntityNotFoundException("Contrato não encontrado com o ID: " + contratoId));
 
         lpu.setContrato(contrato);
         lpu.setAtivo(true);
+
+        // A linha 'lpu.setOs(os);' foi REMOVIDA, pois não faz mais parte deste processo.
 
         return lpuRepository.save(lpu);
     }

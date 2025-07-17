@@ -409,19 +409,22 @@ label.form-label.d-flex {
 
 /* Fundo verde para status "OK" */
 .status-ok {
-  background-color: #d1e7dd; /* Verde sutil do Bootstrap */
+  background-color: #d1e7dd;
+  /* Verde sutil do Bootstrap */
   color: #0f5132;
 }
 
 /* Fundo vermelho para status "NOK" */
 .status-nok {
-  background-color: #f8d7da; /* Vermelho sutil do Bootstrap */
+  background-color: #f8d7da;
+  /* Vermelho sutil do Bootstrap */
   color: #58151c;
 }
 
 /* Fundo laranja/amarelo para status "N/A" */
 .status-na {
-  background-color: #fff3cd; /* Amarelo sutil do Bootstrap */
+  background-color: #fff3cd;
+  /* Amarelo sutil do Bootstrap */
   color: #664d03;
 }
 
@@ -434,20 +437,71 @@ label.form-label.d-flex {
 
 /* Fundo verde para status "OK" */
 .modern-table tbody td.status-ok {
-  background-color: #d1e7dd !important; /* Verde sutil do Bootstrap */
+  background-color: #d1e7dd !important;
+  /* Verde sutil do Bootstrap */
   color: #0f5132 !important;
 }
 
 /* Fundo vermelho para status "NOK" */
 .modern-table tbody td.status-nok {
-  background-color: #f8d7da !important; /* Vermelho sutil do Bootstrap */
+  background-color: #f8d7da !important;
+  /* Vermelho sutil do Bootstrap */
   color: #58151c !important;
 }
 
 /* Fundo laranja/amarelo para status "N/A" */
 .modern-table tbody td.status-na {
-  background-color: #fff3cd !important; /* Amarelo sutil do Bootstrap */
+  background-color: #fff3cd !important;
+  /* Amarelo sutil do Bootstrap */
   color: #664d03 !important;
+}
+
+/* ========================================================== */
+/* ======== ESTILO MODAL DE CONFIRMAÇÃO (PROFISSIONAL) ======== */
+/* ========================================================== */
+
+#modalConfirmarSubmissao .modal-content {
+  border-radius: 12px;
+  border: 1px solid #d4d4d4;
+  /* Borda sutil para definição */
+}
+
+#modalConfirmarSubmissao .modal-header {
+  /* Usando o mesmo verde claro do seu modal principal para consistência */
+  background-color: #d6f5e3;
+  border-bottom: 1px solid #b8e2c9;
+}
+
+#modalConfirmarSubmissao .modal-header .modal-title i {
+  /* Usando a cor de acento do seu tema */
+  color: var(--accent-color, #5ca98c);
+}
+
+#modalConfirmarSubmissao .modal-body {
+  padding: 1.5rem;
+  /* Ajuste no espaçamento interno */
+}
+
+/* Estilo para a caixa de aviso/informação */
+#modalConfirmarSubmissao .alert {
+  padding: 0.8rem 1rem;
+  font-size: 0.85rem;
+  background-color: #f5fdf7;
+  /* Fundo verde muito sutil */
+  border-color: #d6f5e3;
+  color: #4a665a;
+  display: flex;
+  align-items: center;
+}
+
+#modalConfirmarSubmissao .alert i {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+#modalConfirmarSubmissao .modal-footer {
+  background-color: #f9f9f9;
+  border-top: 1px solid #ddd;
 }
 
 @media (max-width: 768px) {

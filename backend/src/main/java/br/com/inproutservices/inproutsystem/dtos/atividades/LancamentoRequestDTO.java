@@ -1,5 +1,6 @@
 package br.com.inproutservices.inproutsystem.dtos.atividades;
 
+import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;
 import br.com.inproutservices.inproutsystem.enums.index.StatusEtapa;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,6 +14,7 @@ public record LancamentoRequestDTO(
         Long osId,
         Long prestadorId,
         Long etapaDetalhadaId,
+        Long lpuId,
 
         // CORREÇÃO: O backend agora espera o formato dd/MM/yyyy
         @JsonFormat(pattern = "dd/MM/yyyy")
@@ -35,6 +37,7 @@ public record LancamentoRequestDTO(
         LocalDate planoInstalacao,
 
         String ativacao,
+        SituacaoAprovacao situacaoAprovacao,
 
         @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate planoAtivacao,

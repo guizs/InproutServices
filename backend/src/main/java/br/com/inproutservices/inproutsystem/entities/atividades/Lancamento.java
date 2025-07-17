@@ -27,6 +27,10 @@ public class Lancamento {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lpu_id")
+    private Lpu lpu;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "os_id", nullable = false)
     @JsonIgnore
     private OS os;
@@ -110,6 +114,14 @@ public class Lancamento {
         if (this.situacaoAprovacao == null) {
             this.situacaoAprovacao = SituacaoAprovacao.RASCUNHO;
         }
+    }
+
+    public Lpu getLpu() {
+        return lpu;
+    }
+
+    public void setLpu(Lpu lpu) {
+        this.lpu = lpu;
     }
 
     public Long getId() {

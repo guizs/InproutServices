@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;
+import br.com.inproutservices.inproutsystem.entities.os.OS;
 
 @Entity
 @Table(name = "lpu", uniqueConstraints = {
@@ -15,6 +16,10 @@ public class Lpu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "situacao_projeto")
+    private SituacaoOperacional situacaoProjeto;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contrato_id", nullable = false)
@@ -46,6 +51,14 @@ public class Lpu {
     private LocalDateTime dataAtualizacao;
 
     public Lpu() {
+    }
+
+    public SituacaoOperacional getSituacaoProjeto() {
+        return situacaoProjeto;
+    }
+
+    public void setSituacaoProjeto(SituacaoOperacional situacaoProjeto) {
+        this.situacaoProjeto = situacaoProjeto;
     }
 
     public Long getId() {

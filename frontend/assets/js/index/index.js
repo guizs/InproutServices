@@ -33,11 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbodyPendentes = document.getElementById('tbody-pendentes');
     const tbodyHistorico = document.getElementById('tbody-historico');
     const tbodyMinhasPendencias = document.getElementById('tbody-minhas-pendencias');
+    const tbodyParalisados = document.getElementById('tbody-paralisados');
     const notificacaoPendencias = document.getElementById('notificacao-pendencias');
+    let filtrosAtivos = { periodo: null, status: null, osId: null };
     let todosLancamentos = []; // Armazena todos os lançamentos para fácil acesso
 
     const colunasPrincipais = ["STATUS APROVAÇÃO", "DATA ATIVIDADE", "OS", "SITE", "SEGMENTO", "PROJETO", "LPU", "GESTOR TIM", "REGIONAL", "EQUIPE", "VISTORIA", "PLANO DE VISTORIA", "DESMOBILIZAÇÃO", "PLANO DE DESMOBILIZAÇÃO", "INSTALAÇÃO", "PLANO DE INSTALAÇÃO", "ATIVAÇÃO", "PLANO DE ATIVAÇÃO", "DOCUMENTAÇÃO", "PLANO DE DOCUMENTAÇÃO", "ETAPA GERAL", "ETAPA DETALHADA", "STATUS", "SITUAÇÃO", "DETALHE DIÁRIO", "CÓD. PRESTADOR", "PRESTADOR", "VALOR", "GESTOR"];
-    const colunasLancamentos = colunasPrincipais.filter(coluna => coluna !== "STATUS APROVAÇÃO");
+    const colunasLancamentos = [...colunasPrincipais.filter(c => c !== "STATUS APROVAÇÃO"), "AÇÃO"];
     const colunasMinhasPendencias = [...colunasLancamentos, "AÇÃO"];
 
     function renderizarCabecalho(colunas, theadElement) {
@@ -89,16 +91,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 td.dataset.label = nomeColuna;
 
                 if (nomeColuna === 'AÇÃO') {
-                    td.innerHTML = `
-                        <div class="btn-group" role="group" aria-label="Ações do Lançamento">
-                            <button class="btn btn-sm btn-info btn-ver-comentarios" data-id="${lancamento.id}" title="Ver Comentários" data-bs-toggle="modal" data-bs-target="#modalComentarios">
-                                <i class="bi bi-chat-left-text"></i>
-                            </button>
-                            <button class="btn btn-sm btn-success btn-reenviar" data-id="${lancamento.id}" title="Corrigir e Reenviar para Aprovação">
-                                <i class="bi bi-pencil-square"></i> Editar e Reenviar
-                            </button>
-                        </div>
-                    `;
+
+                    let buttonsHtml = '';
+                    if (tbodyElement.id === 'tbody-minhas-pendencias') {
+                        buttonsHtml = `
+                            <button class="btn btn-sm btn-info btn-ver-comentarios" data-id="${lancamento.id}" title="Ver Comentários" data-bs-toggle="modal" data-bs-target="#modalComentarios"><i class="bi bi-chat-left-text"></i></button>
+                            <button class="btn btn-sm btn-success btn-reenviar" data-id="${lancamento.id}" title="Corrigir e Reenviar"><i class="bi bi-pencil-square"></i></button>
+                        `;
+                    } else if (tbodyElement.id === 'tbody-lancamentos') {
+                        buttonsHtml = `
+                            <button class="btn btn-sm btn-primary btn-submeter-agora" data-id="${lancamento.id}" title="Enviar para Aprovação"><i class="bi bi-send-plus"></i></button>
+                            <button class="btn btn-sm btn-secondary btn-editar-rascunho" data-id="${lancamento.id}" title="Editar Rascunho"><i class="bi bi-pencil"></i></button>
+                        `;
+                    } else if (tbodyElement.id === 'tbody-paralisados') {
+                        buttonsHtml = `
+                            <button class="btn btn-sm btn-info btn-ver-comentarios" data-id="${lancamento.id}" title="Ver Comentários" data-bs-toggle="modal" data-bs-target="#modalComentarios"><i class="bi bi-chat-left-text"></i></button>
+                            <button class="btn btn-sm btn-warning btn-retomar" data-id="${lancamento.id}" title="Retomar Lançamento"><i class="bi bi-play-circle"></i></button>
+                        `;
+                    }
+                    td.innerHTML = `<div class="btn-group" role="group">${buttonsHtml}</div>`;
                 } else {
                     td.innerHTML = mapaDeCelulas[nomeColuna];
                 }
@@ -112,36 +123,150 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function getDadosFiltrados() {
+        let dadosFiltrados = [...todosLancamentos];
+
+        // 1. Filtro por PERÍODO
+        if (filtrosAtivos.periodo) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            dadosFiltrados = dadosFiltrados.filter(l => {
+                const dataAtividade = new Date(l.dataAtividade.split('/').reverse().join('-')); // Converte DD/MM/YYYY para YYYY-MM-DD
+
+                if (filtrosAtivos.periodo.start && filtrosAtivos.periodo.end) {
+                    return dataAtividade >= filtrosAtivos.periodo.start && dataAtividade <= filtrosAtivos.periodo.end;
+                }
+
+                switch (filtrosAtivos.periodo) {
+                    case 'hoje':
+                        return dataAtividade.getTime() === hoje.getTime();
+                    case 'ontem':
+                        const ontem = new Date(hoje);
+                        ontem.setDate(hoje.getDate() - 1);
+                        return dataAtividade.getTime() === ontem.getTime();
+                    case 'semana':
+                        const umaSemanaAtras = new Date(hoje);
+                        umaSemanaAtras.setDate(hoje.getDate() - 6);
+                        return dataAtividade >= umaSemanaAtras;
+                    case 'mes':
+                        const umMesAtras = new Date(hoje);
+                        umMesAtras.setMonth(hoje.getMonth() - 1);
+                        return dataAtividade >= umMesAtras;
+                    default:
+                        return true
+                }
+            });
+        }
+
+        // 2. Filtro por STATUS DE APROVAÇÃO
+        if (filtrosAtivos.status) {
+            dadosFiltrados = dadosFiltrados.filter(l => l.situacaoAprovacao === filtrosAtivos.status);
+        }
+
+        // 3. Filtro por OS
+        if (filtrosAtivos.osId) {
+            dadosFiltrados = dadosFiltrados.filter(l => l.os.id == filtrosAtivos.osId);
+        }
+
+        return dadosFiltrados;
+    }
+
     async function carregarLancamentos() {
         try {
             const response = await fetch('http://localhost:8080/lancamentos');
             if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
+
             todosLancamentos = await response.json();
-
-            const statusPendentesAprovacao = ['PENDENTE_COORDENADOR', 'AGUARDANDO_EXTENSAO_PRAZO', 'PENDENTE_CONTROLLER'];
-            const statusRejeitados = ['RECUSADO_COORDENADOR', 'RECUSADO_CONTROLLER'];
-
-            const rascunhos = todosLancamentos.filter(l => l.situacaoAprovacao === 'RASCUNHO');
-            const pendentesAprovacao = todosLancamentos.filter(l => statusPendentesAprovacao.includes(l.situacaoAprovacao));
-            const minhasPendencias = todosLancamentos.filter(l => statusRejeitados.includes(l.situacaoAprovacao));
-            const historico = todosLancamentos.filter(l => !['RASCUNHO', ...statusPendentesAprovacao, ...statusRejeitados].includes(l.situacaoAprovacao));
-
-            renderizarTabela(rascunhos, tbodyLancamentos, colunasLancamentos);
-            renderizarTabela(pendentesAprovacao, tbodyPendentes, colunasPrincipais);
-            renderizarTabela(historico, tbodyHistorico, colunasPrincipais);
-            renderizarTabela(minhasPendencias, tbodyMinhasPendencias, colunasMinhasPendencias);
-
-            if (notificacaoPendencias) {
-                if (minhasPendencias.length > 0) {
-                    notificacaoPendencias.textContent = minhasPendencias.length;
-                    notificacaoPendencias.style.display = '';
-                } else {
-                    notificacaoPendencias.style.display = 'none';
-                }
-            }
+            // Após buscar os dados com sucesso, chama a função para renderizar tudo
+            popularFiltroOS();
+            renderizarTodasAsTabelas();
         } catch (error) {
             console.error('Falha ao buscar lançamentos:', error);
             mostrarToast('Falha ao carregar dados do servidor.', 'error');
+        }
+    }
+
+    filtrosAtivos = { periodo: null, status: null, osId: null };
+
+    function getDadosFiltrados() {
+        let dadosFiltrados = [...todosLancamentos];
+
+        // 1. Filtro por PERÍODO
+        if (filtrosAtivos.periodo) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            dadosFiltrados = dadosFiltrados.filter(l => {
+                // --- INÍCIO DA CORREÇÃO ---
+                // Transforma a string "DD/MM/YYYY" em uma data na timezone local, não em UTC.
+                const partesData = l.dataAtividade.split('/'); // -> ["15", "07", "2025"]
+                // O mês é -1 porque em JavaScript os meses vão de 0 (Janeiro) a 11 (Dezembro).
+                const dataAtividade = new Date(partesData[2], partesData[1] - 1, partesData[0]);
+                // --- FIM DA CORREÇÃO ---
+
+                if (filtrosAtivos.periodo.start && filtrosAtivos.periodo.end) {
+                    return dataAtividade >= filtrosAtivos.periodo.start && dataAtividade <= filtrosAtivos.periodo.end;
+                }
+
+                switch (filtrosAtivos.periodo) {
+                    case 'hoje':
+                        return dataAtividade.getTime() === hoje.getTime();
+                    case 'ontem':
+                        const ontem = new Date(hoje);
+                        ontem.setDate(hoje.getDate() - 1);
+                        return dataAtividade.getTime() === ontem.getTime();
+                    case 'semana':
+                        const umaSemanaAtras = new Date(hoje);
+                        umaSemanaAtras.setDate(hoje.getDate() - 6);
+                        return dataAtividade >= umaSemanaAtras;
+                    case 'mes':
+                        const umMesAtras = new Date(hoje);
+                        umMesAtras.setMonth(hoje.getMonth() - 1);
+                        return dataAtividade >= umMesAtras;
+                    default:
+                        return true;
+                }
+            });
+        }
+
+        // 2. Filtro por STATUS DE APROVAÇÃO
+        if (filtrosAtivos.status) {
+            dadosFiltrados = dadosFiltrados.filter(l => l.situacaoAprovacao === filtrosAtivos.status);
+        }
+
+        // 3. Filtro por OS
+        if (filtrosAtivos.osId) {
+            dadosFiltrados = dadosFiltrados.filter(l => l.os.id == filtrosAtivos.osId);
+        }
+
+        return dadosFiltrados;
+    }
+
+    function renderizarTodasAsTabelas() {
+        const dadosParaExibir = getDadosFiltrados();
+
+        const statusPendentes = ['PENDENTE_COORDENADOR', 'AGUARDANDO_EXTENSAO_PRAZO', 'PENDENTE_CONTROLLER'];
+        const statusRejeitados = ['RECUSADO_COORDENADOR', 'RECUSADO_CONTROLLER'];
+
+        // Filtra os dados para cada aba
+        const rascunhos = dadosParaExibir.filter(l => l.situacaoAprovacao === 'RASCUNHO');
+        const pendentesAprovacao = dadosParaExibir.filter(l => statusPendentes.includes(l.situacaoAprovacao));
+        const minhasPendencias = dadosParaExibir.filter(l => statusRejeitados.includes(l.situacaoAprovacao));
+        const historico = dadosParaExibir.filter(l => !['RASCUNHO', ...statusPendentes, ...statusRejeitados].includes(l.situacaoAprovacao));
+        const paralisados = getProjetosParalisados();
+
+        // Renderiza cada tabela
+        renderizarTabela(rascunhos, tbodyLancamentos, colunasLancamentos);
+        renderizarTabela(pendentesAprovacao, tbodyPendentes, colunasPrincipais);
+        renderizarTabela(minhasPendencias, tbodyMinhasPendencias, colunasMinhasPendencias);
+        renderizarTabela(historico, tbodyHistorico, colunasPrincipais);
+        renderizarTabela(paralisados, tbodyParalisados, colunasMinhasPendencias);
+
+        // Atualiza a notificação
+        if (notificacaoPendencias) {
+            notificacaoPendencias.textContent = minhasPendencias.length;
+            notificacaoPendencias.style.display = minhasPendencias.length > 0 ? '' : 'none';
         }
     }
 
@@ -197,86 +322,104 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        async function popularDropdownsDependentes(etapaGeralId, etapaDetalhadaId, statusValor) {
+        async function popularDropdownsDependentes(etapaGeralId, etapaDetalhadaId) {
+            // Lógica para popular a Etapa Detalhada (continua igual)
             const etapaSelecionada = todasAsEtapas.find(etapa => etapa.id == etapaGeralId);
             selectEtapaDetalhada.innerHTML = '<option value="" selected disabled>Selecione...</option>';
+            selectEtapaDetalhada.disabled = true;
+
             if (etapaSelecionada && etapaSelecionada.etapasDetalhadas.length > 0) {
                 etapaSelecionada.etapasDetalhadas.forEach(detalhe => {
-                    const option = document.createElement('option');
-                    option.value = detalhe.id;
-                    option.textContent = `${detalhe.indice} - ${detalhe.nome}`;
-                    selectEtapaDetalhada.appendChild(option);
+                    selectEtapaDetalhada.add(new Option(`${detalhe.indice} - ${detalhe.nome}`, detalhe.id));
                 });
                 selectEtapaDetalhada.disabled = false;
-                if (etapaDetalhadaId) selectEtapaDetalhada.value = etapaDetalhadaId;
-            } else {
-                selectEtapaDetalhada.disabled = true;
+                // Se um ID já veio pré-selecionado (modo edição), seleciona ele
+                if (etapaDetalhadaId) {
+                    selectEtapaDetalhada.value = etapaDetalhadaId;
+                }
             }
 
+            // --- INÍCIO DA CORREÇÃO ---
+            // Lógica para popular o Status, agora de forma mais segura
+
             selectStatus.innerHTML = '<option value="" selected disabled>Selecione...</option>';
+            selectStatus.disabled = true;
+
             if (etapaDetalhadaId) {
                 let statusDaEtapa = [];
+                // Procura em todas as etapas gerais pela etapa detalhada com o ID correto
                 for (const etapaGeral of todasAsEtapas) {
                     const etapaEncontrada = etapaGeral.etapasDetalhadas.find(detalhe => detalhe.id == etapaDetalhadaId);
                     if (etapaEncontrada) {
                         statusDaEtapa = etapaEncontrada.status || [];
-                        break;
+                        break; // Para a busca quando encontrar
                     }
                 }
+
+                // Se encontrou uma lista de status, popula o select
                 if (statusDaEtapa.length > 0) {
                     statusDaEtapa.forEach(status => {
-                        const option = document.createElement('option');
-                        option.value = status;
-                        option.textContent = status;
-                        selectStatus.appendChild(option);
+                        selectStatus.add(new Option(status, status));
                     });
+                    selectStatus.disabled = false;
                 }
-
-                // --- INÍCIO DA LÓGICA CORRIGIDA E À PROVA DE FALHAS ---
-                // Este bloco substitui o antigo 'if (statusValor) selectStatus.value = statusValor;'
-                if (statusValor) {
-                    // Verifica se a opção com o valor desejado já existe no select
-                    const optionExists = selectStatus.querySelector(`option[value="${statusValor}"]`);
-
-                    if (!optionExists) {
-                        // Se não existir, cria uma nova opção, adiciona ao select e já a deixa selecionada.
-                        // Isso garante que o valor do lançamento (mesmo que "inválido" para a etapa) seja exibido.
-                        selectStatus.add(new Option(statusValor, statusValor, true, true));
-                    } else {
-                        // Se a opção já existe, apenas a seleciona.
-                        selectStatus.value = statusValor;
-                    }
-                }
-                // --- FIM DA LÓGICA CORRIGIDA ---
             }
+            // --- FIM DA CORREÇÃO ---
         }
 
-        async function abrirModalParaEdicao(lancamento) {
-            // --- INÍCIO DA CORREÇÃO ---
-            // Garante que os dados para os selects sejam carregados ANTES de continuar.
-            // O 'if' garante que isso só aconteça uma vez (na primeira vez que for necessário).
+        async function carregarDadosParaModal() {
+            // O 'if' garante que a busca na API só aconteça uma vez, para otimizar.
             if (todasAsOS.length === 0) {
                 todasAsOS = await popularSelect(selectOS, 'http://localhost:8080/os', 'id', (item) => item.os);
             }
-            if (selectPrestador.options.length <= 1) { // <= 1 para contar a opção "Selecione..."
+            if (selectPrestador.options.length <= 1) {
                 await popularSelect(selectPrestador, 'http://localhost:8080/index/prestadores', 'id', (item) => `${item.codigoPrestador} - ${item.prestador}`);
             }
             if (todasAsEtapas.length === 0) {
                 todasAsEtapas = await popularSelect(selectEtapaGeral, 'http://localhost:8080/index/etapas', 'id', (item) => `${item.codigo} - ${item.nome}`);
             }
-            // --- FIM DA CORREÇÃO ---
+        }
 
+        async function abrirModalParaEdicao(lancamento, editingId) {
+            // Passo 1: Garante que os dados para todos os selects estejam carregados antes de continuar.
+            await carregarDadosParaModal();
 
-            // Prepara o formulário para o modo de edição
-            formAdicionar.dataset.editingId = lancamento.id;
-            modalTitle.innerHTML = `<i class="bi bi-pencil-square"></i> Editar e Reenviar Lançamento #${lancamento.id}`;
-            submitButton.innerHTML = `<i class="bi bi-send-check"></i> Enviar para Aprovação`;
+            // Passo 2: Prepara o formulário e os botões
+            formAdicionar.dataset.editingId = editingId;
 
-            // Trava campos não editáveis
+            // --- INÍCIO DA LÓGICA DE CONTROLE DE BOTÕES E TÍTULO ---
+            const btnSubmitPadrao = document.getElementById('btnSubmitAdicionar');
+            const btnSalvarRascunho = document.getElementById('btnSalvarRascunho');
+            const btnSalvarEEnviar = document.getElementById('btnSalvarEEnviar');
+
+            // Esconde todos os botões de ação por padrão
+            btnSubmitPadrao.style.display = 'none';
+            btnSalvarRascunho.style.display = 'none';
+            btnSalvarEEnviar.style.display = 'none';
+
+            if (lancamento.situacaoAprovacao === 'RASCUNHO') {
+                // Se for um RASCUNHO, mostra as opções de Salvar ou Salvar e Enviar
+                modalTitle.innerHTML = `<i class="bi bi-pencil"></i> Editar Rascunho #${lancamento.id}`;
+                btnSalvarRascunho.style.display = 'inline-block';
+                btnSalvarEEnviar.style.display = 'inline-block';
+            } else {
+                // Se for REJEITADO ou para RETOMAR, mostra o botão de ação padrão
+                btnSubmitPadrao.style.display = 'inline-block';
+                if (editingId) {
+                    modalTitle.innerHTML = `<i class="bi bi-pencil-square"></i> Editar Lançamento #${editingId}`;
+                    btnSubmitPadrao.innerHTML = `<i class="bi bi-send-check"></i> Salvar e Reenviar`;
+                } else {
+                    modalTitle.innerHTML = `<i class="bi bi-play-circle"></i> Retomar Lançamento (Novo)`;
+                    btnSubmitPadrao.innerHTML = `<i class="bi bi-check-circle"></i> Criar Lançamento`;
+                }
+            }
+            // --- FIM DA LÓGICA DE CONTROLE DE BOTÕES E TÍTULO ---
+
+            // Trava campos que não podem ser alterados na edição
             document.getElementById('osId').disabled = true;
             document.getElementById('dataAtividade').disabled = true;
 
-            // Preenche campos de texto e data
+            // Passo 3: Preenche todos os campos do formulário com os dados do lançamento
             document.getElementById('dataAtividade').value = lancamento.dataAtividade || '';
             document.getElementById('equipe').value = lancamento.equipe || '';
             document.getElementById('detalheDiario').value = lancamento.detalheDiario || '';
@@ -284,7 +427,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ['vistoria', 'desmobilizacao', 'instalacao', 'ativacao', 'documentacao'].forEach(k => document.getElementById(k).value = lancamento[k] || 'N/A');
             ['planoVistoria', 'planoDesmobilizacao', 'planoInstalacao', 'planoAtivacao', 'planoDocumentacao'].forEach(k => document.getElementById(k).value = lancamento[k] || '');
 
-            // Popula campos de relacionamento (com verificações)
             if (lancamento.os) {
                 selectOS.value = lancamento.os.id;
                 preencherCamposOS(lancamento.os.id);
@@ -293,20 +435,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectPrestador.value = lancamento.prestador.id;
             }
 
-            // Lógica para popular e selecionar Etapas e Status
             if (lancamento.etapa && lancamento.etapa.id) {
                 const etapaGeralPai = todasAsEtapas.find(eg => eg.etapasDetalhadas.some(ed => ed.id === lancamento.etapa.id));
                 if (etapaGeralPai) {
                     selectEtapaGeral.value = etapaGeralPai.id;
-                    // Passa o valor do status para a função auxiliar
-                    await popularDropdownsDependentes(etapaGeralPai.id, lancamento.etapa.id, lancamento.status);
+                    await popularDropdownsDependentes(etapaGeralPai.id, lancamento.etapa.id);
+                    selectEtapaDetalhada.value = lancamento.etapa.id;
                 }
             } else {
                 selectEtapaGeral.value = '';
-                await popularDropdownsDependentes('', null, null);
+                await popularDropdownsDependentes('', null);
             }
 
-            // Lógica "à prova de falhas" para o select de Situação
+            const selectStatus = document.getElementById('status');
+            if (lancamento.status && !selectStatus.querySelector(`option[value="${lancamento.status}"]`)) {
+                selectStatus.add(new Option(lancamento.status, lancamento.status, true, true));
+            } else {
+                selectStatus.value = lancamento.status || '';
+            }
+
             const selectSituacao = document.getElementById('situacao');
             if (lancamento.situacao && !selectSituacao.querySelector(`option[value="${lancamento.situacao}"]`)) {
                 selectSituacao.add(new Option(lancamento.situacao, lancamento.situacao, true, true));
@@ -314,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectSituacao.value = lancamento.situacao || 'Não iniciado';
             }
 
-            // Finalmente, mostra o modal
+            // Passo 4: Finalmente, mostra o modal
             const modalEl = document.getElementById('modalAdicionar');
             const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
             modalInstance.show();
@@ -322,11 +469,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modalAdicionarEl.addEventListener('show.bs.modal', async () => {
             // Se o modal não foi acionado por um botão de edição (ou seja, se é um NOVO lançamento)
+            await carregarDadosParaModal();
+
             if (!formAdicionar.dataset.editingId) {
                 modalTitle.innerHTML = '<i class="bi bi-plus-circle"></i> Adicionar Nova Atividade';
                 submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Salvar Lançamento';
                 document.getElementById('osId').disabled = false;
-                document.getElementById('dataAtividade').disabled = false; // Garante que está habilitado para novos
+                document.getElementById('dataAtividade').disabled = false;
             }
         });
 
@@ -340,60 +489,118 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('osId').disabled = false;
         });
 
-        document.body.addEventListener('click', async function (e) {
-            const reenviarButton = e.target.closest('.btn-reenviar');
-            const comentariosButton = e.target.closest('.btn-ver-comentarios');
+        document.body.addEventListener('click', async (e) => {
+            const reenviarBtn = e.target.closest('.btn-reenviar, .btn-editar-rascunho, .btn-retomar');
+            const comentariosBtn = e.target.closest('.btn-ver-comentarios');
+            const submeterBtn = e.target.closest('.btn-submeter-agora');
 
-            // --- LÓGICA PARA O BOTÃO "EDITAR E REENVIAR" ---
-            if (reenviarButton) {
-                // Guarda o conteúdo original do botão para restaurá-lo depois
-                const originalContent = reenviarButton.innerHTML;
-
+            if (reenviarBtn) { // Botões que abrem o modal de edição/criação
+                const originalContent = reenviarBtn.innerHTML;
                 try {
-                    // --- INÍCIO: LÓGICA DO ESTADO DE CARREGAMENTO ---
-                    reenviarButton.disabled = true;
-                    reenviarButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...`;
-                    // --- FIM: LÓGICA DO ESTADO DE CARREGAMENTO ---
+                    reenviarBtn.disabled = true;
+                    reenviarBtn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
-                    const lancamentoId = reenviarButton.dataset.id;
-                    const lancamentoParaEditar = todosLancamentos.find(l => l.id == lancamentoId);
+                    const lancamentoId = reenviarBtn.dataset.id;
+                    const lancamento = todosLancamentos.find(l => l.id == lancamentoId);
 
-                    if (lancamentoParaEditar) {
-                        // O 'await' é crucial. Ele faz o código esperar a função terminar
-                        // (incluindo as buscas na API) antes de ir para o 'finally'.
-                        await abrirModalParaEdicao(lancamentoParaEditar);
+                    if (lancamento) {
+                        // --- INÍCIO DA CORREÇÃO ---
+                        // Verifica se o botão é de 'retomar'. Se for, não há ID de edição (será um novo lançamento).
+                        // Caso contrário, passamos o ID do lançamento que será editado.
+                        const isRetomar = reenviarBtn.classList.contains('btn-retomar');
+                        await abrirModalParaEdicao(lancamento, isRetomar ? null : lancamento.id);
+                        // --- FIM DA CORREÇÃO ---
                     } else {
-                        throw new Error('Lançamento não encontrado para edição.');
+                        throw new Error('Lançamento não encontrado.');
                     }
                 } catch (error) {
-                    // Em caso de erro, exibe uma mensagem
-                    console.error("Erro ao preparar modal de edição:", error);
+                    console.error("Erro ao preparar modal:", error);
                     mostrarToast(error.message, 'error');
                 } finally {
-                    // --- INÍCIO: REVERTE O BOTÃO AO ESTADO ORIGINAL ---
-                    // Este bloco é executado sempre, após o try (ou o catch) terminar.
-                    reenviarButton.disabled = false;
-                    reenviarButton.innerHTML = originalContent;
-                    // --- FIM: REVERTE O BOTÃO AO ESTADO ORIGINAL ---
+                    reenviarBtn.disabled = false;
+                    reenviarBtn.innerHTML = originalContent;
                 }
+            } else if (comentariosBtn) {
+                const lancamento = todosLancamentos.find(l => l.id == comentariosBtn.dataset.id);
+                if (lancamento) exibirComentarios(lancamento);
+                else mostrarToast('Lançamento não encontrado.', 'error');
+
+            } else if (submeterBtn) {
+                const lancamentoId = submeterBtn.dataset.id;
+
+                // Pega o botão de confirmação do novo modal
+                const btnConfirmar = document.getElementById('btnConfirmarSubmissao');
+
+                // Guarda o ID do lançamento no botão de confirmação para usá-lo depois
+                btnConfirmar.dataset.lancamentoId = lancamentoId;
+
+                // Abre o modal de confirmação
+                const modalConfirmacao = new bootstrap.Modal(document.getElementById('modalConfirmarSubmissao'));
+                modalConfirmacao.show();
             }
-            // --- LÓGICA PARA O BOTÃO "VER COMENTÁRIOS" ---
-            else if (comentariosButton) {
-                const lancamentoId = comentariosButton.dataset.id;
-                const lancamentoParaVer = todosLancamentos.find(l => l.id == lancamentoId);
-                if (lancamentoParaVer) {
-                    exibirComentarios(lancamentoParaVer);
-                } else {
-                    mostrarToast('Lançamento não encontrado para ver os comentários.', 'error');
+        });
+
+        function getProjetosParalisados() {
+            const ultimosLancamentos = new Map();
+            // Primeiro, agrupa todos os lançamentos por projeto (OS+LPU)
+            todosLancamentos.forEach(l => {
+                const chaveProjeto = `${l.os.id}-${l.os.lpu.id}`;
+                // Guarda apenas o lançamento mais recente de cada projeto
+                if (!ultimosLancamentos.has(chaveProjeto) || l.id > ultimosLancamentos.get(chaveProjeto).id) {
+                    ultimosLancamentos.set(chaveProjeto, l);
+                }
+            });
+            // Agora, filtra apenas os projetos cujo último lançamento está "Paralisado"
+            return Array.from(ultimosLancamentos.values()).filter(l => l.situacao === 'Paralisado');
+        }
+
+        // Listener para o botão de confirmação final de submissão
+        document.getElementById('btnConfirmarSubmissao').addEventListener('click', async function (e) {
+            const confirmButton = e.currentTarget;
+            const id = confirmButton.dataset.lancamentoId;
+
+            if (!id) return;
+
+            const originalContent = confirmButton.innerHTML;
+            const modalInstance = bootstrap.Modal.getInstance(document.getElementById('modalConfirmarSubmissao'));
+
+            try {
+                // Lógica de "carregando..."
+                confirmButton.disabled = true;
+                confirmButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Enviando...`;
+
+                const resposta = await fetch(`http://localhost:8080/lancamentos/${id}/submeter`, { method: 'POST' });
+                if (!resposta.ok) {
+                    const erroData = await resposta.json();
+                    throw new Error(erroData.message || 'Erro ao submeter.');
+                }
+
+                mostrarToast('Lançamento submetido com sucesso!', 'success');
+
+                // Recarrega os dados para atualizar as tabelas
+                await carregarLancamentos();
+                renderizarTodasAsTabelas();
+
+            } catch (error) {
+                mostrarToast(error.message, 'error');
+            } finally {
+                // Restaura o botão e esconde o modal
+                confirmButton.disabled = false;
+                confirmButton.innerHTML = originalContent;
+                if (modalInstance) {
+                    modalInstance.hide();
                 }
             }
         });
 
-
-
-        formAdicionar.addEventListener('submit', async function (e) {
-            e.preventDefault();
+        // Função central para lidar com o envio do formulário, chamada por diferentes botões
+        async function handleFormSubmit(acao, submitButton) {
             const editingId = formAdicionar.dataset.editingId;
+
+            // Lógica de "carregando..." no botão que foi clicado
+            const originalContent = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Carregando...`;
 
             const dadosParaEnviar = {
                 osId: document.getElementById('osId').value,
@@ -417,8 +624,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 valor: parseFloat(document.getElementById('valor').value.replace(/\./g, '').replace(',', '.')) || 0,
             };
 
-            const url = editingId ? `http://localhost:8080/lancamentos/${editingId}` : 'http://localhost:8080/lancamentos';
-            const method = editingId ? 'PUT' : 'POST';
+            // Define o status de aprovação e o método HTTP com base na ação
+            let method = 'POST';
+            let url = 'http://localhost:8080/lancamentos';
+
+            if (acao === 'salvar') { // Salvar alterações de um Rascunho
+                dadosParaEnviar.situacaoAprovacao = 'RASCUNHO';
+                method = 'PUT';
+                url = `http://localhost:8080/lancamentos/${editingId}`;
+            } else if (acao === 'enviar') { // Salvar e Enviar um Rascunho
+                dadosParaEnviar.situacaoAprovacao = 'PENDENTE_COORDENADOR';
+                method = 'PUT';
+                url = `http://localhost:8080/lancamentos/${editingId}`;
+            } else if (acao === 'reenviar') { // Reenviar um item Rejeitado
+                dadosParaEnviar.situacaoAprovacao = 'PENDENTE_COORDENADOR';
+                method = 'PUT';
+                url = `http://localhost:8080/lancamentos/${editingId}`;
+            }
+            // Se a acao for 'criar' (Retomar ou Novo), o método e URL padrão são usados
 
             try {
                 const resposta = await fetch(url, {
@@ -426,19 +649,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dadosParaEnviar)
                 });
-                if (!resposta.ok) {
-                    const erroData = await resposta.json();
-                    throw new Error(erroData.message || `Erro ${resposta.status}`);
-                }
-                const successMessage = editingId ? 'Lançamento atualizado e reenviado com sucesso!' : 'Lançamento adicionado com sucesso!';
-                mostrarToast(successMessage, 'success');
+                if (!resposta.ok) throw new Error((await resposta.json()).message || 'Erro ao salvar.');
+
+                mostrarToast('Ação realizada com sucesso!', 'success');
                 modalAdicionar.hide();
-                carregarLancamentos();
+                await carregarLancamentos();
+                renderizarTodasAsTabelas();
+
             } catch (erro) {
-                console.error(`Erro ao salvar (${method}) lançamento:`, erro);
-                mostrarToast(`Erro ao salvar: ${erro.message}`, 'error');
+                mostrarToast(erro.message, 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalContent;
             }
+        }
+
+        // Listener para o botão 'Salvar e Enviar' (de um rascunho)
+        document.getElementById('btnSalvarEEnviar').addEventListener('click', function (e) {
+            handleFormSubmit('enviar', e.currentTarget);
         });
+
+        // Listener para o botão 'Salvar Alterações' (só salva como rascunho)
+        document.getElementById('btnSalvarRascunho').addEventListener('click', function (e) {
+            handleFormSubmit('salvar', e.currentTarget);
+        });
+
+        // Listener para o botão de submit padrão (usado para Criar Novo e para Reenviar Rejeitado)
+        document.getElementById('btnSubmitAdicionar').addEventListener('click', function (e) {
+            const editingId = formAdicionar.dataset.editingId;
+            // Se tem um ID, a ação é 'reenviar'. Se não, é 'criar'.
+            handleFormSubmit(editingId ? 'reenviar' : 'criar', e.currentTarget);
+        });
+
+
 
         selectOS.addEventListener('change', (e) => preencherCamposOS(e.target.value));
         selectEtapaGeral.addEventListener('change', (e) => popularDropdownsDependentes(e.target.value, null, null));
@@ -502,6 +745,54 @@ document.addEventListener('DOMContentLoaded', () => {
             modalBody.appendChild(comentarioCard);
         });
     }
+
+    // --- LÓGICA DOS FILTROS ---
+    const filtroDataCustomEl = document.getElementById('filtroDataCustom');
+    const filtroStatusEl = document.getElementById('filtroStatusAprovacao');
+    const filtroOsEl = document.getElementById('filtroOS');
+    const btnLimparFiltros = document.getElementById('limparFiltros');
+
+    const calendario = flatpickr(filtroDataCustomEl, {
+        mode: "range", dateFormat: "d/m/Y", locale: "pt",
+        onClose: function (selectedDates) {
+            if (selectedDates.length === 2) {
+                filtrosAtivos.periodo = { start: selectedDates[0], end: selectedDates[1] };
+                renderizarTodasAsTabelas();
+            }
+        }
+    });
+
+    function popularFiltroOS() {
+        const osUnicas = [...new Map(todosLancamentos.map(l => [l.os.id, l.os])).values()]
+            .sort((a, b) => a.os.localeCompare(b.os));
+        osUnicas.forEach(os => filtroOsEl.add(new Option(os.os, os.id)));
+    }
+
+    document.querySelector('.dropdown-menu.p-3').addEventListener('click', (e) => {
+        if (e.target.matches('[data-filter="periodo"]')) {
+            filtrosAtivos.periodo = e.target.dataset.value;
+            calendario.clear();
+            renderizarTodasAsTabelas();
+        }
+    });
+
+    filtroStatusEl.addEventListener('change', (e) => {
+        filtrosAtivos.status = e.target.value;
+        renderizarTodasAsTabelas();
+    });
+
+    filtroOsEl.addEventListener('change', (e) => {
+        filtrosAtivos.osId = e.target.value;
+        renderizarTodasAsTabelas();
+    });
+
+    btnLimparFiltros.addEventListener('click', () => {
+        filtrosAtivos = { periodo: null, status: null, osId: null };
+        calendario.clear();
+        filtroStatusEl.value = "";
+        filtroOsEl.value = "";
+        renderizarTodasAsTabelas();
+    });
 
     // ==========================================================
     // SEÇÃO 4: EXECUÇÃO INICIAL

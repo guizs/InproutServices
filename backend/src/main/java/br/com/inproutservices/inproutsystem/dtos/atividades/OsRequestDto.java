@@ -2,6 +2,7 @@ package br.com.inproutservices.inproutsystem.dtos.atividades;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class OsRequestDto {
     private String os;
@@ -23,6 +24,7 @@ public class OsRequestDto {
     private BigDecimal valorTotal;
     private String observacoes;
     private LocalDate dataPo;
+    List<Long> lpuIds;
 
     public String getOs() {
         return os;

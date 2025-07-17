@@ -3,7 +3,7 @@ package br.com.inproutservices.inproutsystem.dtos.atividades;
 import br.com.inproutservices.inproutsystem.entities.atividades.Comentario;
 import br.com.inproutservices.inproutsystem.entities.atividades.Lancamento;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
-import br.com.inproutservices.inproutsystem.entities.index.Prestador; // Importe a entidade Prestador
+import br.com.inproutservices.inproutsystem.entities.index.Prestador;
 import br.com.inproutservices.inproutsystem.entities.os.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
@@ -24,6 +24,7 @@ public record LancamentoResponseDTO(
         SituacaoAprovacao situacaoAprovacao,
         ManagerDTO manager,
         OsResponseDTO os,
+        LpuSimpleDTO lpu, // <-- CAMPO LPU NO NÍVEL CORRETO
         PrestadorSimpleDTO prestador,
         EtapaSimpleDTO etapa,
         @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss") LocalDateTime dataCriacao,
@@ -49,13 +50,19 @@ public record LancamentoResponseDTO(
         BigDecimal valor,
         List<ComentarioDTO> comentarios
 ) {
+    // CONSTRUTOR CORRIGIDO
     public LancamentoResponseDTO(Lancamento lancamento) {
         this(
                 lancamento.getId(),
                 lancamento.getSituacaoAprovacao(),
                 (lancamento.getManager() != null) ? new ManagerDTO(lancamento.getManager()) : null,
+                // Mapeamento da OS
                 (lancamento.getOs() != null) ? new OsResponseDTO(lancamento.getOs()) : null,
+                // Mapeamento da LPU (agora direto do lançamento)
+                (lancamento.getLpu() != null) ? new LpuSimpleDTO(lancamento.getLpu()) : null,
+                // Mapeamento do Prestador
                 (lancamento.getPrestador() != null) ? new PrestadorSimpleDTO(lancamento.getPrestador()) : null,
+                // Mapeamento da Etapa
                 (lancamento.getEtapaDetalhada() != null) ? new EtapaSimpleDTO(lancamento.getEtapaDetalhada()) : null,
                 lancamento.getDataCriacao(),
                 lancamento.getDataSubmissao(),
@@ -88,16 +95,16 @@ public record LancamentoResponseDTO(
         public ManagerDTO(Usuario manager) { this(manager.getId(), manager.getNome()); }
     }
 
+    // OsResponseDTO CORRIGIDO (sem LPU dentro)
     public record OsResponseDTO(
             Long id, String os, String site, String contrato, String segmento, String projeto,
-            String gestorTim, String regional, LpuSimpleDTO lpu, String lote, String boq, String po,
+            String gestorTim, String regional, String lote, String boq, String po,
             String item, String objetoContratado, String unidade, Integer quantidade,
             BigDecimal valorTotal, String observacoes, @JsonFormat(pattern = "dd/MM/yyyy") LocalDate dataPo
     ) {
         public OsResponseDTO(OS os) {
             this(os.getId(), os.getOs(), os.getSite(), os.getContrato(), os.getSegmento(),
                     os.getProjeto(), os.getGestorTim(), os.getRegional(),
-                    (os.getLpu() != null) ? new LpuSimpleDTO(os.getLpu()) : null,
                     os.getLote(), os.getBoq(), os.getPo(), os.getItem(), os.getObjetoContratado(),
                     os.getUnidade(), os.getQuantidade(), os.getValorTotal(), os.getObservacoes(),
                     os.getDataPo());
@@ -108,7 +115,6 @@ public record LancamentoResponseDTO(
         public LpuSimpleDTO(Lpu lpu) { this(lpu.getId(), lpu.getCodigoLpu(), lpu.getNomeLpu()); }
     }
 
-    // CORREÇÃO APLICADA AQUI
     public record PrestadorSimpleDTO(Long id, String codigo, String nome) {
         public PrestadorSimpleDTO(Prestador prestador) {
             this(prestador.getId(), prestador.getCodigoPrestador(), prestador.getPrestador());

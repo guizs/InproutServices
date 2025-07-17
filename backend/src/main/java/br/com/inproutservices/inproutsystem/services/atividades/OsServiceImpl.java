@@ -30,23 +30,47 @@ public class OsServiceImpl implements OsService {
     @Override
     @Transactional
     public OS createOs(OsRequestDto osDto) {
-        Contrato contrato = contratoRepository.findById(osDto.getContratoId())
-                .orElseThrow(() -> new EntityNotFoundException("Contrato não encontrado com o ID: " + osDto.getContratoId()));
+        // 1. Cria a nova entidade OS e preenche os dados simples do DTO
+        OS novaOs = new OS();
+        novaOs.setOs(osDto.getOs());
+        novaOs.setSite(osDto.getSite());
+        novaOs.setContrato(osDto.getContrato()); // Assumindo que o DTO tenha o nome do contrato
+        novaOs.setSegmento(osDto.getSegmento());
+        novaOs.setProjeto(osDto.getProjeto());
+        novaOs.setGestorTim(osDto.getGestorTim());
+        novaOs.setRegional(osDto.getRegional());
+        novaOs.setLote(osDto.getLote());
+        novaOs.setBoq(osDto.getBoq());
+        novaOs.setPo(osDto.getPo());
+        novaOs.setItem(osDto.getItem());
+        novaOs.setObjetoContratado(osDto.getObjetoContratado());
+        novaOs.setUnidade(osDto.getUnidade());
+        novaOs.setQuantidade(osDto.getQuantidade());
+        novaOs.setValorTotal(osDto.getValorTotal());
+        novaOs.setObservacoes(osDto.getObservacoes());
+        novaOs.setDataPo(osDto.getDataPo());
 
-        Lpu lpu = lpuRepository.findByCodigoLpuAndContratoId(osDto.getCodigoLpu(), osDto.getContratoId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "LPU não encontrada com o código: " + osDto.getCodigoLpu() + " para o Contrato ID: " + osDto.getContratoId()
-                ));
+        // 2. Associa a coleção de LPUs selecionadas
+        if (osDto.getLpuIds() != null && !osDto.getLpuIds().isEmpty()) {
+            // Busca todas as LPUs da lista de IDs de uma vez só
+            List<Lpu> lpusParaAssociar = lpuRepository.findAllById(osDto.getLpuIds());
 
-        OS newOs = new OS();
-        // Chamando o método de mapeamento atualizado
-        mapDtoToEntity(osDto, newOs, lpu, contrato);
+            // Validação: garante que todas as LPUs solicitadas foram encontradas no banco
+            if (lpusParaAssociar.size() != osDto.getLpuIds().size()) {
+                throw new EntityNotFoundException("Uma ou mais LPUs com os IDs fornecidos não foram encontradas.");
+            }
 
-        newOs.setDataCriacao(LocalDateTime.now());
-        newOs.setUsuarioCriacao("sistema");
-        newOs.setStatusRegistro("ATIVO");
+            // Adiciona a coleção de entidades LPU à nova OS
+            novaOs.setLpus(new HashSet<>(lpusParaAssociar));
+        }
 
-        return osRepository.save(newOs);
+        // 3. Define os campos de auditoria
+        novaOs.setDataCriacao(LocalDateTime.now());
+        novaOs.setUsuarioCriacao("sistema");
+        novaOs.setStatusRegistro("ATIVO");
+
+        // 4. Salva a OS (o JPA cuidará de preencher a tabela de junção os_lpus para você)
+        return osRepository.save(novaOs);
     }
 
     @Override

@@ -75,10 +75,25 @@ public class LancamentoController {
         return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<LancamentoResponseDTO> atualizarLancamento(@PathVariable Long id, @RequestBody LancamentoRequestDTO dto) {
+        Lancamento lancamentoAtualizado = lancamentoService.atualizarLancamento(id, dto);
+        LancamentoResponseDTO responseDTO = new LancamentoResponseDTO(lancamentoAtualizado);
+        return ResponseEntity.ok(responseDTO);
+    }
+
     @PostMapping("/{id}/prazo/rejeitar")
     public ResponseEntity<LancamentoResponseDTO> rejeitarExtensaoPrazo(@PathVariable Long id, @RequestBody AcaoControllerDTO dto) {
         Lancamento lancamento = lancamentoService.rejeitarExtensaoPrazo(id, dto);
         return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
+    }
+
+    @PostMapping("/{id}/submeter")
+    public ResponseEntity<LancamentoResponseDTO> submeterManualmente(@PathVariable Long id) {
+        // No futuro, o ID do manager virá do usuário autenticado
+        Long managerId = 1L;
+        Lancamento lancamentoSubmetido = lancamentoService.submeterLancamentoManualmente(id, managerId);
+        return ResponseEntity.ok(new LancamentoResponseDTO(lancamentoSubmetido));
     }
 
     @GetMapping
