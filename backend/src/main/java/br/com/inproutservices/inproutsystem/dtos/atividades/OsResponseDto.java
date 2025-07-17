@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public record OsResponseDto(
         Long id,
@@ -14,6 +16,7 @@ public record OsResponseDto(
         String site,
         String contrato,
         String segmento,
+        Set<LpuSimpleDTO> lpus,
         String projeto,
         String gestorTim,
         String regional,
@@ -54,6 +57,9 @@ public record OsResponseDto(
                 os.getSite(),
                 os.getContrato(),
                 os.getSegmento(),
+                os.getLpus().stream()
+                        .map(LpuSimpleDTO::new) // Reutiliza o LpuSimpleDTO
+                        .collect(Collectors.toSet()),
                 os.getProjeto(),
                 os.getGestorTim(),
                 os.getRegional(),
@@ -86,7 +92,7 @@ public record OsResponseDto(
     }
 
     /**
-     * DTO aninhado e simplificado para LPU, para evitar mais loops.
+     * DTO aninhado e simplificado para LPU, para evitar loops de serialização.
      */
     public record LpuSimpleDTO(Long id, String codigo, String nome) {
         public LpuSimpleDTO(Lpu lpu) {

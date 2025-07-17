@@ -22,8 +22,7 @@ record LpuCreateDTO(
         String unidade,
         BigDecimal valorSemImposto,
         BigDecimal valorComImposto,
-        Long contratoId,
-        Long osId
+        Long contratoId
 ) {}
 
 // DTO para receber os dados de alteração de uma LPU

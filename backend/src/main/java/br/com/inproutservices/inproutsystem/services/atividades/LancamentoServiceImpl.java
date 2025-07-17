@@ -272,13 +272,15 @@ public class LancamentoServiceImpl implements LancamentoService {
         lancamento.setSituacaoAprovacao(SituacaoAprovacao.APROVADO);
         lancamento.setUltUpdate(LocalDateTime.now());
 
-        // Pega a LPU associada a este lançamento através da OS
-        Lpu lpuDoLancamento = lancamento.getOs().getLpu();
+        // A LPU correta agora é pega diretamente do Lançamento, não mais através da OS.
+        Lpu lpuDoLancamento = lancamento.getLpu();
+
         if (lpuDoLancamento != null) {
             // Atualiza o campo 'situacaoProjeto' da LPU com a situação do lançamento aprovado
             lpuDoLancamento.setSituacaoProjeto(lancamento.getSituacao());
-            // O LpuRepository precisa ser injetado no serviço para isso funcionar
-            // lpuRepository.save(lpuDoLancamento); // Descomente após injetar o LpuRepository
+            // Salva a entidade LPU atualizada no banco de dados.
+            // Lembre-se de injetar o LpuRepository na sua classe LancamentoServiceImpl
+            lpuRepository.save(lpuDoLancamento);
         }
 
         return lancamentoRepository.save(lancamento);
@@ -407,7 +409,17 @@ public class LancamentoServiceImpl implements LancamentoService {
     @Override
     @Transactional(readOnly = true)
     public List<Lancamento> getAllLancamentos() {
-        return lancamentoRepository.findAllWithDetails();
+
+        List<Lancamento> lancamentos = lancamentoRepository.findAllWithDetails();
+
+        for (Lancamento l : lancamentos) {
+            if (l.getOs() != null) {
+
+                l.getOs().getLpus().size();
+            }
+        }
+
+        return lancamentos;
     }
 
     @Override

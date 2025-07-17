@@ -542,15 +542,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function getProjetosParalisados() {
             const ultimosLancamentos = new Map();
-            // Primeiro, agrupa todos os lançamentos por projeto (OS+LPU)
             todosLancamentos.forEach(l => {
-                const chaveProjeto = `${l.os.id}-${l.os.lpu.id}`;
-                // Guarda apenas o lançamento mais recente de cada projeto
-                if (!ultimosLancamentos.has(chaveProjeto) || l.id > ultimosLancamentos.get(chaveProjeto).id) {
-                    ultimosLancamentos.set(chaveProjeto, l);
+                // Garante que o lançamento tenha uma OS e uma LPU antes de processar
+                if (l.os && l.lpu) {
+                    // CORREÇÃO: Acessamos l.os.id e l.lpu.id diretamente
+                    const chaveProjeto = `${l.os.id}-${l.lpu.id}`;
+                    
+                    if (!ultimosLancamentos.has(chaveProjeto) || l.id > ultimosLancamentos.get(chaveProjeto).id) {
+                        ultimosLancamentos.set(chaveProjeto, l);
+                    }
                 }
             });
-            // Agora, filtra apenas os projetos cujo último lançamento está "Paralisado"
+            // Filtra para retornar apenas os projetos cujo último lançamento está "Paralisado"
             return Array.from(ultimosLancamentos.values()).filter(l => l.situacao === 'Paralisado');
         }
 

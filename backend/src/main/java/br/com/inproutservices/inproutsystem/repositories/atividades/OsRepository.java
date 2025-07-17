@@ -12,13 +12,17 @@ import java.util.Optional;
 public interface OsRepository extends JpaRepository<OS, Long> {
 
     /**
-     * Busca todas as OSs, trazendo junto (FETCH) os dados de LPU e Lançamentos
+     * Busca todas as OSs, trazendo junto (FETCH) a coleção de LPUs
      * para evitar LazyInitializationException.
      */
-    @Query("SELECT DISTINCT os FROM OS os LEFT JOIN FETCH os.lpu LEFT JOIN FETCH os.lancamentos")
+    // CORREÇÃO: trocado 'os.lpu' por 'os.lpus'
+    @Query("SELECT DISTINCT os FROM OS os LEFT JOIN FETCH os.lpus")
     List<OS> findAllWithDetails();
 
-    // Você também pode criar uma versão para o findById
-    @Query("SELECT os FROM OS os LEFT JOIN FETCH os.lpu LEFT JOIN FETCH os.lancamentos WHERE os.id = :id")
+    /**
+     * Busca uma OS pelo ID, trazendo junto (FETCH) a coleção de LPUs.
+     */
+    // CORREÇÃO: trocado 'os.lpu' por 'os.lpus'
+    @Query("SELECT os FROM OS os LEFT JOIN FETCH os.lpus WHERE os.id = :id")
     Optional<OS> findByIdWithDetails(Long id);
 }

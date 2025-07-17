@@ -32,20 +32,11 @@ public class LpuService {
 
     @Transactional(readOnly = true)
     public List<LpuResponseDTO> findLpusByOsId(Long osId) {
-        // 1. Busca a OS principal
         OS os = osRepository.findById(osId)
                 .orElseThrow(() -> new EntityNotFoundException("OS não encontrada com o ID: " + osId));
 
-        // 2. Acessa a coleção de LPUs diretamente da entidade OS e converte para DTO
         return os.getLpus().stream()
-                .map(lpu -> {
-                    // A lógica de conversão para DTO que você já tinha continua aqui...
-                    ContratoResponseDTO contratoDTO = new ContratoResponseDTO(lpu.getContrato().getId(), lpu.getContrato().getNome());
-                    return new LpuResponseDTO(
-                            lpu.getId(), lpu.getCodigoLpu(), lpu.getNomeLpu(), lpu.getUnidade(),
-                            lpu.getValorSemImposto(), lpu.getValorComImposto(), lpu.isAtivo(), contratoDTO
-                    );
-                })
+                .map(lpu -> new LpuResponseDTO(lpu))
                 .collect(Collectors.toList());
     }
 
@@ -94,23 +85,18 @@ public class LpuService {
      * Cria uma nova LPU no banco de dados.
      */
     @Transactional
-    public Lpu criarLpu(Lpu lpu, Long contratoId) { // <-- MUDANÇA: Removemos o osId daqui
-
-        // A validação de duplicidade por contrato continua correta
+    public Lpu criarLpu(Lpu lpu, Long contratoId) {
         lpuRepository.findByCodigoLpuAndContratoId(lpu.getCodigoLpu(), contratoId).ifPresent(l -> {
             throw new IllegalArgumentException(
                     "Já existe uma LPU com o código: " + lpu.getCodigoLpu() + " para este contrato."
             );
         });
 
-        // A associação com o Contrato também continua correta
         Contrato contrato = contratoRepository.findById(contratoId)
                 .orElseThrow(() -> new EntityNotFoundException("Contrato não encontrado com o ID: " + contratoId));
 
         lpu.setContrato(contrato);
         lpu.setAtivo(true);
-
-        // A linha 'lpu.setOs(os);' foi REMOVIDA, pois não faz mais parte deste processo.
 
         return lpuRepository.save(lpu);
     }

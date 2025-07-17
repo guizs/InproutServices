@@ -17,10 +17,24 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
 
     Optional<Lancamento> findFirstByOsIdAndSituacaoAprovacaoOrderByDataCriacaoAsc(Long osId, SituacaoAprovacao situacao);
 
-    @Query("SELECT l FROM Lancamento l LEFT JOIN FETCH l.manager LEFT JOIN FETCH l.os LEFT JOIN FETCH l.etapaDetalhada ed LEFT JOIN FETCH ed.etapa LEFT JOIN FETCH l.prestador LEFT JOIN FETCH l.comentarios c LEFT JOIN FETCH c.autor WHERE l.id = :id")
+    @Query("SELECT l FROM Lancamento l " +
+            "LEFT JOIN FETCH l.manager " +
+            "LEFT JOIN FETCH l.os o " +
+            "LEFT JOIN FETCH o.lpus " +
+            "LEFT JOIN FETCH l.lpu " +
+            "LEFT JOIN FETCH l.etapaDetalhada ed " +
+            "LEFT JOIN FETCH ed.etapa " +
+            "LEFT JOIN FETCH l.prestador " +
+            "LEFT JOIN FETCH l.comentarios c " +
+            "LEFT JOIN FETCH c.autor " +
+            "WHERE l.id = :id")
     Optional<Lancamento> findByIdWithDetails(@Param("id") Long id);
 
-    @Query("SELECT DISTINCT l FROM Lancamento l LEFT JOIN FETCH l.manager LEFT JOIN FETCH l.os")
+    @Query("SELECT DISTINCT l FROM Lancamento l " +
+            "LEFT JOIN FETCH l.manager " +
+            "LEFT JOIN FETCH l.os o " +
+            "LEFT JOIN FETCH o.lpus " +
+            "LEFT JOIN FETCH l.lpu") // <-- GARANTE QUE A LPU DO LANÇAMENTO SEJA BUSCADA
     List<Lancamento> findAllWithDetails();
 
     Optional<Lancamento> findFirstByOsIdOrderByIdDesc(Long osId);

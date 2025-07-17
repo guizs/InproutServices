@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -34,7 +35,7 @@ public class OsServiceImpl implements OsService {
         OS novaOs = new OS();
         novaOs.setOs(osDto.getOs());
         novaOs.setSite(osDto.getSite());
-        novaOs.setContrato(osDto.getContrato()); // Assumindo que o DTO tenha o nome do contrato
+        novaOs.setContrato(osDto.getContrato());
         novaOs.setSegmento(osDto.getSegmento());
         novaOs.setProjeto(osDto.getProjeto());
         novaOs.setGestorTim(osDto.getGestorTim());
@@ -52,15 +53,10 @@ public class OsServiceImpl implements OsService {
 
         // 2. Associa a coleção de LPUs selecionadas
         if (osDto.getLpuIds() != null && !osDto.getLpuIds().isEmpty()) {
-            // Busca todas as LPUs da lista de IDs de uma vez só
             List<Lpu> lpusParaAssociar = lpuRepository.findAllById(osDto.getLpuIds());
-
-            // Validação: garante que todas as LPUs solicitadas foram encontradas no banco
             if (lpusParaAssociar.size() != osDto.getLpuIds().size()) {
                 throw new EntityNotFoundException("Uma ou mais LPUs com os IDs fornecidos não foram encontradas.");
             }
-
-            // Adiciona a coleção de entidades LPU à nova OS
             novaOs.setLpus(new HashSet<>(lpusParaAssociar));
         }
 
@@ -69,7 +65,7 @@ public class OsServiceImpl implements OsService {
         novaOs.setUsuarioCriacao("sistema");
         novaOs.setStatusRegistro("ATIVO");
 
-        // 4. Salva a OS (o JPA cuidará de preencher a tabela de junção os_lpus para você)
+        // 4. Salva a OS
         return osRepository.save(novaOs);
     }
 
@@ -89,24 +85,44 @@ public class OsServiceImpl implements OsService {
     @Override
     @Transactional
     public OS updateOs(Long id, OsRequestDto osDto) {
+        // 1. Busca a OS existente
         OS existingOs = getOsById(id);
 
-        Contrato contrato = contratoRepository.findById(osDto.getContratoId())
-                .orElseThrow(() -> new EntityNotFoundException("Contrato não encontrado com o ID: " + osDto.getContratoId()));
+        // 2. Atualiza os campos simples
+        existingOs.setOs(osDto.getOs());
+        existingOs.setSite(osDto.getSite());
+        existingOs.setContrato(osDto.getContrato());
+        existingOs.setSegmento(osDto.getSegmento());
+        existingOs.setProjeto(osDto.getProjeto());
+        existingOs.setGestorTim(osDto.getGestorTim());
+        existingOs.setRegional(osDto.getRegional());
+        existingOs.setLote(osDto.getLote());
+        existingOs.setBoq(osDto.getBoq());
+        existingOs.setPo(osDto.getPo());
+        existingOs.setItem(osDto.getItem());
+        existingOs.setObjetoContratado(osDto.getObjetoContratado());
+        existingOs.setUnidade(osDto.getUnidade());
+        existingOs.setQuantidade(osDto.getQuantidade());
+        existingOs.setValorTotal(osDto.getValorTotal());
+        existingOs.setObservacoes(osDto.getObservacoes());
+        existingOs.setDataPo(osDto.getDataPo());
 
-        Lpu lpu = lpuRepository.findByCodigoLpuAndContratoId(osDto.getCodigoLpu(), osDto.getContratoId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "LPU não encontrada com o código: " + osDto.getCodigoLpu() + " para o Contrato ID: " + osDto.getContratoId()
-                ));
+        // 3. Atualiza a lista de LPUs associadas
+        if (osDto.getLpuIds() != null) {
+            List<Lpu> novasLpus = lpuRepository.findAllById(osDto.getLpuIds());
+            if (novasLpus.size() != osDto.getLpuIds().size()) {
+                throw new EntityNotFoundException("Uma ou mais LPUs com os IDs fornecidos para atualização não foram encontradas.");
+            }
+            existingOs.setLpus(new HashSet<>(novasLpus));
+        }
 
-        // Chamando o método de mapeamento atualizado
-        mapDtoToEntity(osDto, existingOs, lpu, contrato);
-
+        // 4. Define os campos de auditoria
         existingOs.setDataAtualizacao(LocalDateTime.now());
         existingOs.setUsuarioAtualizacao("sistema");
 
         return osRepository.save(existingOs);
     }
+
 
     @Override
     @Transactional
@@ -117,27 +133,4 @@ public class OsServiceImpl implements OsService {
         osRepository.deleteById(id);
     }
 
-    /**
-     * Método auxiliar atualizado para receber a entidade Contrato completa.
-     */
-    private void mapDtoToEntity(OsRequestDto dto, OS os, Lpu lpu, Contrato contrato) {
-        os.setOs(dto.getOs());
-        os.setSite(dto.getSite());
-        os.setContrato(contrato.getNome());
-        os.setSegmento(dto.getSegmento());
-        os.setProjeto(dto.getProjeto());
-        os.setGestorTim(dto.getGestorTim());
-        os.setRegional(dto.getRegional());
-        os.setLpu(lpu);
-        os.setLote(dto.getLote());
-        os.setBoq(dto.getBoq());
-        os.setPo(dto.getPo());
-        os.setItem(dto.getItem());
-        os.setObjetoContratado(dto.getObjetoContratado());
-        os.setUnidade(dto.getUnidade());
-        os.setQuantidade(dto.getQuantidade());
-        os.setValorTotal(dto.getValorTotal());
-        os.setObservacoes(dto.getObservacoes());
-        os.setDataPo(dto.getDataPo());
-    }
 }
