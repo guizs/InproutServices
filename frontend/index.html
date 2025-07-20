@@ -386,149 +386,160 @@
                   <option value="" selected disabled>Selecione uma OS...</option>
                 </select>
               </div>
+
+              <div class="col-md-6 d-none" id="lpuContainer">
+                <label for="lpuId" class="form-label">Lista de Preços Unitários (LPU)</label>
+                <select class="form-select" id="lpuId" required>
+                </select>
+              </div>
+
               <div class="col-md-6">
                 <label for="dataAtividade" class="form-label">Data da Atividade</label>
                 <input type="date" class="form-control" id="dataAtividade" required>
               </div>
-              <div class="col-md-3">
-                <label class="form-label">SITE</label>
-                <input type="text" class="form-control" id="site" readonly>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">SEGMENTO</label>
-                <input type="text" class="form-control" id="segmento" readonly>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">PROJETO</label>
-                <input type="text" class="form-control" id="projeto" readonly>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">CONTRATO</label>
-                <input type="text" class="form-control" id="contrato" readonly>
-              </div>
-            </div>
 
-            <h6 class="section-title">Responsáveis</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-md-4">
-                <label class="form-label">GESTOR TIM</label>
-                <input type="text" class="form-control" id="gestorTim" readonly>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">REGIONAL</label>
-                <input type="text" class="form-control" id="regional" readonly>
-              </div>
-              <div class="col-md-4">
-                <label for="equipe" class="form-label">EQUIPE</label>
-                <input type="text" class="form-control" id="equipe">
-              </div>
-            </div>
-
-            <h6 class="section-title">Execução</h6>
-            <div class="etapas-scroll">
-              <div class="card etapa-card">
-                <h6>Vistoria</h6>
-                <label class="form-label">Status</label>
-                <select class="form-select" id="vistoria">
-                  <option>OK</option>
-                  <option>NOK</option>
-                  <option selected>N/A</option>
-                </select>
-                <label class="form-label mt-2">Plano (Data)</label>
-                <input type="date" class="form-control" id="planoVistoria">
-              </div>
-              <div class="card etapa-card">
-                <h6>Desmobilização</h6><label class="form-label">Status</label><select class="form-select"
-                  id="desmobilizacao">
-                  <option>OK</option>
-                  <option>NOK</option>
-                  <option selected>N/A</option>
-                </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
-                  id="planoDesmobilizacao">
-              </div>
-              <div class="card etapa-card">
-                <h6>Instalação</h6><label class="form-label">Status</label><select class="form-select" id="instalacao">
-                  <option>OK</option>
-                  <option>NOK</option>
-                  <option selected>N/A</option>
-                </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
-                  id="planoInstalacao">
-              </div>
-              <div class="card etapa-card">
-                <h6>Ativação</h6><label class="form-label">Status</label><select class="form-select" id="ativacao">
-                  <option>OK</option>
-                  <option>NOK</option>
-                  <option selected>N/A</option>
-                </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
-                  id="planoAtivacao">
-              </div>
-              <div class="card etapa-card">
-                <h6>Documentação</h6><label class="form-label">Status</label><select class="form-select"
-                  id="documentacao">
-                  <option>OK</option>
-                  <option>NOK</option>
-                  <option selected>N/A</option>
-                </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
-                  id="planoDocumentacao">
-              </div>
-            </div>
-
-            <h6 class="section-title">Etapas</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-md-4">
-                <label for="etapaGeralSelect" class="form-label">ETAPA GERAL</label>
-                <select class="form-select" id="etapaGeralSelect" required>
-                  <option value="" selected disabled>Selecione uma etapa geral...</option>
-                </select>
-              </div>
-              <div class="col-md-4">
-                <label for="etapaDetalhadaId" class="form-label">ETAPA DETALHADA</label>
-                <select class="form-select" id="etapaDetalhadaId" required disabled>
-                  <option value="" selected disabled>Primeiro, selecione a etapa geral</option>
-                </select>
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">STATUS</label>
-                <select class="form-select" id="status">
-                  <option>Aguardando documentação</option>
-                  <option>Paralisado</option>
-                  <option>Em andamento</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">DETALHE DIÁRIO</label>
-              <textarea class="form-control" id="detalheDiario" rows="2" required></textarea>
-            </div>
-
-            <label class="form-label">SITUAÇÃO</label>
-            <select class="form-select" id="situacao">
-              <option>Aguardando documentação</option>
-              <option>Paralisado</option>
-              <option selected>Em andamento</option>
-              <option>Finalizado</option>
-            </select>
-
-
-
-            <h6 class="section-title">Financeiro</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-md-8">
-                <label for="prestadorId" class="form-label">PRESTADOR</label>
-                <select class="form-select" id="prestadorId" required>
-                  <option value="" selected disabled>Selecione um prestador...</option>
-                </select>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">VALOR DA ATIVIDADE</label>
-                <div class="input-group">
-                  <span class="input-group-text">R$</span>
-                  <input type="text" class="form-control" id="valor" inputmode="numeric" />
+              <h6 class="section-title">Dados da OS</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label for="site" class="form-label">Site</label>
+                  <input type="text" class="form-control" id="site" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label for="segmento" class="form-label">Segmento</label>
+                  <input type="text" class="form-control" id="segmento" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label for="projeto" class="form-label">Projeto</label>
+                  <input type="text" class="form-control" id="projeto" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label for="contrato" class="form-label">Contrato</label>
+                  <input type="text" class="form-control" id="contrato" readonly>
                 </div>
               </div>
-            </div>
+
+              <h6 class="section-title">Responsáveis</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                  <label class="form-label">GESTOR TIM</label>
+                  <input type="text" class="form-control" id="gestorTim" readonly>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">REGIONAL</label>
+                  <input type="text" class="form-control" id="regional" readonly>
+                </div>
+                <div class="col-md-4">
+                  <label for="equipe" class="form-label">EQUIPE</label>
+                  <input type="text" class="form-control" id="equipe">
+                </div>
+              </div>
+
+              <h6 class="section-title">Execução</h6>
+              <div class="etapas-scroll">
+                <div class="card etapa-card">
+                  <h6>Vistoria</h6>
+                  <label class="form-label">Status</label>
+                  <select class="form-select" id="vistoria">
+                    <option>OK</option>
+                    <option>NOK</option>
+                    <option selected>N/A</option>
+                  </select>
+                  <label class="form-label mt-2">Plano (Data)</label>
+                  <input type="date" class="form-control" id="planoVistoria">
+                </div>
+                <div class="card etapa-card">
+                  <h6>Desmobilização</h6><label class="form-label">Status</label><select class="form-select"
+                    id="desmobilizacao">
+                    <option>OK</option>
+                    <option>NOK</option>
+                    <option selected>N/A</option>
+                  </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
+                    id="planoDesmobilizacao">
+                </div>
+                <div class="card etapa-card">
+                  <h6>Instalação</h6><label class="form-label">Status</label><select class="form-select"
+                    id="instalacao">
+                    <option>OK</option>
+                    <option>NOK</option>
+                    <option selected>N/A</option>
+                  </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
+                    id="planoInstalacao">
+                </div>
+                <div class="card etapa-card">
+                  <h6>Ativação</h6><label class="form-label">Status</label><select class="form-select" id="ativacao">
+                    <option>OK</option>
+                    <option>NOK</option>
+                    <option selected>N/A</option>
+                  </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
+                    id="planoAtivacao">
+                </div>
+                <div class="card etapa-card">
+                  <h6>Documentação</h6><label class="form-label">Status</label><select class="form-select"
+                    id="documentacao">
+                    <option>OK</option>
+                    <option>NOK</option>
+                    <option selected>N/A</option>
+                  </select><label class="form-label mt-2">Plano (Data)</label><input type="date" class="form-control"
+                    id="planoDocumentacao">
+                </div>
+              </div>
+
+              <h6 class="section-title">Etapas</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                  <label for="etapaGeralSelect" class="form-label">ETAPA GERAL</label>
+                  <select class="form-select" id="etapaGeralSelect" required>
+                    <option value="" selected disabled>Selecione uma etapa geral...</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label for="etapaDetalhadaId" class="form-label">ETAPA DETALHADA</label>
+                  <select class="form-select" id="etapaDetalhadaId" required disabled>
+                    <option value="" selected disabled>Primeiro, selecione a etapa geral</option>
+                  </select>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">STATUS</label>
+                  <select class="form-select" id="status">
+                    <option>Aguardando documentação</option>
+                    <option>Paralisado</option>
+                    <option>Em andamento</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">DETALHE DIÁRIO</label>
+                <textarea class="form-control" id="detalheDiario" rows="2" required></textarea>
+              </div>
+
+              <label class="form-label">SITUAÇÃO</label>
+              <select class="form-select" id="situacao">
+                <option>Aguardando documentação</option>
+                <option>Paralisado</option>
+                <option selected>Em andamento</option>
+                <option>Finalizado</option>
+              </select>
+
+
+
+              <h6 class="section-title">Financeiro</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-md-8">
+                  <label for="prestadorId" class="form-label">PRESTADOR</label>
+                  <select class="form-select" id="prestadorId" required>
+                    <option value="" selected disabled>Selecione um prestador...</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">VALOR DA ATIVIDADE</label>
+                  <div class="input-group">
+                    <span class="input-group-text">R$</span>
+                    <input type="text" class="form-control" id="valor" inputmode="numeric" />
+                  </div>
+                </div>
+              </div>
 
           </form>
         </div>

@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dados.forEach(lancamento => {
             const tr = document.createElement('tr');
             const mapaDeCelulas = {
-                "DATA ATIVIDADE": lancamento.dataAtividade || '', "OS": lancamento.os.os || '', "SITE": lancamento.os.site || '', "SEGMENTO": lancamento.os.segmento || '', "PROJETO": lancamento.os.projeto || '', "LPU": (lancamento.os.lpu) ? `${lancamento.os.lpu.codigo} - ${lancamento.os.lpu.nome}` : '', "GESTOR TIM": lancamento.os.gestorTim || '', "REGIONAL": lancamento.os.regional || '', "EQUIPE": lancamento.equipe || '', "VISTORIA": lancamento.vistoria || '', "PLANO DE VISTORIA": lancamento.planoVistoria || '', "DESMOBILIZAÇÃO": lancamento.desmobilizacao || '', "PLANO DE DESMOBILIZAÇÃO": lancamento.planoDesmobilizacao || '', "INSTALAÇÃO": lancamento.instalacao || '', "PLANO DE INSTALAÇÃO": lancamento.planoInstalacao || '', "ATIVAÇÃO": lancamento.ativacao || '', "PLANO DE ATIVAÇÃO": lancamento.planoAtivacao || '', "DOCUMENTAÇÃO": lancamento.documentacao || '', "PLANO DE DOCUMENTAÇÃO": lancamento.planoDocumentacao || '', "ETAPA GERAL": lancamento.etapa ? lancamento.etapa.nomeGeral : '', "ETAPA DETALHADA": lancamento.etapa ? lancamento.etapa.nomeDetalhado : '', "STATUS": lancamento.status || '', "SITUAÇÃO": lancamento.situacao || '', "DETALHE DIÁRIO": lancamento.detalheDiario || '', "CÓD. PRESTADOR": lancamento.prestador ? lancamento.prestador.codigo : '', "PRESTADOR": lancamento.prestador ? lancamento.prestador.nome : '', "VALOR": formatarMoeda(lancamento.valor), "GESTOR": lancamento.manager ? lancamento.manager.nome : '', "STATUS APROVAÇÃO": `<span class="badge rounded-pill text-bg-secondary">${lancamento.situacaoAprovacao.replace(/_/g, ' ')}</span>`
+                "DATA ATIVIDADE": lancamento.dataAtividade || '', "OS": lancamento.os.os || '', "SITE": lancamento.os.site || '', "SEGMENTO": lancamento.os.segmento || '', "PROJETO": lancamento.os.projeto || '', "LPU": (lancamento.lpu) ? `${lancamento.lpu.codigo} - ${lancamento.lpu.nome}` : '', "GESTOR TIM": lancamento.os.gestorTim || '', "REGIONAL": lancamento.os.regional || '', "EQUIPE": lancamento.equipe || '', "VISTORIA": lancamento.vistoria || '', "PLANO DE VISTORIA": lancamento.planoVistoria || '', "DESMOBILIZAÇÃO": lancamento.desmobilizacao || '', "PLANO DE DESMOBILIZAÇÃO": lancamento.planoDesmobilizacao || '', "INSTALAÇÃO": lancamento.instalacao || '', "PLANO DE INSTALAÇÃO": lancamento.planoInstalacao || '', "ATIVAÇÃO": lancamento.ativacao || '', "PLANO DE ATIVAÇÃO": lancamento.planoAtivacao || '', "DOCUMENTAÇÃO": lancamento.documentacao || '', "PLANO DE DOCUMENTAÇÃO": lancamento.planoDocumentacao || '', "ETAPA GERAL": lancamento.etapa ? lancamento.etapa.nomeGeral : '', "ETAPA DETALHADA": lancamento.etapa ? lancamento.etapa.nomeDetalhado : '', "STATUS": lancamento.status || '', "SITUAÇÃO": lancamento.situacao || '', "DETALHE DIÁRIO": lancamento.detalheDiario || '', "CÓD. PRESTADOR": lancamento.prestador ? lancamento.prestador.codigo : '', "PRESTADOR": lancamento.prestador ? lancamento.prestador.nome : '', "VALOR": formatarMoeda(lancamento.valor), "GESTOR": lancamento.manager ? lancamento.manager.nome : '', "STATUS APROVAÇÃO": `<span class="badge rounded-pill text-bg-secondary">${lancamento.situacaoAprovacao.replace(/_/g, ' ')}</span>`
             };
 
             colunas.forEach(nomeColuna => {
@@ -368,9 +368,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         async function carregarDadosParaModal() {
-            // O 'if' garante que a busca na API só aconteça uma vez, para otimizar.
+            // Busca na API só acontece uma vez para otimizar
             if (todasAsOS.length === 0) {
-                todasAsOS = await popularSelect(selectOS, 'http://localhost:8080/os', 'id', (item) => item.os);
+                try {
+                    const response = await fetch('http://localhost:8080/os');
+                    if (!response.ok) throw new Error('Falha ao carregar Ordens de Serviço.');
+                    const osData = await response.json();
+
+                    // --- INÍCIO DA CORREÇÃO DE UNICIDADE ---
+                    // Remove duplicatas usando um Map, garantindo que cada OS apareça uma única vez
+                    const osUnicas = [...new Map(osData.map(os => [os.id, os])).values()];
+                    todasAsOS = osUnicas.sort((a, b) => a.os.localeCompare(b.os)); // Guarda a lista única e ordenada
+
+                    // Limpa o select antes de popular
+                    selectOS.innerHTML = `<option value="" selected disabled>Selecione...</option>`;
+
+                    // Popula o select com a lista de OSs únicas
+                    todasAsOS.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.os;
+                        selectOS.appendChild(option);
+                    });
+                    // --- FIM DA CORREÇÃO DE UNICIDADE ---
+
+                } catch (error) {
+                    console.error('Erro ao popular o select de OS:', error);
+                    selectOS.innerHTML = `<option value="" selected disabled>Erro ao carregar OS</option>`;
+                }
             }
             if (selectPrestador.options.length <= 1) {
                 await popularSelect(selectPrestador, 'http://localhost:8080/index/prestadores', 'id', (item) => `${item.codigoPrestador} - ${item.prestador}`);
@@ -547,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (l.os && l.lpu) {
                     // CORREÇÃO: Acessamos l.os.id e l.lpu.id diretamente
                     const chaveProjeto = `${l.os.id}-${l.lpu.id}`;
-                    
+
                     if (!ultimosLancamentos.has(chaveProjeto) || l.id > ultimosLancamentos.get(chaveProjeto).id) {
                         ultimosLancamentos.set(chaveProjeto, l);
                     }
@@ -596,6 +621,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        selectOS.addEventListener('change', async (e) => {
+            const osId = e.target.value;
+            preencherCamposOS(osId); // Função que você já tem, para preencher site, segmento, etc.
+
+            const lpuContainer = document.getElementById('lpuContainer');
+            const selectLPU = document.getElementById('lpuId');
+
+            if (!osId) {
+                lpuContainer.classList.add('d-none');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/os/${osId}/lpus`);
+                if (!response.ok) throw new Error('Falha ao buscar LPUs para esta OS.');
+
+                const lpus = await response.json();
+
+                selectLPU.innerHTML = '<option value="" selected disabled>Selecione a LPU...</option>';
+                if (lpus && lpus.length > 0) {
+                    lpus.forEach(lpu => {
+                        const option = new Option(`${lpu.codigoLpu} - ${lpu.nomeLpu}`, lpu.id);
+                        selectLPU.add(option);
+                    });
+                    selectLPU.disabled = false;
+                } else {
+                    selectLPU.innerHTML = '<option value="" disabled>Nenhuma LPU encontrada para esta OS</option>';
+                    selectLPU.disabled = true;
+                }
+                lpuContainer.classList.remove('d-none'); // Mostra o campo de LPU
+
+            } catch (error) {
+                mostrarToast(error.message, 'error');
+                lpuContainer.classList.add('d-none'); // Esconde se der erro
+            }
+        });
+
         // Função central para lidar com o envio do formulário, chamada por diferentes botões
         async function handleFormSubmit(acao, submitButton) {
             const editingId = formAdicionar.dataset.editingId;
@@ -607,6 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const dadosParaEnviar = {
                 osId: document.getElementById('osId').value,
+                lpuId: document.getElementById('lpuId').value,
                 dataAtividade: document.getElementById('dataAtividade').value,
                 prestadorId: document.getElementById('prestadorId').value,
                 etapaDetalhadaId: document.getElementById('etapaDetalhadaId').value,
@@ -665,6 +728,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalContent;
             }
+
+            modalAdicionarEl.addEventListener('hidden.bs.modal', () => {
+                formAdicionar.reset();
+                delete formAdicionar.dataset.editingId;
+
+                // ... outras limpezas que você já tem
+                selectStatus.disabled = true;
+                document.getElementById('osId').disabled = false;
+
+                // --- INÍCIO DA ADIÇÃO ---
+                document.getElementById('lpuContainer').classList.add('d-none');
+                document.getElementById('lpuId').innerHTML = '';
+                // --- FIM DA ADIÇÃO ---
+            });
         }
 
         // Listener para o botão 'Salvar e Enviar' (de um rascunho)

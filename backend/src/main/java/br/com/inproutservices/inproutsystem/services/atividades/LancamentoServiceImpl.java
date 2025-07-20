@@ -167,6 +167,7 @@ public class LancamentoServiceImpl implements LancamentoService {
         lancamento.setManager(manager);
         lancamento.setPrestador(prestador);
         lancamento.setEtapaDetalhada(etapaDetalhada);
+        lancamento.setLpu(lpu);
 
         // Define os status e datas iniciais do fluxo
         lancamento.setDataAtividade(dto.dataAtividade());
