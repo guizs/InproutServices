@@ -546,18 +546,19 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle"></i> Cancelar
+            <i class="bi bi-x-lg"></i> Fechar
           </button>
 
           <button type="submit" id="btnSubmitAdicionar" form="formAdicionar" class="btn btn-success">
             <i class="bi bi-check-circle"></i> Salvar Lançamento
           </button>
 
-          <button type="button" id="btnSalvarRascunho" class="btn btn-primary" style="display: none;">
+          <button type="button" class="btn btn-outline-primary" id="btnSalvarRascunho">
             <i class="bi bi-save"></i> Salvar Alterações
           </button>
-          <button type="button" id="btnSalvarEEnviar" class="btn btn-success" style="display: none;">
-            <i class="bi bi-send-check"></i> Salvar e Enviar
+
+          <button type="button" class="btn btn-primary" id="btnSalvarEEnviar">
+            <i class="bi bi-send"></i> Salvar e Enviar
           </button>
         </div>
 
@@ -1099,6 +1100,12 @@
         </div>
 
       </div>
+    </div>
+  </div>
+
+  <div id="overlay-loader" class="overlay-loader d-none">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Carregando...</span>
     </div>
   </div>
 

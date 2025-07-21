@@ -23,11 +23,9 @@
             List<Prestador> prestadores;
 
             if (termoDeBusca != null && !termoDeBusca.isEmpty()) {
-                // Se um termo de busca foi enviado, usa o novo método de busca
                 prestadores = prestadorService.buscarPorTermo(termoDeBusca);
             } else {
-                // Se não, retorna a lista de prestadores ativos
-                prestadores = prestadorService.listarAtivos();
+                prestadores = prestadorService.listarTodos();
             }
             return ResponseEntity.ok(prestadores);
         }

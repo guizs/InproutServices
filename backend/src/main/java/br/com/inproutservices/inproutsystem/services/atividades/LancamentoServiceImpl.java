@@ -516,4 +516,51 @@ public class LancamentoServiceImpl implements LancamentoService {
 
         return lancamentoRepository.save(lancamento);
     }
+
+    @Override
+    @Transactional
+    public Lancamento salvarComoRascunho(Long id, LancamentoRequestDTO dto) {
+        // 1. Busca o lançamento existente no banco
+        Lancamento lancamento = lancamentoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lançamento não encontrado com o ID: " + id));
+
+        // 2. Validação CRÍTICA: Garante que o método só funcione para Rascunhos
+        if (lancamento.getSituacaoAprovacao() != SituacaoAprovacao.RASCUNHO) {
+            throw new BusinessException("Este lançamento não é um rascunho e não pode ser salvo desta forma. Status atual: " + lancamento.getSituacaoAprovacao());
+        }
+
+        // 3. Busca as entidades relacionadas para garantir que os novos IDs são válidos
+        Prestador prestador = prestadorRepository.findById(dto.prestadorId())
+                .orElseThrow(() -> new EntityNotFoundException("Prestador não encontrado com o ID: " + dto.prestadorId()));
+
+        EtapaDetalhada etapaDetalhada = etapaDetalhadaRepository.findById(dto.etapaDetalhadaId())
+                .orElseThrow(() -> new EntityNotFoundException("Etapa Detalhada não encontrada com o ID: " + dto.etapaDetalhadaId()));
+
+        Lpu lpu = lpuRepository.findById(dto.lpuId())
+                .orElseThrow(() -> new EntityNotFoundException("LPU não encontrada com o ID: " + dto.lpuId()));
+
+
+        lancamento.setPrestador(prestador);
+        lancamento.setEtapaDetalhada(etapaDetalhada);
+        lancamento.setLpu(lpu);
+        lancamento.setEquipe(dto.equipe());
+        lancamento.setVistoria(dto.vistoria());
+        lancamento.setPlanoVistoria(dto.planoVistoria());
+        lancamento.setDesmobilizacao(dto.desmobilizacao());
+        lancamento.setPlanoDesmobilizacao(dto.planoDesmobilizacao());
+        lancamento.setInstalacao(dto.instalacao());
+        lancamento.setPlanoInstalacao(dto.planoInstalacao());
+        lancamento.setAtivacao(dto.ativacao());
+        lancamento.setPlanoAtivacao(dto.planoAtivacao());
+        lancamento.setDocumentacao(dto.documentacao());
+        lancamento.setPlanoDocumentacao(dto.planoDocumentacao());
+        lancamento.setStatus(dto.status());
+        lancamento.setSituacao(dto.situacao());
+        lancamento.setDetalheDiario(dto.detalheDiario());
+        lancamento.setValor(dto.valor());
+
+        lancamento.setUltUpdate(LocalDateTime.now());
+
+        return lancamentoRepository.save(lancamento);
+    }
 }

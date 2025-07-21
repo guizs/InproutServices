@@ -90,12 +90,10 @@ async function carregarTabelaPrestadores(camposOriginais) {
     const thead = document.getElementById("thead-prestadores");
     const tbody = document.getElementById("tbody-prestadores");
 
-    // 1. Adicionamos a nossa nova coluna 'status' no início da lista de campos.
     const campos = ['status', ...camposOriginais];
 
-    // 2. Adicionamos um título para a nova coluna.
     const titulosFormatados = {
-        status: 'Status', // Título para a nova coluna
+        status: 'Status',
         codigoPrestador: "Código",
         prestador: "Prestador",
         razaoSocial: "Razão Social",
@@ -112,33 +110,41 @@ async function carregarTabelaPrestadores(camposOriginais) {
     };
 
     try {
-        // O fetch continua o mesmo, buscando todos os prestadores
-        const response = await fetch("http://localhost:8080/index/prestadores");
-        if (!response.ok) throw new Error("Erro ao buscar prestadores.");
-        const prestadores = await response.json();
+        // --- INÍCIO DA ALTERAÇÃO ---
 
-        if (!Array.isArray(prestadores) || prestadores.length === 0) {
+        // 1. Busca TODOS os prestadores de um único endpoint.
+        // A lista já virá do backend ordenada pelo ID.
+        const response = await fetch("http://localhost:8080/index/prestadores");
+
+        if (!response.ok) {
+            throw new Error("Erro ao buscar prestadores.");
+        }
+
+        const todosOsPrestadores = await response.json();
+
+        // 2. O sort no frontend não é mais necessário! A ordem vem do servidor.
+
+        // --- FIM DA ALTERAÇÃO ---
+
+        if (!Array.isArray(todosOsPrestadores) || todosOsPrestadores.length === 0) {
             thead.innerHTML = "<tr><th>Nenhum dado encontrado</th></tr>";
             tbody.innerHTML = "";
             return;
         }
 
-        // Geração do cabeçalho (já funciona com a nova coluna 'Status')
         thead.innerHTML = `
             <tr>
                 ${campos.map(campo => `<th>${titulosFormatados[campo] || campo}</th>`).join("")}
             </tr>
         `;
 
-        // 3. Modificação principal: Geração do corpo da tabela com a lógica do status
-        tbody.innerHTML = prestadores.map(prestador => {
+        tbody.innerHTML = todosOsPrestadores.map(prestador => {
             const linhaHtml = campos.map(campo => {
-                // Se a coluna for a de 'status', criamos o nosso indicador
                 if (campo === 'status') {
+                    // Esta lógica agora funcionará perfeitamente para todos os prestadores
                     const statusClass = prestador.ativo ? 'active' : 'inactive';
                     return `<td><span class="status-indicator ${statusClass}"></span></td>`;
                 }
-                // Para todas as outras colunas, o comportamento é o mesmo de antes
                 return `<td>${prestador[campo] ?? ""}</td>`;
             }).join("");
 
@@ -254,9 +260,23 @@ function configurarModalDesativarPrestador() {
         toggleLoader(true);
 
         try {
-            const response = await fetch(`http://localhost:8080/index/prestadores/desativar/${prestadorId}`, {
+            // --- INÍCIO DA CORREÇÃO ---
+            // 1. Busca todos os prestadores para encontrar o código
+            const prestadoresResponse = await fetch("http://localhost:8080/index/prestadores/ativos");
+            const prestadores = await prestadoresResponse.json();
+            const prestadorSelecionado = prestadores.find(p => p.id == prestadorId);
+
+            if (!prestadorSelecionado) {
+                throw new Error('Não foi possível encontrar o prestador selecionado.');
+            }
+
+            const prestadorCodigo = prestadorSelecionado.codigoPrestador;
+
+            // 2. Usa o CÓDIGO na URL, como o backend espera
+            const response = await fetch(`http://localhost:8080/index/prestadores/desativar/${prestadorCodigo}`, {
                 method: 'PUT',
             });
+            // --- FIM DA CORREÇÃO ---
 
             if (!response.ok) {
                 throw new Error('Falha ao desativar o prestador. Tente novamente.');
@@ -265,17 +285,7 @@ function configurarModalDesativarPrestador() {
             mostrarToast("Prestador desativado com sucesso!", 'success');
             bootstrap.Modal.getInstance(modalEl).hide();
 
-            // A variável 'colunas' agora é definida dentro deste escopo, resolvendo o erro.
-            const colunasPorRole = {
-                ADMIN: ['codigoPrestador', 'prestador', 'razaoSocial', 'cidade', 'uf', 'regiao', 'cpf', 'cnpj', 'telefone', 'email', 'tipoPix', 'chavePix', 'observacoes'],
-                COORDINATOR: ['codigoPrestador', 'prestador', 'cidade', 'uf', 'regiao', 'telefone', 'email'],
-                MANAGER: ['codigoPrestador', 'prestador', 'cidade', 'uf', 'regiao', 'telefone', 'email'],
-                CONTROLLER: ['codigoPrestador', 'prestador', 'cidade', 'uf', 'regiao', 'telefone', 'email'],
-                ASSISTANT: ['codigoPrestador', 'prestador', 'razaoSocial', 'cidade', 'uf', 'regiao', 'cpf', 'cnpj', 'telefone', 'email', 'tipoPix', 'chavePix', 'observacoes']
-            };
-            const role = (localStorage.getItem("role") || "").trim().toUpperCase();
-            const colunas = colunasPorRole[role] ?? ['codigoPrestador', 'prestador'];
-
+            const colunas = getColunasAtuaisPorRole();
             await carregarTabelaPrestadores(colunas);
 
         } catch (error) {
@@ -363,10 +373,23 @@ function configurarModalAtivarPrestador() {
         toggleLoader(true);
 
         try {
-            // A URL agora aponta para o endpoint de ATIVAR
-            const response = await fetch(`http://localhost:8080/index/prestadores/ativar/${prestadorId}`, {
+            // --- INÍCIO DA CORREÇÃO ---
+            // 1. Busca os prestadores INATIVOS para encontrar o código
+            const prestadoresResponse = await fetch("http://localhost:8080/index/prestadores/desativados");
+            const prestadores = await prestadoresResponse.json();
+            const prestadorSelecionado = prestadores.find(p => p.id == prestadorId);
+
+            if (!prestadorSelecionado) {
+                throw new Error('Não foi possível encontrar o prestador selecionado.');
+            }
+
+            const prestadorCodigo = prestadorSelecionado.codigoPrestador;
+
+            // 2. Usa o CÓDIGO na URL
+            const response = await fetch(`http://localhost:8080/index/prestadores/ativar/${prestadorCodigo}`, {
                 method: 'PUT',
             });
+            // --- FIM DA CORREÇÃO ---
 
             if (!response.ok) {
                 throw new Error('Falha ao ativar o prestador. Tente novamente.');
@@ -375,10 +398,7 @@ function configurarModalAtivarPrestador() {
             mostrarToast("Prestador ativado com sucesso!", 'success');
             bootstrap.Modal.getInstance(modalEl).hide();
 
-            // Recarrega a tabela principal para mostrar o status atualizado
             const colunas = getColunasAtuaisPorRole();
-            await carregarTabelaPrestadores(colunas);
-
             await carregarTabelaPrestadores(colunas);
 
         } catch (error) {

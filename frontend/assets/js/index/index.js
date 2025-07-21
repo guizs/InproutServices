@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const colunasPrincipais = ["STATUS APROVAÇÃO", "DATA ATIVIDADE", "OS", "SITE", "SEGMENTO", "PROJETO", "LPU", "GESTOR TIM", "REGIONAL", "EQUIPE", "VISTORIA", "PLANO DE VISTORIA", "DESMOBILIZAÇÃO", "PLANO DE DESMOBILIZAÇÃO", "INSTALAÇÃO", "PLANO DE INSTALAÇÃO", "ATIVAÇÃO", "PLANO DE ATIVAÇÃO", "DOCUMENTAÇÃO", "PLANO DE DOCUMENTAÇÃO", "ETAPA GERAL", "ETAPA DETALHADA", "STATUS", "SITUAÇÃO", "DETALHE DIÁRIO", "CÓD. PRESTADOR", "PRESTADOR", "VALOR", "GESTOR"];
     const colunasLancamentos = [...colunasPrincipais.filter(c => c !== "STATUS APROVAÇÃO"), "AÇÃO"];
-    const colunasMinhasPendencias = [...colunasLancamentos, "AÇÃO"];
+    const colunasMinhasPendencias = colunasLancamentos;
 
     function renderizarCabecalho(colunas, theadElement) {
         if (!theadElement) return;
@@ -100,12 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                     } else if (tbodyElement.id === 'tbody-lancamentos') {
                         buttonsHtml = `
-                            <button class="btn btn-sm btn-primary btn-submeter-agora" data-id="${lancamento.id}" title="Enviar para Aprovação"><i class="bi bi-send-plus"></i></button>
                             <button class="btn btn-sm btn-secondary btn-editar-rascunho" data-id="${lancamento.id}" title="Editar Rascunho"><i class="bi bi-pencil"></i></button>
                         `;
                     } else if (tbodyElement.id === 'tbody-paralisados') {
                         buttonsHtml = `
-                            <button class="btn btn-sm btn-info btn-ver-comentarios" data-id="${lancamento.id}" title="Ver Comentários" data-bs-toggle="modal" data-bs-target="#modalComentarios"><i class="bi bi-chat-left-text"></i></button>
                             <button class="btn btn-sm btn-warning btn-retomar" data-id="${lancamento.id}" title="Retomar Lançamento"><i class="bi bi-play-circle"></i></button>
                         `;
                     }
@@ -290,6 +288,55 @@ document.addEventListener('DOMContentLoaded', () => {
         let todasAsOS = [];
         let todasAsEtapas = [];
 
+        selectOS.addEventListener('change', async (e) => {
+            const osId = e.target.value;
+            // Pega os elementos do DOM para o container e o select da LPU
+            const lpuContainer = document.getElementById('lpuContainer');
+            const selectLPU = document.getElementById('lpuId');
+
+            // Se o usuário desmarcar a OS, esconde o campo de LPU
+            if (!osId) {
+                lpuContainer.classList.add('d-none');
+                return;
+            }
+
+            try {
+                // Mostra um "carregando" (opcional, mas bom para UX)
+                selectLPU.innerHTML = '<option>Carregando LPUs...</option>';
+                selectLPU.disabled = true;
+                lpuContainer.classList.remove('d-none'); // Mostra o container
+
+                // Busca as LPUs para a OS selecionada
+                const response = await fetch(`http://localhost:8080/os/${osId}/lpus`);
+                if (!response.ok) {
+                    throw new Error('Falha ao buscar LPUs para esta OS.');
+                }
+
+                const lpus = await response.json();
+
+                // Limpa o select e prepara para novas opções
+                selectLPU.innerHTML = '<option value="" selected disabled>Selecione a LPU...</option>';
+
+                if (lpus && lpus.length > 0) {
+                    // Popula o select com as LPUs encontradas
+                    lpus.forEach(lpu => {
+                        // Usamos o formato "CÓDIGO - NOME" para o texto da opção
+                        const option = new Option(`${lpu.codigo} - ${lpu.nome}`, lpu.id);
+                        selectLPU.add(option);
+                    });
+                    selectLPU.disabled = false;
+                } else {
+                    // Caso não encontre nenhuma LPU
+                    selectLPU.innerHTML = '<option value="" disabled>Nenhuma LPU encontrada para esta OS</option>';
+                    selectLPU.disabled = true;
+                }
+
+            } catch (error) {
+                mostrarToast(error.message, 'error');
+                lpuContainer.classList.add('d-none'); // Esconde se der erro
+            }
+        });
+
         async function popularSelect(selectElement, url, valueField, textFieldFormatter) {
             try {
                 const response = await fetch(url);
@@ -406,29 +453,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         async function abrirModalParaEdicao(lancamento, editingId) {
-            // Passo 1: Garante que os dados para todos os selects estejam carregados antes de continuar.
             await carregarDadosParaModal();
-
-            // Passo 2: Prepara o formulário e os botões
             formAdicionar.dataset.editingId = editingId;
 
-            // --- INÍCIO DA LÓGICA DE CONTROLE DE BOTÕES E TÍTULO ---
+            const modalTitle = document.getElementById('modalAdicionarLabel');
             const btnSubmitPadrao = document.getElementById('btnSubmitAdicionar');
             const btnSalvarRascunho = document.getElementById('btnSalvarRascunho');
             const btnSalvarEEnviar = document.getElementById('btnSalvarEEnviar');
 
-            // Esconde todos os botões de ação por padrão
             btnSubmitPadrao.style.display = 'none';
             btnSalvarRascunho.style.display = 'none';
             btnSalvarEEnviar.style.display = 'none';
 
             if (lancamento.situacaoAprovacao === 'RASCUNHO') {
-                // Se for um RASCUNHO, mostra as opções de Salvar ou Salvar e Enviar
                 modalTitle.innerHTML = `<i class="bi bi-pencil"></i> Editar Rascunho #${lancamento.id}`;
                 btnSalvarRascunho.style.display = 'inline-block';
                 btnSalvarEEnviar.style.display = 'inline-block';
             } else {
-                // Se for REJEITADO ou para RETOMAR, mostra o botão de ação padrão
                 btnSubmitPadrao.style.display = 'inline-block';
                 if (editingId) {
                     modalTitle.innerHTML = `<i class="bi bi-pencil-square"></i> Editar Lançamento #${editingId}`;
@@ -438,37 +479,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnSubmitPadrao.innerHTML = `<i class="bi bi-check-circle"></i> Criar Lançamento`;
                 }
             }
-            // --- FIM DA LÓGICA DE CONTROLE DE BOTÕES E TÍTULO ---
 
-            // Trava campos que não podem ser alterados na edição
-            document.getElementById('osId').disabled = true;
-            document.getElementById('dataAtividade').disabled = true;
+            const selectOS = document.getElementById('osId');
+            const selectLPU = document.getElementById('lpuId');
+            selectOS.disabled = true;
 
-            // Passo 3: Preenche todos os campos do formulário com os dados do lançamento
-            document.getElementById('dataAtividade').value = lancamento.dataAtividade || '';
+            const dataAtividadeInput = document.getElementById('dataAtividade');
+            dataAtividadeInput.value = lancamento.dataAtividade || '';
+            dataAtividadeInput.disabled = !!editingId;
+
             document.getElementById('equipe').value = lancamento.equipe || '';
             document.getElementById('detalheDiario').value = lancamento.detalheDiario || '';
             document.getElementById('valor').value = (lancamento.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
             ['vistoria', 'desmobilizacao', 'instalacao', 'ativacao', 'documentacao'].forEach(k => document.getElementById(k).value = lancamento[k] || 'N/A');
-            ['planoVistoria', 'planoDesmobilizacao', 'planoInstalacao', 'planoAtivacao', 'planoDocumentacao'].forEach(k => document.getElementById(k).value = lancamento[k] || '');
+            ['planoVistoria', 'planoDesmobilizacao', 'planoInstalacao', 'planoAtivacao', 'planoDocumentacao'].forEach(k => {
+                if (lancamento[k]) {
+                    // CORREÇÃO: Atribui a data no formato original (DD/MM/AAAA)
+                    document.getElementById(k).value = lancamento[k];
+                }
+            });
 
-            if (lancamento.os) {
+            // --- INÍCIO DA LÓGICA CORRIGIDA ---
+            if (lancamento.os && lancamento.os.id) {
                 selectOS.value = lancamento.os.id;
                 preencherCamposOS(lancamento.os.id);
+
+                // 1. CHAMA E ESPERA A FUNÇÃO DE CARREGAR A LPU TERMINAR
+                await carregarEPopularLPU(lancamento.os.id);
             }
+
+            if (lancamento.lpu && lancamento.lpu.id) {
+                // 2. AGORA, COM CERTEZA A LISTA ESTÁ PRONTA, ENTÃO PREENCHEMOS E TRAVAMOS
+                selectLPU.value = lancamento.lpu.id;
+                selectLPU.disabled = true;
+            }
+            // --- FIM DA LÓGICA CORRIGIDA ---
+
             if (lancamento.prestador) {
-                selectPrestador.value = lancamento.prestador.id;
+                document.getElementById('prestadorId').value = lancamento.prestador.id;
             }
 
             if (lancamento.etapa && lancamento.etapa.id) {
                 const etapaGeralPai = todasAsEtapas.find(eg => eg.etapasDetalhadas.some(ed => ed.id === lancamento.etapa.id));
                 if (etapaGeralPai) {
-                    selectEtapaGeral.value = etapaGeralPai.id;
+                    document.getElementById('etapaGeralSelect').value = etapaGeralPai.id;
                     await popularDropdownsDependentes(etapaGeralPai.id, lancamento.etapa.id);
-                    selectEtapaDetalhada.value = lancamento.etapa.id;
+                    document.getElementById('etapaDetalhadaId').value = lancamento.etapa.id;
                 }
             } else {
-                selectEtapaGeral.value = '';
+                document.getElementById('etapaGeralSelect').value = '';
                 await popularDropdownsDependentes('', null);
             }
 
@@ -486,7 +545,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectSituacao.value = lancamento.situacao || 'Não iniciado';
             }
 
-            // Passo 4: Finalmente, mostra o modal
             const modalEl = document.getElementById('modalAdicionar');
             const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
             modalInstance.show();
@@ -507,11 +565,17 @@ document.addEventListener('DOMContentLoaded', () => {
         modalAdicionarEl.addEventListener('hidden.bs.modal', () => {
             formAdicionar.reset();
             delete formAdicionar.dataset.editingId;
+
+            const selectEtapaDetalhada = document.getElementById('etapaDetalhadaId');
+            const selectStatus = document.getElementById('status');
+
             selectEtapaDetalhada.innerHTML = '<option value="" selected disabled>Primeiro, selecione a etapa geral</option>';
             selectEtapaDetalhada.disabled = true;
             selectStatus.innerHTML = '<option value="" selected disabled>Primeiro, selecione a etapa detalhada</option>';
             selectStatus.disabled = true;
             document.getElementById('osId').disabled = false;
+            document.getElementById('lpuContainer').classList.add('d-none');
+            document.getElementById('lpuId').innerHTML = '';
         });
 
         document.body.addEventListener('click', async (e) => {
@@ -565,6 +629,50 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        async function carregarEPopularLPU(osId) {
+            const lpuContainer = document.getElementById('lpuContainer');
+            const selectLPU = document.getElementById('lpuId');
+
+            if (!osId) {
+                lpuContainer.classList.add('d-none');
+                selectLPU.innerHTML = '';
+                return;
+            }
+
+            try {
+                selectLPU.innerHTML = '<option>Carregando LPUs...</option>';
+                selectLPU.disabled = true;
+                lpuContainer.classList.remove('d-none');
+
+                const response = await fetch(`http://localhost:8080/os/${osId}/lpus`);
+                if (!response.ok) {
+                    throw new Error('Falha ao buscar LPUs para esta OS.');
+                }
+
+                const lpus = await response.json();
+
+                selectLPU.innerHTML = '<option value="" selected disabled>Selecione a LPU...</option>';
+
+                if (lpus && lpus.length > 0) {
+                    lpus.forEach(lpu => {
+                        // --- INÍCIO DA CORREÇÃO ---
+                        // Ajustamos para usar as propriedades corretas: lpu.codigoLpu e lpu.nomeLpu
+                        const option = new Option(`${lpu.codigoLpu} - ${lpu.nomeLpu}`, lpu.id);
+                        // --- FIM DA CORREÇÃO ---
+                        selectLPU.add(option);
+                    });
+                    selectLPU.disabled = false;
+                } else {
+                    selectLPU.innerHTML = '<option value="" disabled>Nenhuma LPU encontrada</option>';
+                    selectLPU.disabled = true;
+                }
+
+            } catch (error) {
+                mostrarToast(error.message, 'error');
+                lpuContainer.classList.add('d-none');
+            }
+        }
+
         function getProjetosParalisados() {
             const ultimosLancamentos = new Map();
             todosLancamentos.forEach(l => {
@@ -579,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             // Filtra para retornar apenas os projetos cujo último lançamento está "Paralisado"
-            return Array.from(ultimosLancamentos.values()).filter(l => l.situacao === 'Paralisado');
+            return Array.from(ultimosLancamentos.values()).filter(l => l.situacao === 'Paralisado' && l.situacaoAprovacao !== 'RASCUNHO');
         }
 
         // Listener para o botão de confirmação final de submissão
@@ -728,20 +836,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalContent;
             }
-
-            modalAdicionarEl.addEventListener('hidden.bs.modal', () => {
-                formAdicionar.reset();
-                delete formAdicionar.dataset.editingId;
-
-                // ... outras limpezas que você já tem
-                selectStatus.disabled = true;
-                document.getElementById('osId').disabled = false;
-
-                // --- INÍCIO DA ADIÇÃO ---
-                document.getElementById('lpuContainer').classList.add('d-none');
-                document.getElementById('lpuId').innerHTML = '';
-                // --- FIM DA ADIÇÃO ---
-            });
         }
 
         // Listener para o botão 'Salvar e Enviar' (de um rascunho)
@@ -757,13 +851,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listener para o botão de submit padrão (usado para Criar Novo e para Reenviar Rejeitado)
         document.getElementById('btnSubmitAdicionar').addEventListener('click', function (e) {
             const editingId = formAdicionar.dataset.editingId;
-            // Se tem um ID, a ação é 'reenviar'. Se não, é 'criar'.
-            handleFormSubmit(editingId ? 'reenviar' : 'criar', e.currentTarget);
+
+            const isEditing = editingId && editingId !== 'null' && editingId !== 'undefined';
+
+            handleFormSubmit(isEditing ? 'reenviar' : 'criar', e.currentTarget);
         });
 
 
 
-        selectOS.addEventListener('change', (e) => preencherCamposOS(e.target.value));
+        selectOS.addEventListener('change', (e) => {
+            carregarEPopularLPU(e.target.value);
+        });
         selectEtapaGeral.addEventListener('change', (e) => popularDropdownsDependentes(e.target.value, null, null));
         selectEtapaDetalhada.addEventListener('change', (e) => {
             const etapaGeralId = selectEtapaGeral.value;
@@ -882,6 +980,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderizarCabecalho(colunasPrincipais, document.querySelector('#pendentes-pane thead'));
         renderizarCabecalho(colunasPrincipais, document.querySelector('#historico-pane thead'));
         renderizarCabecalho(colunasMinhasPendencias, document.querySelector('#minhasPendencias-pane thead'));
+        renderizarCabecalho(colunasMinhasPendencias, document.querySelector('#paralisados-pane thead'));
     }
 
     inicializarCabecalhos();

@@ -75,9 +75,9 @@ function controlarVisibilidadeDasAcoes(filtroAtivo) {
 
     // 1. Array com todos os containers de ação para facilitar a iteração
     const todosOsContainers = [
-        { id: 'acoes-etapas',    filtro: 'etapas',    permissoes: ["COORDINATOR", "ASSISTANT", "ADMIN"] },
+        { id: 'acoes-etapas', filtro: 'etapas', permissoes: ["COORDINATOR", "ASSISTANT", "ADMIN"] },
         { id: 'acoes-prestadores', filtro: 'prestadores', permissoes: ["ADMIN", "ASSISTANT", "CONTROLLER"] },
-        { id: 'acoes-lpu',         filtro: 'lpu',         permissoes: ["ADMIN", "ASSISTANT", "CONTROLLER"] }
+        { id: 'acoes-lpu', filtro: 'lpu', permissoes: ["ADMIN", "ASSISTANT", "CONTROLLER"] }
     ];
 
     // 2. Itera sobre cada container para decidir se ele deve ser mostrado ou escondido
@@ -122,17 +122,30 @@ function formatarStatus(status) {
 }
 
 function formatarBadges(statusArray) {
-    const ordemFixa = ['TRABALHADO', 'TRABALHO_PARCIAL', 'NAO_TRABALHADO'];
+    // Mapeamento que traduz a DESCRIÇÃO (vinda da API) para a cor do badge.
+    const mapaStatus = {
+        "Trabalhado": 'success',
+        "Trabalho Parcial": 'warning', // Corrigido para "Trabalho Parcial"
+        "Não trabalhado": 'danger'    // Corrigido para "Não trabalhado"
+    };
+
+    // Ordem em que os badges devem aparecer na tela, para consistência.
+    const ordemFixa = ['Trabalhado', 'Trabalho Parcial', 'Não trabalhado'];
+
+    if (!Array.isArray(statusArray)) {
+        // Medida de segurança: se 'status' não for um array, não tenta processar.
+        return '';
+    }
+
     return ordemFixa
-        .filter(s => statusArray.includes(s))
-        .map(status => {
-            const cor = {
-                TRABALHADO: 'success',
-                TRABALHO_PARCIAL: 'warning',
-                NAO_TRABALHADO: 'danger'
-            }[status] || 'secondary';
-            return `<span class="badge-status badge-${cor}">${formatarStatus(status)}</span>`;
-        }).join(' ');
+        // 1. Filtra a ordem padrão, mantendo apenas os status que realmente vieram no array da API.
+        .filter(descricao => statusArray.includes(descricao))
+        // 2. Para cada status válido, cria o HTML do badge.
+        .map(descricao => {
+            const cor = mapaStatus[descricao] || 'secondary'; // Pega a cor do mapa ou usa uma cor padrão.
+            return `<span class="badge-status badge-${cor}">${descricao}</span>`;
+        })
+        .join(' '); // 3. Junta todos os HTMLs dos badges em uma única string.
 }
 
 function formatarTitulo(campo) {

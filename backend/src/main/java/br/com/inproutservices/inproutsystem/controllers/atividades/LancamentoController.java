@@ -130,4 +130,12 @@ public class LancamentoController {
         Lancamento lancamento = lancamentoService.reenviarParaAprovacao(id, managerId);
         return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
     }
+
+    @PutMapping("/{id}/rascunho")
+    public ResponseEntity<LancamentoResponseDTO> salvarRascunho(@PathVariable Long id, @RequestBody LancamentoRequestDTO dto) {
+        Lancamento lancamentoSalvo = lancamentoService.salvarComoRascunho(id, dto);
+
+        LancamentoResponseDTO responseDTO = new LancamentoResponseDTO(lancamentoSalvo);
+        return ResponseEntity.ok(responseDTO);
+    }
 }
