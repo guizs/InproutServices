@@ -456,6 +456,20 @@ label.form-label.d-flex {
   color: #664d03 !important;
 }
 
+.modern-table thead th {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid #e2e8e4;
+    position: sticky; /* Mantém o cabeçalho fixo no topo ao rolar */
+    top: 0;
+    z-index: 10;
+}
+
 /* ========================================================== */
 /* ======== ESTILO MODAL DE CONFIRMAÇÃO (PROFISSIONAL) ======== */
 /* ========================================================== */
@@ -504,6 +518,46 @@ label.form-label.d-flex {
   border-top: 1px solid #ddd;
 }
 
+/* ======================================== */
+/* ======== CORES DOS CARDS DO DASHBOARD ======== */
+/* ======================================== */
+
+/* Cor Padrão (Azulada/Secundária) */
+.card-stat.card-planejamento {
+  background-color: var(--card-secondary) !important;
+  border-left: 5px solid #889ca3;
+}
+
+/* Cor de Alerta (Amarela) */
+.card-stat.card-alerta {
+  background-color: var(--card-warning) !important;
+  border-left: 5px solid #d1b154;
+}
+
+/* Cor de Perigo/Ação Urgente (Laranja/Vermelho do seu root) */
+.card-stat.card-perigo {
+  background-color: #ffab91 !important; /* Um tom de laranja/vermelho claro */
+  border-left: 5px solid var(--bs-orange);
+}
+.card-stat.card-perigo p,
+.card-stat.card-perigo h5 {
+    color: #b95000 !important;
+    font-weight: 600;
+}
+
+
+/* Cor de Sucesso (Verde) */
+.card-stat.card-sucesso {
+  background-color: var(--card-success) !important;
+  border-left: 5px solid #6b9b6d;
+}
+
+/* Cor de Informação (Azul do seu tema) */
+.card-stat.card-info {
+    background-color: #bbdefb !important; /* Um azul claro para diferenciar */
+    border-left: 5px solid #64b5f6;
+}
+
 @media (max-width: 768px) {
   .overview-banner h1 {
     font-size: 1rem;
@@ -548,5 +602,39 @@ label.form-label.d-flex {
   .btn-dropdown {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* ======== ESTILOS RESPONSIVOS PARA O DROPDOWN DE FILTROS ======== */
+
+.filtros-dropdown {
+  width: 550px; /* Largura padrão para telas maiores */
+  max-width: 90vw; /* Garante que não ultrapasse a largura da tela */
+}
+
+.filtros-dropdown .dropdown-item {
+  flex: 1 1 45%; /* Permite que os botões de período ocupem o espaço */
+}
+
+/* Para telas de tablet e menores (abaixo de 768px) */
+@media (max-width: 768px) {
+  .filtros-dropdown {
+    width: 320px; /* Uma largura mais adequada para telas menores */
+  }
+
+  /* Faz com que as seções de Status e OS fiquem uma em cima da outra */
+  .filtros-dropdown li.d-flex {
+    flex-direction: column;
+  }
+}
+
+/* Para telas de celular (abaixo de 400px) */
+@media (max-width: 400px) {
+  .filtros-dropdown {
+    width: 90vw; /* Ocupa quase toda a largura da tela */
+  }
+
+  .filtros-dropdown .dropdown-item {
+    flex-basis: 100%; /* Um botão por linha */
   }
 }

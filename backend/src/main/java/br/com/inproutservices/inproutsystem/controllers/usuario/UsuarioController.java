@@ -105,6 +105,7 @@ public class UsuarioController {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             if (encoder.matches(loginRequest.getSenha(), usuario.getSenha())) {
                 Map<String, Object> response = new HashMap<>();
+                response.put("id", usuario.getId());
                 response.put("token", UUID.randomUUID().toString());
                 response.put("usuario", usuario.getNome());
                 response.put("email", usuario.getEmail());

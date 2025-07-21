@@ -31,6 +31,7 @@ function mostrarMensagem(texto, tipo = 'success') {
         const data = await response.json();
 
         localStorage.setItem('token', data.token);
+        localStorage.setItem('usuarioId', data.id);
         localStorage.setItem('usuario', data.usuario);
         localStorage.setItem('email', data.email);
         localStorage.setItem('role', data.role);

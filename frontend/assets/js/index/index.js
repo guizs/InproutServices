@@ -54,6 +54,57 @@ document.addEventListener('DOMContentLoaded', () => {
         theadElement.appendChild(tr);
     }
 
+    function renderizarCardsDashboard(lancamentos) {
+        // --- LÓGICA GERAL ---
+        const hoje = new Date().toLocaleDateString('pt-BR'); // Formato "dd/MM/yyyy"
+        const statusPendenteAprovacao = ['PENDENTE_COORDENADOR', 'AGUARDANDO_EXTENSAO_PRAZO', 'PENDENTE_CONTROLLER'];
+        const statusRecusado = ['RECUSADO_COORDENADOR', 'RECUSADO_CONTROLLER'];
+
+        // --- CÁLCULO DOS CARDS ---
+
+        // 1. Lançamentos para Hoje: Rascunhos cuja data da atividade é hoje.
+        const totalLancamentosHoje = lancamentos.filter(l =>
+            l.situacaoAprovacao === 'RASCUNHO' && l.dataAtividade === hoje
+        ).length;
+
+        // 2. Aguardando Aprovação
+        const totalPendentesAprovacao = lancamentos.filter(l =>
+            statusPendenteAprovacao.includes(l.situacaoAprovacao)
+        ).length;
+
+        // 3. Recusados para Correção
+        const totalRecusados = lancamentos.filter(l =>
+            statusRecusado.includes(l.situacaoAprovacao)
+        ).length;
+
+        // 4. Projetos em Andamento: Contagem de projetos únicos (OS+LPU) cujo último status NÃO é Paralisado ou Finalizado.
+        const projetosAtivos = new Set();
+        lancamentos.forEach(l => {
+            if (l.situacao !== 'Paralisado' && l.situacao !== 'Finalizado') {
+                const chaveProjeto = `${l.os.id}-${l.lpu.id}`;
+                projetosAtivos.add(chaveProjeto);
+            }
+        });
+        const totalEmAndamento = projetosAtivos.size;
+
+        // 5. Projetos Paralisados: Reutiliza a função que já existe.
+        const totalParalisadas = getProjetosParalisados().length;
+
+        // 6. Finalizados Hoje: Lançamentos com situação "Finalizado" e data da atividade de hoje.
+        const totalFinalizadasHoje = lancamentos.filter(l =>
+            l.situacao === 'Finalizado' && l.dataAtividade === hoje
+        ).length;
+
+
+        // --- ATUALIZAÇÃO DO HTML ---
+        document.getElementById('card-lancamentos-hoje').textContent = totalLancamentosHoje;
+        document.getElementById('card-pendentes-aprovacao').textContent = totalPendentesAprovacao;
+        document.getElementById('card-recusados').textContent = totalRecusados;
+        document.getElementById('card-em-andamento').textContent = totalEmAndamento;
+        document.getElementById('card-paralisadas').textContent = totalParalisadas;
+        document.getElementById('card-finalizadas-hoje').textContent = totalFinalizadasHoje;
+    }
+
     function aplicarEstiloStatus(cell, statusText) {
         if (!statusText) return;
         cell.classList.add('status-cell');
@@ -176,7 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
 
             todosLancamentos = await response.json();
-            // Após buscar os dados com sucesso, chama a função para renderizar tudo
+
+            // ADICIONE A CHAMADA DA NOVA FUNÇÃO AQUI!
+            renderizarCardsDashboard(todosLancamentos);
             popularFiltroOS();
             renderizarTodasAsTabelas();
         } catch (error) {
