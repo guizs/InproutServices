@@ -53,6 +53,11 @@ public class OS {
     private Integer quantidade;
     private BigDecimal valorTotal;
     private String observacoes;
+
+    // --- CAMPO ADICIONADO ---
+    @Column(name = "custo_total_materiais", precision = 10, scale = 2)
+    private BigDecimal custoTotalMateriais;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dataPo;
 
@@ -78,6 +83,19 @@ public class OS {
     private String usuarioCriacao;
     private String usuarioAtualizacao;
     private String statusRegistro;
+
+    // --- GETTERS E SETTERS ---
+
+    // ... (todos os getters e setters existentes) ...
+
+    // --- MÉTODOS ADICIONADOS ---
+    public BigDecimal getCustoTotalMateriais() {
+        return custoTotalMateriais;
+    }
+
+    public void setCustoTotalMateriais(BigDecimal custoTotalMateriais) {
+        this.custoTotalMateriais = custoTotalMateriais;
+    }
 
     public Long getId() {
         return id;

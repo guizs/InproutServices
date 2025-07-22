@@ -1,5 +1,6 @@
 package br.com.inproutservices.inproutsystem.controllers.materiais;
 
+import br.com.inproutservices.inproutsystem.dtos.materiais.EntradaMaterialDTO;
 import br.com.inproutservices.inproutsystem.dtos.materiais.MaterialRequestDTO;
 import br.com.inproutservices.inproutsystem.dtos.materiais.MaterialResponseDTO;
 import br.com.inproutservices.inproutsystem.entities.materiais.Material;
@@ -32,7 +33,6 @@ public class MaterialController {
         return ResponseEntity.ok(list);
     }
 
-    // Endpoint de Busca por ID (já existia)
     @GetMapping("/{id}")
     public ResponseEntity<MaterialResponseDTO> buscarMaterialPorId(@PathVariable Long id) {
         MaterialResponseDTO dto = new MaterialResponseDTO(materialService.buscarPorId(id));
@@ -47,9 +47,9 @@ public class MaterialController {
         return ResponseEntity.created(location).body(new MaterialResponseDTO(novoMaterial));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<MaterialResponseDTO> atualizarMaterial(@PathVariable Long id, @RequestBody MaterialRequestDTO dto) {
-        Material materialAtualizado = materialService.atualizarMaterial(id, dto);
+    @PostMapping("/entradas")
+    public ResponseEntity<MaterialResponseDTO> adicionarEntrada(@RequestBody EntradaMaterialDTO dto) {
+        Material materialAtualizado = materialService.adicionarEntrada(dto);
         return ResponseEntity.ok(new MaterialResponseDTO(materialAtualizado));
     }
 

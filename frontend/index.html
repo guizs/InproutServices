@@ -329,6 +329,98 @@
 
   </div>
 
+  <div class="modal fade" id="modalSolicitarMaterial" tabindex="-1" aria-labelledby="modalSolicitarMaterialLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalSolicitarMaterialLabel">
+            <i class="bi bi-box-seam me-2"></i> Nova solicitação de material
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+
+        <div class="modal-body">
+          <form id="formSolicitarMaterial">
+
+            <h6 class="section-title">Dados da Solicitação</h6>
+            <div class="row g-3 mb-3">
+
+              <div class="col-md-6">
+                <label for="osSolicitacao" class="form-label">Ordem de <s></s>erviço (OS)</label>
+                <select class="form-select" id="osSolicitacao">
+                  <option selected disabled value="">Selecione a OS...</option>
+                  <option value="1">OS-2025-001</option>
+                  <option value="2">OS-2025-002</option>
+                  <option value="3">OS-2025-003</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="lpuSolicitacao" class="form-label">LPU</label>
+                <select class="form-select" id="lpuSolicitacao">
+                  <option selected disabled value="">Selecione a LPU...</option>
+                  <option value="1">LPU-SP-CAPITAL-01</option>
+                  <option value="2">LPU-RJ-CAPITAL-05</option>
+                  <option value="3">LPU-MG-INTERIOR-12</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label for="justificativaSolicitacao" class="form-label">
+                  Justificativa <small class="text-muted ms-1">(Opcional)</small>
+                </label>
+                <textarea class="form-control" id="justificativaSolicitacao" rows="2"
+                  placeholder="Ex: Material necessário para instalação, está em falta."></textarea>
+              </div>
+            </div>
+
+            <div class="itens-container bg-light border rounded p-3 mt-4">
+              <h6 class="section-title mt-0">Itens</h6>
+              <div id="listaItens">
+                <div class="row g-2 align-items-center mb-2 item-row">
+                  <div class="col-md">
+                    <label class="form-label visually-hidden">Material</label>
+                    <select class="form-select material-select" required>
+                      <option selected disabled value="">Selecione o material...</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label visually-hidden">Quantidade</label>
+                    <input type="number" class="form-control quantidade-input" placeholder="Qtde." min="1" value="1"
+                      required>
+                  </div>
+                  <div class="col-md-auto">
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-remover-item" title="Remover Item"
+                      disabled>
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button type="button" id="btnAdicionarItem" class="btn btn-outline-primary btn-sm mt-2">
+                <i class="bi bi-plus-circle me-1"></i> Adicionar Novo Item
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" id="btnEnviarSolicitacao" form="formSolicitarMaterial" class="btn btn-success">
+            <i class="bi bi-send me-1"></i> Enviar Solicitação
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <div class="modal fade" id="modalComentarios" tabindex="-1" aria-labelledby="modalComentariosLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -579,99 +671,6 @@
             <i class="bi bi-send-check"></i> Sim, Enviar
           </button>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="modalSolicitarMaterial" tabindex="-1" aria-labelledby="modalSolicitarMaterialLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalSolicitarMaterialLabel">
-            <i class="bi bi-box-seam me-2"></i> Nova solicitação de material
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-
-        <div class="modal-body">
-          <form id="formSolicitarMaterial">
-
-            <h6 class="section-title">Dados da Solicitação</h6>
-            <div class="row g-3 mb-3">
-
-              <div class="col-md-6">
-                <label for="osSolicitacao" class="form-label">Ordem de <s></s>erviço (OS)</label>
-                <select class="form-select" id="osSolicitacao">
-                  <option selected disabled value="">Selecione a OS...</option>
-                  <option value="1">OS-2025-001</option>
-                  <option value="2">OS-2025-002</option>
-                  <option value="3">OS-2025-003</option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label for="lpuSolicitacao" class="form-label">LPU</label>
-                <select class="form-select" id="lpuSolicitacao">
-                  <option selected disabled value="">Selecione a LPU...</option>
-                  <option value="1">LPU-SP-CAPITAL-01</option>
-                  <option value="2">LPU-RJ-CAPITAL-05</option>
-                  <option value="3">LPU-MG-INTERIOR-12</option>
-                </select>
-              </div>
-
-              <div class="col-12">
-                <label for="justificativaSolicitacao" class="form-label">
-                  Justificativa <small class="text-muted ms-1">(Opcional)</small>
-                </label>
-                <textarea class="form-control" id="justificativaSolicitacao" rows="2"
-                  placeholder="Ex: Material necessário para instalação, está em falta."></textarea>
-              </div>
-            </div>
-
-            <div class="itens-container bg-light border rounded p-3 mt-4">
-              <h6 class="section-title mt-0">Itens</h6>
-              <div id="listaItens">
-                <div class="row g-2 align-items-center mb-2 item-row">
-                  <div class="col-md">
-                    <label class="form-label visually-hidden">Código do Material</label>
-                    <select class="form-select">
-                      <option selected disabled>Selecione o código do material...</option>
-                      <option value="RAYSA">RAYSA - Cabo de Rede</option>
-                      <option value="JQUEIROZ">JQUEIROZ - Conector RJ45</option>
-                      <option value="OUTRO">OUTRO - Outro Material</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label visually-hidden">Quantidade</label>
-                    <input type="number" class="form-control" placeholder="Qtde." min="1" value="1">
-                  </div>
-                  <div class="col-md-auto">
-                    <button type="button" class="btn btn-outline-danger btn-sm" title="Remover Item">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <button type="button" id="btnAdicionarItem" class="btn btn-outline-primary btn-sm mt-2">
-                <i class="bi bi-plus-circle me-1"></i> Adicionar Novo Item
-              </button>
-            </div>
-
-          </form>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-1"></i> Cancelar
-          </button>
-          <button type="submit" form="formSolicitarMaterial" class="btn btn-success">
-            <i class="bi bi-send me-1"></i> Enviar Solicitação
-          </button>
-        </div>
-
       </div>
     </div>
   </div>

@@ -158,6 +158,12 @@ body {
     background-color: #e6f3ec;
 }
 
+.tab-pane .table-responsive,
+.tab-pane .modern-table {
+    min-width: 100% !important;
+    max-width: none !important;
+}
+
 /* =================================================================== */
 /* ============= ESTILOS RESPONSIVOS (MOBILE) ============= */
 /* Bloco inteiro é específico para o layout de cards desta página

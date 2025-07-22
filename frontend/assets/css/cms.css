@@ -1,78 +1,80 @@
 /* ===============================================
- * ESTILOS GERAIS DA PÁGINA (NAVEGAÇÃO POR ABAS)
+ * ESTILOS GERAIS DA PÁGINA
  * =============================================== */
 
-.nav-tabs {
-    border-bottom: 1px solid #dee2e6;
+.bloco-etapas-header {
+  padding: 1rem 1.5rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8e4;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.03);
 }
 
-.nav-tabs .nav-link {
-    border: none;
-    border-bottom: 3px solid transparent;
-    color: #6c757d;
-    font-weight: 500;
-    transition: all 0.2s ease-in-out;
-    padding-bottom: 0.75rem;
-    margin-bottom: -2px;
+.titulo-etapas {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #4a665a;
+  margin: 0;
 }
 
-.nav-tabs .nav-link:hover:not(.active) {
-    border-bottom-color: #e9ecef;
-    color: #343a40;
+.btn-adicionar-etapa {
+  font-size: 0.9rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
-.nav-tabs .nav-link.active,
-.nav-tabs .nav-item.show .nav-link {
-    border-bottom: 3px solid var(--inprout-green-dark);
-    background-color: transparent;
-    color: var(--inprout-green-dark);
-    font-weight: 600;
+.btn-outline--success {
+  --btn-color-borda: #4cae8c;
+  --btn-color-fundo-hover: #4cae8c;
+  --btn-color-texto-hover: white;
+  background-color: transparent;
+  border: 1px solid var(--btn-color-borda);
+  color: var(--btn-color-borda);
 }
 
-.tab-content {
-    padding-top: 0.2rem;
+.btn-outline--success:hover {
+  background-color: var(--btn-color-fundo-hover);
+  color: var(--btn-color-texto-hover);
 }
 
 
 /* ================================================================== */
-/* ====== ESTILOS PARA A TABELA GERAL (.MODERN-TABLE) ====== */
+/* ====== ESTILOS PARA A TABELA E SEUS COMPONENTES ====== */
 /* ================================================================== */
 
-/* Wrapper para criar a rolagem da tabela (Funcionalidade do cms.css) */
-.table-scroll-container {
-    max-height: 220px;
+.table-responsive.custom-scroll {
+    max-height: calc(100vh - 250px);
     overflow-y: auto;
     position: relative;
     border: 1px solid #ccc;
-    /* Borda externa para o container */
     border-radius: 12px;
     background-color: #fff;
 }
 
-
-/* Estilo da barra de rolagem (Funcionalidade do cms.css) */
-.table-scroll-container::-webkit-scrollbar {
+.table-responsive.custom-scroll::-webkit-scrollbar {
     width: 8px;
 }
 
-.table-scroll-container::-webkit-scrollbar-track {
+.table-responsive.custom-scroll::-webkit-scrollbar-track {
     background: #f0f0f0;
     border-radius: 8px;
 }
 
-.table-scroll-container::-webkit-scrollbar-thumb {
+.table-responsive.custom-scroll::-webkit-scrollbar-thumb {
     background-color: #b8d8c5;
     border-radius: 8px;
 }
 
-/* ESTILO BASE DA TABELA (Aparência do indexDB.css) */
 .modern-table {
     width: 100%;
     border-collapse: collapse;
-    /* MUDANÇA PRINCIPAL */
 }
 
-/* CABEÇALHO (Aparência do indexDB.css + Funcionalidade do cms.css) */
 .modern-table thead th {
     background-color: var(--primary-color);
     color: var(--text-color);
@@ -81,188 +83,52 @@
     font-size: 0.85rem;
     padding: 0.75rem 1rem;
     text-align: left;
-    /* Ajustado para melhor leitura */
     border-bottom: 1px solid #e2e8e4;
-    /* --- FUNCIONALIDADE MANTIDA: Cabeçalho fixo --- */
     position: sticky;
-    /* Faz o elemento "grudar" */
     top: 0;
-    /* Define que ele vai grudar no topo (distância 0) */
     z-index: 10;
 }
 
-/* CORPO DA TABELA (Aparência do indexDB.css) */
 .modern-table tbody td {
     border: none;
-    /* Resetado para o estilo novo */
     color: #444;
     padding: 0.85rem 1rem;
-    /* Padding ajustado */
     border-top: 1px solid #ececec;
     text-align: left;
-    /* Ajustado para melhor leitura */
     vertical-align: middle;
 }
 
-/* Efeito de linhas alternadas */
 .modern-table tbody tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-/* Efeito de hover */
 .modern-table tbody tr:hover {
     background-color: #e6f3ec;
-    transform: none;
-    /* Remove o efeito de levantar */
-    box-shadow: none;
-    /* Remove a sombra */
-    cursor: pointer;
 }
 
-/* --- FUNCIONALIDADES MANTIDAS (do cms.css original) --- */
-
-/* Destaque para estoque insuficiente */
-.modern-table tbody tr.estoque-insuficiente {
-    background-color: var(--bs-danger-bg-subtle) !important;
-    color: var(--bs-danger-text-emphasis) !important;
-}
-
-.modern-table tbody tr.estoque-insuficiente:hover {
-    background-color: #f6c8cb !important;
-}
-
-.modern-table tbody tr.estoque-insuficiente .stock-quantity,
-.modern-table tbody tr.estoque-insuficiente .stock-unit {
-    color: inherit;
-}
-
-/* Estilo da célula de quantidade */
-.stock-cell .stock-quantity {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--bs-body-color);
-    margin-right: 6px;
-}
-
-.stock-cell .stock-unit {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--bs-secondary-color);
-    text-transform: uppercase;
-}
-
-/* Centraliza o texto onde for necessário */
 .modern-table .text-center {
     text-align: center !important;
 }
 
 
 /* ================================================================== */
-/* ======== MELHORIA NO MODAL DE DETALHES DO HISTÓRICO =========== */
+/* ====== CORREÇÃO DE LARGURA DA TABELA ====== */
 /* ================================================================== */
-/* (Esta seção continua a mesma, pois é específica do modal) */
 
-#modalHistoricoDetalhes .detalhes-secao {
-    margin-bottom: 1.5rem;
-}
-
-#modalHistoricoDetalhes .detalhes-titulo-secao {
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--bs-secondary-color);
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--bs-border-color-translucent);
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-#modalHistoricoDetalhes .info-block {
-    background-color: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color-translucent);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-
-#modalHistoricoDetalhes .info-block .info-label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-    text-transform: uppercase;
-    margin-bottom: 0.25rem;
-}
-
-#modalHistoricoDetalhes .info-block .info-value {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--bs-body-color);
-}
-
-#modalHistoricoDetalhes .list-group-item {
-    background-color: transparent;
-    padding-left: 0;
-    border-color: var(--bs-border-color-translucent);
-}
-
-#modalHistoricoDetalhes .item-solicitado-detalhe {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-}
-
-#modalHistoricoDetalhes .item-quantity-display {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background-color: var(--bs-light-bg-subtle);
-    border: 1px solid var(--bs-border-color-translucent);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-#modalHistoricoDetalhes .item-quantity-display .valor {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--bs-primary);
-    line-height: 1.2;
-}
-
-#modalHistoricoDetalhes .item-quantity-display .unidade {
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    color: var(--bs-secondary-color);
-}
-
-#modalHistoricoDetalhes .item-description-display {
-    display: flex;
-    flex-direction: column;
-}
-
-#modalHistoricoDetalhes .item-description-display .nome {
-    font-weight: 500;
-}
-
-#modalHistoricoDetalhes .item-description-display .codigo {
-    font-size: 0.8rem;
-    color: var(--bs-secondary-color);
+/* Garante que a tabela e seu container usem 100% da largura disponível, 
+   removendo qualquer min-width ou max-width de outros arquivos CSS. */
+.table-responsive,
+.modern-table {
+    min-width: 100% !important;
+    max-width: none !important;
 }
 
 
 /* ================================================================== */
 /* ====== ESTILOS RESPONSIVOS PARA DISPOSITIVOS MÓVEIS (<= 768px) ====== */
 /* ================================================================== */
-/* (Funcionalidade mantida do cms.css para a melhor experiência mobile) */
 
 @media (max-width: 768px) {
-
     .modern-table thead {
         display: none;
     }
@@ -278,10 +144,8 @@
         margin-bottom: 1rem;
         border: 1px solid var(--bs-border-color-translucent);
         border-radius: 0.5rem;
-        /* Adicionado para arredondar os cards */
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         background-color: #fff !important;
-        /* Força o fundo branco no mobile */
     }
 
     .modern-table td {
@@ -293,7 +157,6 @@
 
     .modern-table tr td:first-child {
         border-top: none !important;
-        /* Remove a borda de cima do primeiro item */
     }
 
     .modern-table td:last-child {
@@ -315,65 +178,4 @@
     .modern-table .text-center {
         text-align: right !important;
     }
-}
-
-/* ================================================================== */
-/* ============= AJUSTES FINOS DE ESPAÇAMENTO ============= */
-/* ================================================================== */
-#solicitacoes-pane .table-scroll-container {
-    margin-bottom: 0.5rem !important;
-}
-
-/* ================================================================== */
-/* ============= ESTILO DO BOTÃO DE FILTRO ============= */
-/* ================================================================== */
-.btn-dropdown {
-    /* Layout e fonte */
-    font-size: 0.9rem;
-    padding: 0.5rem 1.25rem;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    /* justify-content: center;  << REMOVIDO */
-    font-weight: 500;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-    /* gap: 0.5rem; << REMOVIDO */
-
-    /* Cores (baseado no estilo --success do indexDB.css) */
-    background-color: transparent;
-    color: #4cae8c;
-    border: 1px solid #4cae8c;
-}
-
-.btn-dropdown:hover {
-    background-color: #4cae8c;
-    color: white;
-    border-color: #4cae8c;
-}
-
-/* ================================================================== */
-/* =========== ESTILO DO BOTÃO DE CADASTRO DE MATERIAL ============ */
-/* ================================================================== */
-.btn-fill-success-custom {
-    font-size: 0.9rem;
-    padding: 0.5rem 1.25rem;
-    border-radius: 12px;
-    font-weight: 500;
-    background-color: var(--inprout-green-dark, #2a8a65); /* Cor de preenchimento verde */
-    color: white; /* Texto branco para contraste */
-    border: none; /* Remove a borda padrão */
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
-    cursor: pointer;
-}
-
-.btn-fill-success-custom:hover {
-    background-color: #237456; /* Tom de verde um pouco mais escuro no hover */
-    color: white;
-}
-
-.btn-fill-success-custom:active {
-    transform: scale(0.98); /* Efeito de clique sutil */
-    box-shadow: none;
 }

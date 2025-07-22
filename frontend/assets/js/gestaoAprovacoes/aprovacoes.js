@@ -6,6 +6,8 @@ const modalComentar = document.getElementById('modalComentarPrazo') ? new bootst
 const modalEditar = document.getElementById('modalEditarLancamento') ? new bootstrap.Modal(document.getElementById('modalEditarLancamento')) : null;
 const modalRecusar = document.getElementById('modalRecusarLancamento') ? new bootstrap.Modal(document.getElementById('modalRecusarLancamento')) : null;
 const modalComentarios = document.getElementById('modalComentarios') ? new bootstrap.Modal(document.getElementById('modalComentarios')) : null;
+const modalAprovarMaterial = document.getElementById('modalAprovarMaterial') ? new bootstrap.Modal(document.getElementById('modalAprovarMaterial')) : null;
+const modalRecusarMaterial = document.getElementById('modalRecusarMaterial') ? new bootstrap.Modal(document.getElementById('modalRecusarMaterial')) : null;
 let todosOsLancamentosGlobais = [];
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -38,6 +40,23 @@ function toggleLoader(ativo = true) {
             overlay.classList.add("d-none");
         }
     }
+}
+
+function aprovarMaterial(id) {
+    if (!modalAprovarMaterial) return;
+    // Armazena o ID no botão de confirmação do novo modal
+    const btnConfirmar = document.getElementById('btnConfirmarAprovacaoMaterial');
+    btnConfirmar.dataset.id = id;
+    modalAprovarMaterial.show();
+}
+
+function recusarMaterial(id) {
+    if (!modalRecusarMaterial) return;
+    // Armazena o ID no formulário do novo modal
+    const form = document.getElementById('formRecusarMaterial');
+    form.dataset.id = id;
+    form.reset();
+    modalRecusarMaterial.show();
 }
 
 function verComentarios(id) {
@@ -139,6 +158,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const userId = localStorage.getItem('usuarioId');
     const theadHistorico = document.getElementById('thead-historico');
     const tbodyHistorico = document.getElementById('tbody-historico');
+    const tbodyPendentesMateriais = document.getElementById('tbody-pendentes-materiais');
+    const tbodyHistoricoMateriais = document.getElementById('tbody-historico-materiais');
 
     const campoNovaData = document.getElementById('novaDataProposta');
     if (campoNovaData) {
@@ -378,8 +399,203 @@ document.addEventListener('DOMContentLoaded', function () {
         dashboardContainer.innerHTML = cardsHtml;
     }
 
+    async function carregarDadosMateriais() {
+        // Só executa se os elementos da tabela de materiais existirem na página
+        if (!document.getElementById('tbody-pendentes-materiais')) return;
 
-    async function carregarDados() {
+        try {
+            // Passa o perfil do usuário no cabeçalho para o backend saber quais pendências retornar
+            const pendentesResponse = await fetch(`${API_BASE_URL}/solicitacoes/pendentes`, {
+                headers: { 'X-User-Role': userRole }
+            });
+            const historicoResponse = await fetch(`${API_BASE_URL}/solicitacoes/historico`);
+
+            if (!pendentesResponse.ok || !historicoResponse.ok) {
+                throw new Error('Falha ao carregar solicitações de materiais.');
+            }
+
+            const pendentes = await pendentesResponse.json();
+            const historico = await historicoResponse.json();
+
+            // Chama as funções para desenhar as tabelas (vamos criá-las no próximo passo)
+            renderizarTabelaPendentesMateriais(pendentes);
+            renderizarTabelaHistoricoMateriais(historico);
+
+        } catch (error) {
+            console.error("Erro ao carregar dados de materiais:", error);
+            mostrarToast(error.message, 'error');
+        }
+    }
+
+    function renderizarTabelaPendentesMateriais(solicitacoes) {
+        const tbody = tbodyPendentesMateriais;
+        if (!tbody) return;
+
+        const thead = tbody.previousElementSibling;
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+
+        // Define as colunas com base no perfil do usuário
+        let colunasHtml = `
+        <th>Ações</th>
+        <th>Data Solicitação</th>
+        <th>Solicitante</th>
+        <th>OS</th>
+        <th>LPU</th>
+        <th>Item Solicitado</th>
+        <th class="text-center">Unidade</th>
+        <th class="text-center">Qtd. Solicitada</th>
+        <th class="text-center">Qtd. em Estoque</th>
+        <th>Justificativa</th>
+    `;
+        if (userRole === 'CONTROLLER') {
+            colunasHtml += '<th>Status</th>';
+        }
+        thead.innerHTML = `<tr>${colunasHtml}</tr>`;
+
+        // Ajusta o colspan para a mensagem de "nenhuma pendência"
+        const colspan = userRole === 'CONTROLLER' ? 11 : 10;
+        if (!solicitacoes || solicitacoes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-center text-muted">Nenhuma pendência de material.</td></tr>`;
+            return;
+        }
+
+        solicitacoes.forEach(s => {
+            const item = s.itens[0];
+            if (!item) return;
+
+            const tr = document.createElement('tr');
+
+            let acoesHtml = '';
+            let statusHtml = '';
+
+            if (userRole === 'CONTROLLER') {
+                if (s.status === 'PENDENTE_CONTROLLER') {
+                    // Se a pendência está com o Controller, mostra os botões de ação
+                    acoesHtml = `
+                    <button class="btn btn-sm btn-outline-success" title="Aprovar" onclick="aprovarMaterial(${s.id})"><i class="bi bi-check-lg"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" title="Recusar" onclick="recusarMaterial(${s.id})"><i class="bi bi-x-lg"></i></button>`;
+                    statusHtml = `<span class="badge rounded-pill text-bg-warning">PENDENTE CONTROLLER</span>`;
+                } else {
+                    // Se está com o Coordenador, não mostra nenhuma ação
+                    acoesHtml = `—`; // Um traço para indicar que não há ação
+                    statusHtml = `<span class="badge rounded-pill text-bg-info">PENDENTE COORDENADOR</span>`;
+                }
+            } else { // Lógica para o Coordenador
+                acoesHtml = `
+                <button class="btn btn-sm btn-outline-success" title="Aprovar" onclick="aprovarMaterial(${s.id})"><i class="bi bi-check-lg"></i></button>
+                <button class="btn btn-sm btn-outline-danger" title="Recusar" onclick="recusarMaterial(${s.id})"><i class="bi bi-x-lg"></i></button>`;
+            }
+
+            tr.innerHTML = `
+            <td data-label="Ações" class="text-center">${acoesHtml}</td>
+            <td data-label="Data">${new Date(s.dataSolicitacao).toLocaleString('pt-BR')}</td>
+            <td data-label="Solicitante">${s.nomeSolicitante || 'N/A'}</td>
+            <td data-label="OS">${s.os.os}</td>
+            <td data-label="LPU">${s.lpu.codigoLpu}</td>
+            <td data-label="Item Solicitado">${item.material.descricao}</td>
+            <td data-label="Unidade" class="text-center">${item.material.unidadeMedida}</td>
+            <td data-label="Qtd. Solicitada" class="text-center">${item.quantidadeSolicitada}</td>
+            <td data-label="Qtd. em Estoque" class="text-center">${item.material.saldoFisico}</td>
+            <td data-label="Justificativa">${s.justificativa || ''}</td>
+            ${userRole === 'CONTROLLER' ? `<td data-label="Status">${statusHtml}</td>` : ''}
+        `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderizarTabelaHistoricoMateriais(solicitacoes) {
+        const tbody = tbodyHistoricoMateriais;
+        if (!tbody) return;
+
+        const thead = tbody.previousElementSibling;
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+
+        // Novas colunas, alinhadas com a tabela de pendências + colunas de histórico
+        thead.innerHTML = `
+        <tr>
+            <th>Data Ação</th>
+            <th>Status</th>
+            <th>Data Solicitação</th>
+            <th>Solicitante</th>
+            <th>OS</th>
+            <th>LPU</th>
+            <th>Item Solicitado</th>
+            <th class="text-center">Unidade</th>
+            <th class="text-center">Qtd. Solicitada</th>
+            <th>Aprovador</th>
+            <th>Motivo Recusa</th>
+        </tr>
+   `;
+
+        if (!solicitacoes || solicitacoes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted">Nenhum histórico encontrado.</td></tr>`;
+            return;
+        }
+
+        // Ordena as solicitações pela data da ação, da mais recente para a mais antiga
+        solicitacoes.sort((a, b) => {
+            const dateA = new Date(a.dataAcaoController || a.dataAcaoCoordenador);
+            const dateB = new Date(b.dataAcaoController || b.dataAcaoCoordenador);
+            return dateB - dateA;
+        });
+
+        solicitacoes.forEach(s => {
+            const item = s.itens[0];
+            if (!item) return;
+
+            const tr = document.createElement('tr');
+
+            // Formata o badge de status (APROVADA ou REJEITADA)
+            const statusBadge = s.status === 'APROVADA'
+                ? `<span class="badge bg-success">${s.status}</span>`
+                : `<span class="badge bg-danger">${s.status}</span>`;
+
+            // Determina qual aprovador e qual data de ação mostrar
+            const dataAcao = s.dataAcaoController || s.dataAcaoCoordenador;
+            const nomeAprovador = s.nomeAprovadorController || s.nomeAprovadorCoordenador;
+
+            tr.innerHTML = `
+            <td data-label="Data Ação">${new Date(dataAcao).toLocaleString('pt-BR')}</td>
+            <td data-label="Status">${statusBadge}</td>
+            <td data-label="Data Solicitação">${new Date(s.dataSolicitacao).toLocaleString('pt-BR')}</td>
+            <td data-label="Solicitante">${s.nomeSolicitante || 'N/A'}</td>
+            <td data-label="OS">${s.os.os}</td>
+            <td data-label="LPU">${s.lpu.codigoLpu}</td>
+            <td data-label="Item Solicitado">${item.material.descricao}</td>
+            <td data-label="Unidade" class="text-center">${item.material.unidadeMedida}</td>
+            <td data-label="Qtd. Solicitada" class="text-center">${item.quantidadeSolicitada}</td>
+            <td data-label="Aprovador">${nomeAprovador || 'N/A'}</td>
+            <td data-label="Motivo Recusa">${s.motivoRecusa || '—'}</td>
+       `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function aprovarMaterial(id) {
+        // Reutiliza o modal de aprovação de atividades, mas com um texto diferente
+        if (!modalAprovar) return;
+        document.getElementById('aprovarLancamentoId').value = id;
+        modalAprovar._element.querySelector('.modal-body p').textContent = 'Você tem certeza que deseja aprovar esta solicitação de material?';
+
+        // Adiciona um atributo para sabermos o que estamos aprovando
+        document.getElementById('btnConfirmarAprovacao').dataset.tipo = 'material';
+        modalAprovar.show();
+    }
+
+    function recusarMaterial(id) {
+        // Reutiliza o modal de recusa de atividades
+        if (!modalRecusar) return;
+        document.getElementById('recusarLancamentoId').value = id;
+        document.getElementById('formRecusarLancamento').reset();
+
+        // Adiciona um atributo para sabermos o que estamos recusando
+        document.getElementById('btnConfirmarRecusa').dataset.tipo = 'material';
+        modalRecusar.show();
+    }
+
+    async function carregarDadosAtividades() {
         toggleLoader(true);
         try {
             const response = await fetch(`${API_BASE_URL}/lancamentos`);
@@ -526,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             mostrarToast(`Ação de aprovação realizada com sucesso!`, 'success');
             modalAprovar.hide();
-            await carregarDados();
+            await carregarDadosAtividades();
 
         } catch (error) {
             mostrarToast(`Erro: ${error.message}`, 'error');
@@ -565,7 +781,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             mostrarToast('Lançamento recusado com sucesso!', 'success');
             modalRecusar.hide();
-            await carregarDados();
+            await carregarDadosAtividades();
         } catch (error) {
             mostrarToast(`Erro ao recusar: ${error.message}`, 'error');
         } finally {
@@ -621,7 +837,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             mostrarToast(`Ação realizada com sucesso!`, 'success');
             modalComentar.hide();
-            await carregarDados();
+            await carregarDadosAtividades();
         } catch (error) {
             mostrarToast(`Erro: ${error.message}`, 'error');
         } finally {
@@ -629,8 +845,80 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    async function carregarTodosOsDados() {
+        toggleLoader(true);
+        // Promise.all executa as duas buscas em paralelo, o que é mais rápido!
+        await Promise.all([
+            carregarDadosAtividades(), // Carrega os dados das atividades
+            carregarDadosMateriais()  // Carrega os dados dos materiais
+        ]);
+        toggleLoader(false);
+    }
+
+    // Listener para o botão de CONFIRMAR APROVAÇÃO de material
+    const btnConfirmarAprovacaoMaterial = document.getElementById('btnConfirmarAprovacaoMaterial');
+    if (btnConfirmarAprovacaoMaterial) {
+        btnConfirmarAprovacaoMaterial.addEventListener('click', async function () {
+            const solicitacaoId = this.dataset.id;
+            const endpoint = userRole === 'COORDINATOR'
+                ? `${API_BASE_URL}/solicitacoes/${solicitacaoId}/coordenador/aprovar`
+                : `${API_BASE_URL}/solicitacoes/${solicitacaoId}/controller/aprovar`;
+
+            setButtonLoading(this, true); // Reutiliza sua função de loading
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ aprovadorId: userId })
+                });
+                if (!response.ok) throw new Error((await response.json()).message || 'Falha ao aprovar.');
+
+                mostrarToast('Solicitação de material aprovada!', 'success');
+                modalAprovarMaterial.hide();
+                await carregarTodosOsDados();
+            } catch (error) {
+                mostrarToast(error.message, 'error');
+            } finally {
+                setButtonLoading(this, false);
+            }
+        });
+    }
+
+    // Listener para o formulário de RECUSA de material
+    const formRecusarMaterial = document.getElementById('formRecusarMaterial');
+    if (formRecusarMaterial) {
+        formRecusarMaterial.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const solicitacaoId = this.dataset.id;
+            const motivo = document.getElementById('motivoRecusaMaterial').value;
+            const btn = document.getElementById('btnConfirmarRecusaMaterial');
+
+            const endpoint = userRole === 'COORDINATOR'
+                ? `${API_BASE_URL}/solicitacoes/${solicitacaoId}/coordenador/rejeitar`
+                : `${API_BASE_URL}/solicitacoes/${solicitacaoId}/controller/rejeitar`;
+
+            setButtonLoading(btn, true);
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ aprovadorId: userId, observacao: motivo })
+                });
+                if (!response.ok) throw new Error((await response.json()).message || 'Falha ao recusar.');
+
+                mostrarToast('Solicitação de material recusada.', 'success');
+                modalRecusarMaterial.hide();
+                await carregarTodosOsDados();
+            } catch (error) {
+                mostrarToast(error.message, 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        });
+    }
+
 
     // --- INICIALIZAÇÃO ---
     renderizarCabecalho();
-    carregarDados();
+    carregarTodosOsDados();
 });

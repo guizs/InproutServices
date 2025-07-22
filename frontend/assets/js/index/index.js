@@ -1025,6 +1025,188 @@ document.addEventListener('DOMContentLoaded', () => {
         renderizarTodasAsTabelas();
     });
 
+    // --- LÓGICA DO MODAL DE SOLICITAÇÃO DE MATERIAL ---
+    const modalSolicitarMaterialEl = document.getElementById('modalSolicitarMaterial');
+    if (modalSolicitarMaterialEl) {
+        const modalSolicitarMaterial = new bootstrap.Modal(modalSolicitarMaterialEl);
+        const formSolicitacao = document.getElementById('formSolicitarMaterial');
+        const selectOS = document.getElementById('osSolicitacao');
+        const selectLPU = document.getElementById('lpuSolicitacao');
+        const listaItensContainer = document.getElementById('listaItens');
+        const btnAdicionarItem = document.getElementById('btnAdicionarItem');
+
+        let todosOsMateriais = []; // Cache para a lista de materiais
+
+        // Função para popular um select de materiais
+        const popularSelectMateriais = (selectElement) => {
+            selectElement.innerHTML = '<option value="" selected disabled>Carregando...</option>';
+            if (todosOsMateriais.length === 0) {
+                // Busca materiais da API apenas se o cache estiver vazio
+                fetch('http://localhost:8080/materiais')
+                    .then(res => res.json())
+                    .then(data => {
+                        todosOsMateriais = data; // Armazena no cache
+                        preencherOpcoes(selectElement);
+                    })
+                    .catch(err => {
+                        console.error("Erro ao buscar materiais:", err);
+                        selectElement.innerHTML = '<option value="">Erro ao carregar</option>';
+                    });
+            } else {
+                preencherOpcoes(selectElement); // Usa o cache
+            }
+        };
+
+        const preencherOpcoes = (selectElement) => {
+            selectElement.innerHTML = '<option value="" selected disabled>Selecione o material...</option>';
+            todosOsMateriais.forEach(material => {
+                const option = new Option(`${material.codigo} - ${material.descricao}`, material.codigo);
+                selectElement.add(option);
+            });
+        };
+
+        // Evento disparado quando o modal de solicitação é aberto
+        modalSolicitarMaterialEl.addEventListener('show.bs.modal', async () => {
+            formSolicitacao.reset();
+            listaItensContainer.innerHTML = `
+            <div class="row g-2 align-items-center mb-2 item-row">
+              <div class="col-md"><select class="form-select material-select" required><option selected disabled value="">Selecione...</option></select></div>
+              <div class="col-md-3"><input type="number" class="form-control quantidade-input" placeholder="Qtde." min="1" value="1" required></div>
+              <div class="col-md-auto"><button type="button" class="btn btn-outline-danger btn-sm btn-remover-item" title="Remover Item" disabled><i class="bi bi-trash"></i></button></div>
+            </div>`;
+
+            selectLPU.innerHTML = '<option value="" selected disabled>Selecione a OS primeiro...</option>';
+            selectLPU.disabled = true;
+
+            // Popula o primeiro select de material
+            popularSelectMateriais(listaItensContainer.querySelector('.material-select'));
+
+            // Popula o select de OS
+            try {
+                const response = await fetch('http://localhost:8080/os');
+                const oss = await response.json();
+                selectOS.innerHTML = '<option value="" selected disabled>Selecione a OS...</option>';
+                oss.forEach(os => {
+                    const option = new Option(os.os, os.id);
+                    selectOS.add(option);
+                });
+            } catch (error) {
+                console.error("Erro ao buscar OSs:", error);
+                selectOS.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        });
+
+        // Evento para carregar LPUs quando uma OS é selecionada
+        selectOS.addEventListener('change', async (e) => {
+            const osId = e.target.value;
+            selectLPU.disabled = true; // Mantém desabilitado enquanto carrega
+            selectLPU.innerHTML = '<option>Carregando LPUs...</option>';
+
+            // Se o usuário deselecionar a OS, reseta e desabilita o campo de LPU
+            if (!osId) {
+                selectLPU.innerHTML = '<option value="" selected disabled>Selecione a OS primeiro...</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/os/${osId}/lpus`);
+                const lpus = await response.json();
+                selectLPU.innerHTML = '<option value="" selected disabled>Selecione a LPU...</option>';
+
+                if (lpus && lpus.length > 0) {
+                    lpus.forEach(lpu => {
+                        const option = new Option(`${lpu.codigoLpu} - ${lpu.nomeLpu}`, lpu.id);
+                        selectLPU.add(option);
+                    });
+                    // SÓ HABILITA SE ENCONTRAR LPUs
+                    selectLPU.disabled = false;
+                } else {
+                    selectLPU.innerHTML = '<option value="" disabled>Nenhuma LPU encontrada</option>';
+                }
+
+            } catch (error) {
+                console.error("Erro ao buscar LPUs:", error);
+                selectLPU.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        });
+
+        // Evento para adicionar um novo item à solicitação
+        btnAdicionarItem.addEventListener('click', () => {
+            const novoItemRow = listaItensContainer.firstElementChild.cloneNode(true);
+            const newSelect = novoItemRow.querySelector('.material-select');
+            novoItemRow.querySelector('.quantidade-input').value = 1;
+
+            // Habilita o botão de remover para o novo item
+            const btnRemover = novoItemRow.querySelector('.btn-remover-item');
+            btnRemover.disabled = false;
+
+            listaItensContainer.appendChild(novoItemRow);
+            popularSelectMateriais(newSelect); // Popula o select do novo item
+        });
+
+        // Evento para remover um item (usando delegação de evento)
+        listaItensContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-remover-item')) {
+                e.target.closest('.item-row').remove();
+            }
+        });
+
+        // Evento de submissão do formulário
+        formSolicitacao.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnSubmit = document.getElementById('btnEnviarSolicitacao');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Enviando...`;
+
+            const itens = [];
+            document.querySelectorAll('#listaItens .item-row').forEach(row => {
+                const codigoMaterial = row.querySelector('.material-select').value;
+                const quantidade = row.querySelector('.quantidade-input').value;
+                if (codigoMaterial && quantidade) {
+                    itens.push({ codigoMaterial, quantidade: parseFloat(quantidade) });
+                }
+            });
+
+            const payload = {
+                idSolicitante: localStorage.getItem('usuarioId'),
+                osId: selectOS.value,
+                lpuId: selectLPU.value,
+                justificativa: document.getElementById('justificativaSolicitacao').value,
+                itens: itens
+            };
+
+            // ==========================================================
+            // ADICIONE ESTA LINHA PARA VER O PAYLOAD NO CONSOLE DO NAVEGADOR
+            console.log('Enviando para o backend:', JSON.stringify(payload, null, 2));
+            // ==========================================================
+
+            try {
+                const response = await fetch('http://localhost:8080/solicitacoes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    // Tenta ler a resposta de erro como texto, pois pode não ser JSON
+                    const errorText = await response.text();
+                    console.error("Erro recebido do backend:", errorText);
+                    throw new Error('Falha ao criar solicitação. Verifique o console para detalhes.');
+                }
+
+                mostrarToast('Solicitação enviada com sucesso!', 'success');
+                modalSolicitarMaterial.hide();
+
+            } catch (error) {
+                mostrarToast(error.message, 'error');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="bi bi-send me-1"></i> Enviar Solicitação';
+            }
+        });
+    }
+
+
     // ==========================================================
     // SEÇÃO 4: EXECUÇÃO INICIAL
     // ==========================================================
