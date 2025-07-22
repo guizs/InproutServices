@@ -598,30 +598,38 @@ document.addEventListener('DOMContentLoaded', function () {
     async function carregarDadosAtividades() {
         toggleLoader(true);
         try {
+            // 1. A busca geral continua, pois ela alimenta o Dashboard e a aba de Histórico
             const response = await fetch(`${API_BASE_URL}/lancamentos`);
             if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
 
             const todosLancamentos = await response.json();
             todosOsLancamentosGlobais = todosLancamentos;
 
-            // Renderiza os cards com os dados totais, mas adaptados ao perfil
             renderizarCardsDashboard(todosLancamentos);
+            const historicoParaExibir = todosLancamentos.filter(l => l.situacaoAprovacao !== 'RASCUNHO');
+            renderizarTabelaHistorico(historicoParaExibir);
 
-            // Filtra os lançamentos para a tabela com base no perfil
-            let pendenciasParaExibir = [];
+
+            // --- INÍCIO DA MUDANÇA ---
+            // 2. Busca a lista de PENDÊNCIAS diretamente do novo endpoint, que já traz os dados filtrados
+            const userId = localStorage.getItem('usuarioId');
+            const responsePendencias = await fetch(`${API_BASE_URL}/lancamentos/pendentes/${userId}`);
+            if (!responsePendencias.ok) throw new Error('Falha ao carregar suas pendências.');
+
+            const pendenciasParaExibir = await responsePendencias.json();
+
+            // 3. O client-side filtering (if userRole === 'COORDINATOR' etc.) foi REMOVIDO!
+
+            // 4. Atualiza o título da tabela
             if (userRole === 'COORDINATOR') {
-                pendenciasParaExibir = todosLancamentos.filter(l => l.situacaoAprovacao === 'PENDENTE_COORDENADOR');
-                document.getElementById('titulo-tabela').innerHTML = '<i class="bi bi-clock-history me-2"></i> Pendências do Coordenador';
-
+                document.getElementById('titulo-tabela').innerHTML = '<i class="bi bi-clock-history me-2"></i> Pendências do Meu Segmento';
             } else if (userRole === 'CONTROLLER') {
-                const statusController = ['PENDENTE_CONTROLLER', 'AGUARDANDO_EXTENSAO_PRAZO', 'PRAZO_VENCIDO'];
-                pendenciasParaExibir = todosLancamentos.filter(l => statusController.includes(l.situacaoAprovacao));
                 document.getElementById('titulo-tabela').innerHTML = '<i class="bi bi-shield-check me-2"></i> Pendências do Controller';
             }
 
+            // 5. Renderiza a tabela de pendências com os dados que vieram do backend
             renderizarTabela(pendenciasParaExibir);
-            const historicoParaExibir = todosLancamentos.filter(l => l.situacaoAprovacao !== 'RASCUNHO');
-            renderizarTabelaHistorico(historicoParaExibir);
+            // --- FIM DA MUDANÇA ---
 
         } catch (error) {
             console.error('Falha ao buscar dados:', error);

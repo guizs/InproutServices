@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 
 @Entity
 @Table(name = "lpu", uniqueConstraints = {

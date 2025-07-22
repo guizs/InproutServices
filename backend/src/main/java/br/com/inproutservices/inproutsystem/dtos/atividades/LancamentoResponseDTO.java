@@ -4,7 +4,8 @@ import br.com.inproutservices.inproutsystem.entities.atividades.Comentario;
 import br.com.inproutservices.inproutsystem.entities.atividades.Lancamento;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
 import br.com.inproutservices.inproutsystem.entities.index.Prestador;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento; // Importe o Segmento
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;
@@ -20,11 +21,12 @@ import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record LancamentoResponseDTO(
+        // ... (outros campos do record principal não mudam)
         Long id,
         SituacaoAprovacao situacaoAprovacao,
         ManagerDTO manager,
         OsResponseDTO os,
-        LpuSimpleDTO lpu, // <-- CAMPO LPU NO NÍVEL CORRETO
+        LpuSimpleDTO lpu,
         PrestadorSimpleDTO prestador,
         EtapaSimpleDTO etapa,
         @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss") LocalDateTime dataCriacao,
@@ -50,19 +52,14 @@ public record LancamentoResponseDTO(
         BigDecimal valor,
         List<ComentarioDTO> comentarios
 ) {
-    // CONSTRUTOR CORRIGIDO
     public LancamentoResponseDTO(Lancamento lancamento) {
         this(
                 lancamento.getId(),
                 lancamento.getSituacaoAprovacao(),
                 (lancamento.getManager() != null) ? new ManagerDTO(lancamento.getManager()) : null,
-                // Mapeamento da OS
                 (lancamento.getOs() != null) ? new OsResponseDTO(lancamento.getOs()) : null,
-                // Mapeamento da LPU (agora direto do lançamento)
                 (lancamento.getLpu() != null) ? new LpuSimpleDTO(lancamento.getLpu()) : null,
-                // Mapeamento do Prestador
                 (lancamento.getPrestador() != null) ? new PrestadorSimpleDTO(lancamento.getPrestador()) : null,
-                // Mapeamento da Etapa
                 (lancamento.getEtapaDetalhada() != null) ? new EtapaSimpleDTO(lancamento.getEtapaDetalhada()) : null,
                 lancamento.getDataCriacao(),
                 lancamento.getDataSubmissao(),
@@ -95,19 +92,28 @@ public record LancamentoResponseDTO(
         public ManagerDTO(Usuario manager) { this(manager.getId(), manager.getNome()); }
     }
 
-    // OsResponseDTO CORRIGIDO (sem LPU dentro)
+    // A MUDANÇA PRINCIPAL ESTÁ AQUI
     public record OsResponseDTO(
-            Long id, String os, String site, String contrato, String segmento, String projeto,
+            Long id, String os, String site, String contrato, SegmentoSimpleDTO segmento, String projeto, // MUDOU AQUI
             String gestorTim, String regional, String lote, String boq, String po,
             String item, String objetoContratado, String unidade, Integer quantidade,
             BigDecimal valorTotal, String observacoes, @JsonFormat(pattern = "dd/MM/yyyy") LocalDate dataPo
     ) {
         public OsResponseDTO(OS os) {
-            this(os.getId(), os.getOs(), os.getSite(), os.getContrato(), os.getSegmento(),
+            this(os.getId(), os.getOs(), os.getSite(), os.getContrato(),
+                    // E AQUI
+                    os.getSegmento() != null ? new SegmentoSimpleDTO(os.getSegmento()) : null,
                     os.getProjeto(), os.getGestorTim(), os.getRegional(),
                     os.getLote(), os.getBoq(), os.getPo(), os.getItem(), os.getObjetoContratado(),
                     os.getUnidade(), os.getQuantidade(), os.getValorTotal(), os.getObservacoes(),
                     os.getDataPo());
+        }
+    }
+
+    // NOVO DTO ANINHADO PARA SEGMENTO
+    public record SegmentoSimpleDTO(Long id, String nome) {
+        public SegmentoSimpleDTO(Segmento segmento) {
+            this(segmento.getId(), segmento.getNome());
         }
     }
 

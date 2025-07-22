@@ -3,7 +3,7 @@ package br.com.inproutservices.inproutsystem.entities.atividades;
 import br.com.inproutservices.inproutsystem.entities.index.EtapaDetalhada;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
 import br.com.inproutservices.inproutsystem.entities.index.Prestador;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;

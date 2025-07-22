@@ -10,7 +10,7 @@ import br.com.inproutservices.inproutsystem.repositories.index.LpuRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 
 import java.math.BigDecimal;
 import java.util.List;

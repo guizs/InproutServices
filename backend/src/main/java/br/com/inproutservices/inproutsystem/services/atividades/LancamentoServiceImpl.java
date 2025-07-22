@@ -8,10 +8,11 @@ import br.com.inproutservices.inproutsystem.entities.atividades.Lancamento;
 import br.com.inproutservices.inproutsystem.entities.index.EtapaDetalhada;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
 import br.com.inproutservices.inproutsystem.entities.index.Prestador;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoAprovacao;
 import br.com.inproutservices.inproutsystem.enums.atividades.SituacaoOperacional;
+import br.com.inproutservices.inproutsystem.enums.usuarios.Role;
 import br.com.inproutservices.inproutsystem.exceptions.materiais.BusinessException;
 import br.com.inproutservices.inproutsystem.repositories.atividades.ComentarioRepository;
 import br.com.inproutservices.inproutsystem.repositories.atividades.LancamentoRepository;
@@ -23,13 +24,18 @@ import br.com.inproutservices.inproutsystem.repositories.usuarios.UsuarioReposit
 import br.com.inproutservices.inproutsystem.services.config.PrazoService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class LancamentoServiceImpl implements LancamentoService {
@@ -198,9 +204,14 @@ public class LancamentoServiceImpl implements LancamentoService {
     @Override
     @Transactional
     public void submeterLancamentosDiarios() {
-        List<Lancamento> rascunhos = lancamentoRepository.findBySituacaoAprovacao(SituacaoAprovacao.RASCUNHO);
+        // 1. Define a data que será usada no filtro (o dia anterior)
+        LocalDate ontem = LocalDate.now().minusDays(1);
 
-        for (Lancamento lancamento : rascunhos) {
+        // 2. Busca apenas os rascunhos com a data da atividade de ontem
+        List<Lancamento> rascunhosDeOntem = lancamentoRepository.findBySituacaoAprovacaoAndDataAtividade(SituacaoAprovacao.RASCUNHO, ontem);
+
+        // 3. O resto da lógica continua a mesma, mas agora iterando sobre a lista filtrada
+        for (Lancamento lancamento : rascunhosDeOntem) {
             LocalDate novoPrazo = prazoService.calcularPrazoEmDiasUteis(LocalDate.now(), 3);
             lancamento.setSituacaoAprovacao(SituacaoAprovacao.PENDENTE_COORDENADOR);
             lancamento.setDataSubmissao(LocalDateTime.now());
@@ -411,16 +422,42 @@ public class LancamentoServiceImpl implements LancamentoService {
     @Transactional(readOnly = true)
     public List<Lancamento> getAllLancamentos() {
 
-        List<Lancamento> lancamentos = lancamentoRepository.findAllWithDetails();
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        for (Lancamento l : lancamentos) {
-            if (l.getOs() != null) {
-
-                l.getOs().getLpus().size();
-            }
+        String userEmail;
+        if (principal instanceof UserDetails) {
+            userEmail = ((UserDetails) principal).getUsername();
+        } else {
+            userEmail = principal.toString();
         }
 
-        return lancamentos;
+        Usuario usuarioLogado = usuarioRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário '" + userEmail + "' não encontrado no banco de dados."));
+
+        List<Lancamento> todosLancamentos = lancamentoRepository.findAllWithDetails();
+
+        Role role = usuarioLogado.getRole();
+        if (role == Role.ADMIN || role == Role.CONTROLLER || role == Role.ASSISTANT) {
+            return todosLancamentos;
+        }
+
+        if (role == Role.MANAGER || role == Role.COORDINATOR) {
+            Set<Long> segmentosDoUsuario = usuarioLogado.getSegmentos().stream()
+                    .map(Segmento::getId) // Agora esta linha funciona!
+                    .collect(Collectors.toSet());
+
+            if (segmentosDoUsuario.isEmpty()) {
+                return List.of();
+            }
+
+            return todosLancamentos.stream()
+                    .filter(lancamento -> lancamento.getOs() != null &&
+                            lancamento.getOs().getSegmento() != null &&
+                            segmentosDoUsuario.contains(lancamento.getOs().getSegmento().getId()))
+                    .collect(Collectors.toList());
+        }
+
+        return List.of();
     }
 
     @Override

@@ -1,9 +1,11 @@
 package br.com.inproutservices.inproutsystem.controllers.usuario;
 
 import br.com.inproutservices.inproutsystem.dtos.login.LoginRequest;
+import br.com.inproutservices.inproutsystem.dtos.usuario.UsuarioRequestDTO;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.repositories.usuarios.UsuarioRepository;
 import br.com.inproutservices.inproutsystem.services.usuarios.PasswordService;
+import br.com.inproutservices.inproutsystem.services.usuarios.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,17 +21,18 @@ public class UsuarioController {
 
     private final UsuarioRepository usuarioRepo;
     private final PasswordService passwordService;
+    private final UsuarioService usuarioService;
 
-    public UsuarioController(UsuarioRepository usuarioRepo, PasswordService passwordService) {
+    public UsuarioController(UsuarioRepository usuarioRepo, PasswordService passwordService, UsuarioService usuarioService) {
         this.usuarioRepo = usuarioRepo;
         this.passwordService = passwordService;
+        this.usuarioService = usuarioService;
     }
 
     // Criar usuário
     @PostMapping
-    public Usuario criar(@RequestBody Usuario usuario) {
-        usuario.setSenha(passwordService.encode(usuario.getSenha()));
-        return usuarioRepo.save(usuario);
+    public Usuario criar(@RequestBody UsuarioRequestDTO usuarioDTO) {
+        return usuarioService.criarUsuario(usuarioDTO);
     }
 
     // Listar usuários ativos

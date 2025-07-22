@@ -3,10 +3,12 @@ package br.com.inproutservices.inproutsystem.services.atividades;
 import br.com.inproutservices.inproutsystem.dtos.atividades.OsRequestDto;
 import br.com.inproutservices.inproutsystem.entities.index.Contrato;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import br.com.inproutservices.inproutsystem.repositories.atividades.OsRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.ContratoRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.LpuRepository;
+import br.com.inproutservices.inproutsystem.repositories.index.SegmentoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +23,13 @@ public class OsServiceImpl implements OsService {
     private final OsRepository osRepository;
     private final LpuRepository lpuRepository;
     private final ContratoRepository contratoRepository;
+    private final SegmentoRepository segmentoRepository;
 
-    public OsServiceImpl(OsRepository osRepository, LpuRepository lpuRepository, ContratoRepository contratoRepository) {
+    public OsServiceImpl(OsRepository osRepository, LpuRepository lpuRepository, ContratoRepository contratoRepository, SegmentoRepository segmentoRepository) {
         this.osRepository = osRepository;
         this.lpuRepository = lpuRepository;
         this.contratoRepository = contratoRepository;
+        this.segmentoRepository = segmentoRepository;
     }
 
     @Override
@@ -36,7 +40,6 @@ public class OsServiceImpl implements OsService {
         novaOs.setOs(osDto.getOs());
         novaOs.setSite(osDto.getSite());
         novaOs.setContrato(osDto.getContrato());
-        novaOs.setSegmento(osDto.getSegmento());
         novaOs.setProjeto(osDto.getProjeto());
         novaOs.setGestorTim(osDto.getGestorTim());
         novaOs.setRegional(osDto.getRegional());
@@ -50,6 +53,12 @@ public class OsServiceImpl implements OsService {
         novaOs.setValorTotal(osDto.getValorTotal());
         novaOs.setObservacoes(osDto.getObservacoes());
         novaOs.setDataPo(osDto.getDataPo());
+
+        if (osDto.getSegmentoId() != null) {
+            Segmento segmento = segmentoRepository.findById(osDto.getSegmentoId())
+                    .orElseThrow(() -> new EntityNotFoundException("Segmento não encontrado com o ID: " + osDto.getSegmentoId()));
+            novaOs.setSegmento(segmento);
+        }
 
         // 2. Associa a coleção de LPUs selecionadas
         if (osDto.getLpuIds() != null && !osDto.getLpuIds().isEmpty()) {
@@ -92,7 +101,6 @@ public class OsServiceImpl implements OsService {
         existingOs.setOs(osDto.getOs());
         existingOs.setSite(osDto.getSite());
         existingOs.setContrato(osDto.getContrato());
-        existingOs.setSegmento(osDto.getSegmento());
         existingOs.setProjeto(osDto.getProjeto());
         existingOs.setGestorTim(osDto.getGestorTim());
         existingOs.setRegional(osDto.getRegional());
@@ -106,6 +114,12 @@ public class OsServiceImpl implements OsService {
         existingOs.setValorTotal(osDto.getValorTotal());
         existingOs.setObservacoes(osDto.getObservacoes());
         existingOs.setDataPo(osDto.getDataPo());
+
+        if (osDto.getSegmentoId() != null) {
+            Segmento segmento = segmentoRepository.findById(osDto.getSegmentoId())
+                    .orElseThrow(() -> new EntityNotFoundException("Segmento não encontrado com o ID: " + osDto.getSegmentoId()));
+            existingOs.setSegmento(segmento);
+        }
 
         // 3. Atualiza a lista de LPUs associadas
         if (osDto.getLpuIds() != null) {

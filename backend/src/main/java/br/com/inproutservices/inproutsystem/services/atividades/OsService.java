@@ -1,7 +1,7 @@
 package br.com.inproutservices.inproutsystem.services.atividades;
 
 import br.com.inproutservices.inproutsystem.dtos.atividades.OsRequestDto;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 
 import java.util.List;
 

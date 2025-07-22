@@ -3,7 +3,7 @@ package br.com.inproutservices.inproutsystem.controllers.atividades;
 import br.com.inproutservices.inproutsystem.dtos.atividades.OsRequestDto;
 import br.com.inproutservices.inproutsystem.dtos.atividades.OsResponseDto;
 import br.com.inproutservices.inproutsystem.dtos.index.LpuResponseDTO;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import br.com.inproutservices.inproutsystem.services.atividades.OsService;
 import br.com.inproutservices.inproutsystem.services.index.LpuService;
 import org.springframework.http.HttpStatus;

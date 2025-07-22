@@ -3,7 +3,7 @@ package br.com.inproutservices.inproutsystem.dtos.materiais;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
 import br.com.inproutservices.inproutsystem.entities.materiais.ItemSolicitacao;
 import br.com.inproutservices.inproutsystem.entities.materiais.Solicitacao;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.materiais.StatusSolicitacao;
 import com.fasterxml.jackson.annotation.JsonInclude;

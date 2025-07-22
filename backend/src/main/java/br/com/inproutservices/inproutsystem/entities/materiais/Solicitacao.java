@@ -1,7 +1,7 @@
 package br.com.inproutservices.inproutsystem.entities.materiais;
 
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.materiais.StatusSolicitacao;
 import jakarta.persistence.*;

@@ -8,7 +8,7 @@ public class OsRequestDto {
     private String os;
     private String site;
     private String contrato;
-    private String segmento;
+    private Long segmentoId;
     private String projeto;
     private List<Long> lpuIds;
     private String gestorTim;
@@ -52,12 +52,12 @@ public class OsRequestDto {
 
     public void setContrato(String contrato) { this.contrato = contrato; }
 
-    public String getSegmento() {
-        return segmento;
+    public Long getSegmentoId() {
+        return segmentoId;
     }
 
-    public void setSegmento(String segmento) {
-        this.segmento = segmento;
+    public void setSegmentoId(Long segmentoId) {
+        this.segmentoId = segmentoId;
     }
 
     public String getProjeto() {

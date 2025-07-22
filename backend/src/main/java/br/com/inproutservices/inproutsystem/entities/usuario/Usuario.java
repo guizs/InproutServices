@@ -1,18 +1,39 @@
 package br.com.inproutservices.inproutsystem.entities.usuario;
 
+import br.com.inproutservices.inproutsystem.entities.index.Segmento;
 import br.com.inproutservices.inproutsystem.enums.usuarios.Role;
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String nome;
+
+    @ManyToMany(fetch = FetchType.EAGER) // EAGER para carregar os segmentos junto com o usuário
+    @JoinTable(
+            name = "usuario_segmentos",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "segmento_id")
+    )
+    private Set<Segmento> segmentos = new HashSet<>();
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
+    }
 
     @Column(unique = true)
     private String email;
@@ -60,6 +81,14 @@ public class Usuario {
         return id;
     }
 
+    public Set<Segmento> getSegmentos() {
+        return segmentos;
+    }
+
+    public void setSegmentos(Set<Segmento> segmentos) {
+        this.segmentos = segmentos;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -98,6 +127,38 @@ public class Usuario {
 
     public LocalDateTime getDataCriacao() {
         return dataCriacao;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.senha;
+    }
+
+    @Override
+    public String getUsername() {
+        // Usaremos o email como "username" para o login
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // A conta não expira
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // A conta não é bloqueada
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // As credenciais não expiram
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // A conta está ativa se o campo 'ativo' for true
+        return this.ativo;
     }
 
     public void setDataCriacao(LocalDateTime dataCriacao) {

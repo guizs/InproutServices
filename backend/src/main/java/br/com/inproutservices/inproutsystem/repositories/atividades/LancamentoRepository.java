@@ -16,6 +16,9 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
 
     List<Lancamento> findBySituacaoAprovacao(SituacaoAprovacao situacao);
 
+    // ADICIONE ESTA LINHA: Novo método para filtrar por data de atividade
+    List<Lancamento> findBySituacaoAprovacaoAndDataAtividade(SituacaoAprovacao situacao, LocalDate data);
+
     Optional<Lancamento> findFirstByOsIdAndSituacaoAprovacaoOrderByDataCriacaoAsc(Long osId, SituacaoAprovacao situacao);
 
     @Query("SELECT l FROM Lancamento l " +

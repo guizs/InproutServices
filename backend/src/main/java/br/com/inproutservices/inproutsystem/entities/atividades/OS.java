@@ -1,13 +1,14 @@
-package br.com.inproutservices.inproutsystem.entities.os;
+package br.com.inproutservices.inproutsystem.entities.atividades;
 
 // Garanta que este import aponte para o pacote onde sua classe Lpu está
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
 import br.com.inproutservices.inproutsystem.entities.atividades.Lancamento;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -39,7 +40,9 @@ public class OS {
     private String os;
     private String site;
     private String contrato;
-    private String segmento;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "segmento_id")
+    private Segmento segmento;
     private String projeto;
     private String gestorTim;
     private String regional;
@@ -61,6 +64,7 @@ public class OS {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dataPo;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "os", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<Lancamento> lancamentos;
 
@@ -137,11 +141,11 @@ public class OS {
         this.contrato = contrato;
     }
 
-    public String getSegmento() {
+    public Segmento getSegmento() {
         return segmento;
     }
 
-    public void setSegmento(String segmento) {
+    public void setSegmento(Segmento segmento) {
         this.segmento = segmento;
     }
 

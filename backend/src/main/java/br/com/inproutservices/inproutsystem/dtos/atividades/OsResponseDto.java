@@ -1,7 +1,8 @@
 package br.com.inproutservices.inproutsystem.dtos.atividades;
 
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento; // ADICIONE ESTE IMPORT
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.math.BigDecimal;
@@ -15,7 +16,7 @@ public record OsResponseDto(
         String os,
         String site,
         String contrato,
-        String segmento,
+        SegmentoSimpleDTO segmento, // ALTERADO DE String PARA SegmentoSimpleDTO
         Set<LpuSimpleDTO> lpus,
         String projeto,
         String gestorTim,
@@ -56,9 +57,10 @@ public record OsResponseDto(
                 os.getOs(),
                 os.getSite(),
                 os.getContrato(),
-                os.getSegmento(),
+                // LÓGICA DE MAPEAMENTO DO SEGMENTO
+                os.getSegmento() != null ? new SegmentoSimpleDTO(os.getSegmento()) : null,
                 os.getLpus().stream()
-                        .map(LpuSimpleDTO::new) // Reutiliza o LpuSimpleDTO
+                        .map(LpuSimpleDTO::new)
                         .collect(Collectors.toSet()),
                 os.getProjeto(),
                 os.getGestorTim(),
@@ -97,6 +99,15 @@ public record OsResponseDto(
     public record LpuSimpleDTO(Long id, String codigo, String nome) {
         public LpuSimpleDTO(Lpu lpu) {
             this(lpu.getId(), lpu.getCodigoLpu(), lpu.getNomeLpu());
+        }
+    }
+
+    /**
+     * NOVO DTO ANINHADO: DTO simplificado para Segmento.
+     */
+    public record SegmentoSimpleDTO(Long id, String nome) {
+        public SegmentoSimpleDTO(Segmento segmento) {
+            this(segmento.getId(), segmento.getNome());
         }
     }
 }
