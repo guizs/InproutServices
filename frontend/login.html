@@ -24,17 +24,17 @@
                 <h2 class="form-title">Acesse sua conta</h2>
                 <p class="form-subtitle">Bem-vindo de volta! Por favor, insira seus dados.</p>
 
-                <form id="formLogin" novalidate>
+                <form id="formLogin" novalidate autocomplete="off">
                     <div id="mensagem" class="alert d-none" role="alert"></div>
 
                     <div class="form-floating mb-3">
-                        <input type="email" class="form-control" id="email" placeholder="seu@email.com" required>
+                        <input type="email" class="form-control" id="email" placeholder="seu@email.com" required autocomplete="username">
                         <label for="email">E-mail</label>
                     </div>
 
                     <div class="input-group mb-3">
                         <div class="form-floating">
-                            <input type="password" class="form-control" id="senha" placeholder="Sua senha" required>
+                            <input type="password" class="form-control" id="senha" placeholder="Sua senha" required autocomplete="current-password">
                             <label for="senha">Senha</label>
                         </div>
                         <button class="btn btn-outline-secondary" type="button" id="togglePassword">

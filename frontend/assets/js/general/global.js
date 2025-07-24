@@ -1,4 +1,65 @@
 // ==========================================================
+// SEÇÃO DE GERENCIAMENTO DE SESSÃO E TOKEN
+// ==========================================================
+let inactivityTimer;
+const TIMEOUT_MINUTES = 60;
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    localStorage.setItem('lastActivity', new Date().getTime());
+    inactivityTimer = setTimeout(() => {
+        alert('Sua sessão expirou por inatividade.');
+        logout();
+    }, TIMEOUT_MINUTES * 60 * 1000);
+}
+
+function checkInitialInactivity() {
+    const lastActivity = parseInt(localStorage.getItem('lastActivity'), 10);
+    const now = new Date().getTime();
+    if (now - lastActivity > TIMEOUT_MINUTES * 60 * 1000) {
+        logout();
+    } else {
+        resetInactivityTimer();
+    }
+}
+
+async function logout() {
+    // Chama o endpoint de logout no backend para limpar o cookie
+    try {
+        await fetch('http://localhost:8080/usuarios/logout', { 
+            method: 'POST',
+            credentials: 'include' // Garante que a requisição envie os cookies
+        });
+    } catch (error) {
+        console.error("Erro ao fazer logout no backend:", error);
+    } finally {
+        // Limpa o localStorage e redireciona, independentemente do resultado do backend
+        localStorage.clear();
+        redirectToLogin();
+    }
+}
+
+// Intercepta o fetch global para adicionar credenciais e tratar erros 401
+const originalFetch = window.fetch;
+window.fetch = async (...args) => {
+    let [resource, config] = args;
+    
+    config = config || {};
+    // ESSENCIAL: Adiciona a opção para que o navegador envie os cookies
+    config.credentials = 'include';
+
+    const response = await originalFetch(resource, config);
+
+    if (response.status === 401 || response.status === 403) {
+        alert('Sua sessão expirou ou você não tem permissão. Por favor, faça login novamente.');
+        logout();
+        return new Response(null, { status: response.status });
+    }
+
+    return response;
+};
+
+// ==========================================================
 // FUNÇÕES GLOBAIS E AUXILIARES
 // ==========================================================
 
@@ -37,15 +98,22 @@ function redirectToLogin() {
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. VERIFICAÇÃO DE AUTENTICAÇÃO ---
-    const nomeCompleto = localStorage.getItem('usuario');
-    if (!nomeCompleto) {
-        redirectToLogin();
+    // VERSÃO CORRIGIDA: Verifica o item 'usuario', e não mais o 'token'
+    const usuario = localStorage.getItem('usuario');
+    if (!usuario) {
+        if (!window.location.pathname.includes('login.html')) {
+            redirectToLogin();
+        }
         return; // Interrompe a execução se não houver usuário
+    } else {
+        // Se há dados do usuário, inicia o controle de inatividade
+        checkInitialInactivity();
+        window.addEventListener('mousemove', resetInactivityTimer);
+        window.addEventListener('keypress', resetInactivityTimer);
     }
 
     // --- 2. CONFIGURAÇÕES DA INTERFACE DO USUÁRIO ---
-    // Mostra o primeiro nome do usuário na barra de navegação
-    const primeiroNome = nomeCompleto.split(' ')[0];
+    const primeiroNome = usuario ? usuario.split(' ')[0] : 'Usuário';
     const nomeUsuarioEl = document.getElementById('nomeUsuario');
     if (nomeUsuarioEl) {
         nomeUsuarioEl.textContent = `Olá, ${primeiroNome}`;
@@ -56,10 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botão de Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.clear();
-            redirectToLogin();
-        });
+        logoutBtn.addEventListener('click', logout);
     }
 
     // Botão para salvar alterações na "Minha Conta"
@@ -123,65 +188,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalMinhaConta = document.getElementById('modalMinhaConta');
     if (modalMinhaConta) {
         modalMinhaConta.addEventListener('show.bs.modal', async () => {
-            // --- Preenche os dados básicos do usuário ---
             document.getElementById('nomeUsuarioModal').textContent = localStorage.getItem('usuario') || 'Usuário';
             document.getElementById('emailUsuarioModal').textContent = localStorage.getItem('email') || 'email@dominio.com';
-
-            // --- LÓGICA PARA EXIBIR CARGO E SEGMENTOS ---
             const userRole = (localStorage.getItem('role') || '').toUpperCase();
             const userSegmentoIds = JSON.parse(localStorage.getItem('segmentos')) || [];
             const detalhesContainer = modalMinhaConta.querySelector('#userInfoDetalhes');
-
             if (detalhesContainer) {
-                detalhesContainer.innerHTML = ''; // Limpa o conteúdo anterior
-
-                // Verifica se o usuário é Gestor ou Coordenador
+                detalhesContainer.innerHTML = '';
                 if (userRole === 'MANAGER' || userRole === 'COORDINATOR') {
                     const roleTraduzido = userRole === 'MANAGER' ? 'Gestor' : 'Coordenador';
-
                     try {
-                        // Busca a lista completa de segmentos na API
                         const response = await fetch('http://localhost:8080/segmentos');
                         if (!response.ok) throw new Error('Falha ao buscar segmentos.');
                         const todosSegmentos = await response.json();
-
-                        // Mapeia os IDs dos segmentos do usuário para seus nomes
                         const nomesSegmentos = userSegmentoIds.map(id => {
                             const segmento = todosSegmentos.find(s => s.id === id);
                             return segmento ? segmento.nome : null;
-                        }).filter(Boolean); // Remove nulos caso algum ID não seja encontrado
-
+                        }).filter(Boolean);
                         const segmentosTexto = nomesSegmentos.length > 0 ? nomesSegmentos.join(', ') : 'Nenhum segmento associado';
-
-                        // Exibe as informações formatadas no container
                         detalhesContainer.innerHTML = `
                         <div class="text-center">
                             <span class="badge bg-success mb-2" style="font-size: 0.9rem;">${roleTraduzido}</span>
                             <p class="text-muted small mb-0"><strong>Segmentos:</strong> ${segmentosTexto}</p>
-                        </div>
-                    `;
+                        </div>`;
                     } catch (error) {
                         console.error("Erro ao buscar segmentos:", error);
                         detalhesContainer.innerHTML = `<p class="text-danger small">Erro ao carregar segmentos.</p>`;
                     }
                 }
             }
-
-            // --- Configura os botões e collapses INTERNOS do modal ---
             const botaoEmail = modalMinhaConta.querySelector('[data-bs-target="#alterarEmail"]');
             const botaoSenha = modalMinhaConta.querySelector('[data-bs-target="#alterarSenha"]');
             const collapseEmailEl = modalMinhaConta.querySelector('#alterarEmail');
             const collapseSenhaEl = modalMinhaConta.querySelector('#alterarSenha');
-
             if (botaoEmail && botaoSenha && collapseEmailEl && collapseSenhaEl) {
                 const collapseEmail = new bootstrap.Collapse(collapseEmailEl, { toggle: false });
                 const collapseSenha = new bootstrap.Collapse(collapseSenhaEl, { toggle: false });
-
                 botaoEmail.addEventListener('click', () => {
                     collapseSenha.hide();
                     collapseEmail.toggle();
                 });
-
                 botaoSenha.addEventListener('click', () => {
                     collapseEmail.hide();
                     collapseSenha.toggle();

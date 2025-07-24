@@ -17,3 +17,5 @@ spring:
 server:
   port: 8080
 
+jwt:
+  secret: N2Y0NjE0ZDE2NTM4N2E3NzE3ODc0YjcxYjM3ZTk5YjYxMTQ4ZGIwYjFlYjE5ZThhMmZkNDRjZDYxYjY4MWRlOA==
