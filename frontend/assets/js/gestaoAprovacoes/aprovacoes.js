@@ -65,12 +65,16 @@ function verComentarios(id) {
     const lancamento = todosOsLancamentosGlobais.find(l => l.id == id);
     const modalBody = document.getElementById('modalComentariosBody');
 
+    // --- LINHA CRUCIAL DA CORREÇÃO ---
+    // Limpa completamente o conteúdo do modal antes de adicionar os novos comentários.
+    modalBody.innerHTML = '';
+    // --- FIM DA CORREÇÃO ---
+
     if (!lancamento || !lancamento.comentarios || lancamento.comentarios.length === 0) {
         modalBody.innerHTML = '<p class="text-center text-muted">Nenhum comentário para este lançamento.</p>';
     } else {
-        // Ordena os comentários do mais recente para o mais antigo
-        const comentariosOrdenados = [...lancamento.comentarios].sort((a, b) => parseDataBrasileira(b.dataHora) - parseDataBrasileira(a.dataHora));
 
+        const comentariosOrdenados = [...lancamento.comentarios].sort((a, b) => parseDataBrasileira(b.dataHora) - parseDataBrasileira(a.dataHora));
 
         modalBody.innerHTML = comentariosOrdenados.map(comentario => `
             <div class="card mb-3">
@@ -154,12 +158,36 @@ document.addEventListener('DOMContentLoaded', function () {
     const toastElement = document.getElementById('toastMensagem');
     const toastBody = document.getElementById('toastTexto');
     const toast = toastElement ? new bootstrap.Toast(toastElement) : null;
-    const userRole = (localStorage.getItem("role") || "").trim().toUpperCase(); // Pega o perfil do usuário
+    const userRole = (localStorage.getItem("role") || "").trim().toUpperCase();
     const userId = localStorage.getItem('usuarioId');
     const theadHistorico = document.getElementById('thead-historico');
     const tbodyHistorico = document.getElementById('tbody-historico');
     const tbodyPendentesMateriais = document.getElementById('tbody-pendentes-materiais');
     const tbodyHistoricoMateriais = document.getElementById('tbody-historico-materiais');
+
+    if (userRole === 'MANAGER') {
+        // Seleciona as abas que devem ser escondidas
+        const abaAprovacaoAtividades = document.getElementById('atividades-tab');
+        const abaAprovacaoMateriais = document.getElementById('materiais-tab');
+
+        // Seleciona os painéis de conteúdo correspondentes
+        const painelAprovacaoAtividades = document.getElementById('atividades-pane');
+        const painelAprovacaoMateriais = document.getElementById('materiais-pane');
+
+        // Esconde os botões das abas
+        if (abaAprovacaoAtividades) abaAprovacaoAtividades.style.display = 'none';
+        if (abaAprovacaoMateriais) abaAprovacaoMateriais.style.display = 'none';
+
+        // Esconde os painéis
+        if (painelAprovacaoAtividades) painelAprovacaoAtividades.classList.remove('show', 'active');
+        if (painelAprovacaoMateriais) painelAprovacaoMateriais.classList.remove('show', 'active');
+
+        // Torna a primeira aba visível (Histórico de Atividades) a aba ativa
+        const abaHistoricoAtividades = document.getElementById('historico-atividades-tab');
+        const painelHistoricoAtividades = document.getElementById('historico-atividades-pane');
+        if (abaHistoricoAtividades) abaHistoricoAtividades.classList.add('active');
+        if (painelHistoricoAtividades) painelHistoricoAtividades.classList.add('show', 'active');
+    }
 
     const campoNovaData = document.getElementById('novaDataProposta');
     if (campoNovaData) {
@@ -240,6 +268,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Define as ações com base no perfil do usuário
             let acoesHtml = '';
+            // Formata o badge de status de forma condicional
+            let statusHtml = `<span class="badge rounded-pill text-bg-warning">${(lancamento.situacaoAprovacao || '').replace(/_/g, ' ')}</span>`;
+
+            // Se o status for de solicitação de prazo, adiciona a data proposta
+            if (lancamento.situacaoAprovacao === 'AGUARDANDO_EXTENSAO_PRAZO' && lancamento.dataPrazoProposta) {
+                const dataAtualFormatada = formatarData(lancamento.dataPrazo);
+                const dataPropostaFormatada = lancamento.dataPrazoProposta.split('-').reverse().join('/');
+
+                // Adiciona as duas linhas de informação
+                statusHtml += `<br><small class="text-muted">Prazo Atual: <b>${dataAtualFormatada}</b></small>`;
+                statusHtml += `<br><small class="text-muted">Prazo Solicitado: <b>${dataPropostaFormatada}</b></small>`;
+            }
+
             if (userRole === 'COORDINATOR') {
                 acoesHtml = `
                     <div class="d-flex justify-content-center gap-1">
@@ -263,6 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="d-flex justify-content-center gap-1">
                     <button class="btn btn-sm btn-outline-success" title="Aprovar Novo Prazo" onclick="aprovarPrazoController(${lancamento.id})"><i class="bi bi-calendar-check"></i></button>
                     <button class="btn btn-sm btn-outline-danger" title="Recusar Novo Prazo" onclick="recusarPrazoController(${lancamento.id})"><i class="bi bi-calendar-x"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary" title="Ver Comentários" onclick="verComentarios(${lancamento.id})" ${!lancamento.comentarios || lancamento.comentarios.length === 0 ? 'disabled' : ''}><i class="bi bi-eye"></i></button>
                 </div>`;
                         break;
                     case 'PRAZO_VENCIDO':
@@ -279,13 +321,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const mapaDeCelulas = {
                 "AÇÕES": acoesHtml,
                 "PRAZO AÇÃO": userRole === 'COORDINATOR' ? `<span class="badge bg-danger">${formatarData(lancamento.dataPrazo)}</span>` : '',
-                "STATUS APROVAÇÃO": `<span class="badge rounded-pill text-bg-warning">${(lancamento.situacaoAprovacao || '').replace(/_/g, ' ')}</span>`,
+                "STATUS APROVAÇÃO": statusHtml,
                 "DATA ATIVIDADE": formatarData(lancamento.dataAtividade) || '',
                 // Dados da OS
                 "OS": (lancamento.os || {}).os || '',
                 "SITE": (lancamento.os || {}).site || '',
                 "CONTRATO": (lancamento.os || {}).contrato || '',
-                "SEGMENTO": (lancamento.os || {}).segmento || '',
+                "SEGMENTO": (lancamento.os && lancamento.os.segmento) ? lancamento.os.segmento.nome : '',
                 "PROJETO": (lancamento.os || {}).projeto || '',
                 "GESTOR TIM": (lancamento.os || {}).gestorTim || '',
                 "REGIONAL": (lancamento.os || {}).regional || '',
@@ -598,37 +640,36 @@ document.addEventListener('DOMContentLoaded', function () {
     async function carregarDadosAtividades() {
         toggleLoader(true);
         try {
-            // 1. A busca geral continua, pois ela alimenta o Dashboard e a aba de Histórico
-            const response = await fetch(`${API_BASE_URL}/lancamentos`);
-            if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
-
-            const todosLancamentos = await response.json();
-            todosOsLancamentosGlobais = todosLancamentos;
-
-            renderizarCardsDashboard(todosLancamentos);
-            const historicoParaExibir = todosLancamentos.filter(l => l.situacaoAprovacao !== 'RASCUNHO');
-            renderizarTabelaHistorico(historicoParaExibir);
-
+            const userId = localStorage.getItem('usuarioId');
 
             // --- INÍCIO DA MUDANÇA ---
-            // 2. Busca a lista de PENDÊNCIAS diretamente do novo endpoint, que já traz os dados filtrados
-            const userId = localStorage.getItem('usuarioId');
+            // 1. Busca TODAS as pendências e histórico para os CARDS do dashboard
+            const responseGeral = await fetch(`${API_BASE_URL}/lancamentos`);
+            if (!responseGeral.ok) throw new Error(`Erro na rede: ${responseGeral.statusText}`);
+            const todosLancamentos = await responseGeral.json();
+            todosOsLancamentosGlobais = todosLancamentos; // Mantém para a função de ver comentários
+            renderizarCardsDashboard(todosLancamentos);
+
+            // 2. Busca a lista de PENDÊNCIAS já filtrada para a primeira aba
             const responsePendencias = await fetch(`${API_BASE_URL}/lancamentos/pendentes/${userId}`);
             if (!responsePendencias.ok) throw new Error('Falha ao carregar suas pendências.');
-
             const pendenciasParaExibir = await responsePendencias.json();
 
-            // 3. O client-side filtering (if userRole === 'COORDINATOR' etc.) foi REMOVIDO!
+            // 3. Busca a lista de HISTÓRICO já filtrada para a segunda aba
+            const responseHistorico = await fetch(`${API_BASE_URL}/lancamentos/historico/${userId}`);
+            if (!responseHistorico.ok) throw new Error('Falha ao carregar seu histórico.');
+            const historicoParaExibir = await responseHistorico.json();
 
-            // 4. Atualiza o título da tabela
+            // 4. Renderiza as tabelas com os dados já filtrados pelo backend
+            renderizarTabela(pendenciasParaExibir);
+            renderizarTabelaHistorico(historicoParaExibir);
+
+            // O resto da lógica de título da tabela permanece igual...
             if (userRole === 'COORDINATOR') {
                 document.getElementById('titulo-tabela').innerHTML = '<i class="bi bi-clock-history me-2"></i> Pendências do Meu Segmento';
             } else if (userRole === 'CONTROLLER') {
                 document.getElementById('titulo-tabela').innerHTML = '<i class="bi bi-shield-check me-2"></i> Pendências do Controller';
             }
-
-            // 5. Renderiza a tabela de pendências com os dados que vieram do backend
-            renderizarTabela(pendenciasParaExibir);
             // --- FIM DA MUDANÇA ---
 
         } catch (error) {
@@ -687,8 +728,7 @@ document.addEventListener('DOMContentLoaded', function () {
             `,
                 "STATUS APROVAÇÃO": statusBadge,
                 "DATA ATIVIDADE": formatarData(lancamento.dataAtividade) || '',
-                // (O resto do mapa de células continua exatamente igual)
-                "OS": (lancamento.os || {}).os || '', "SITE": (lancamento.os || {}).site || '', "CONTRATO": (lancamento.os || {}).contrato || '', "SEGMENTO": (lancamento.os || {}).segmento || '', "PROJETO": (lancamento.os || {}).projeto || '',
+                "OS": (lancamento.os || {}).os || '', "SITE": (lancamento.os || {}).site || '', "CONTRATO": (lancamento.os || {}).contrato || '', "SEGMENTO": (lancamento.os && lancamento.os.segmento) ? lancamento.os.segmento.nome : '', "PROJETO": (lancamento.os || {}).projeto || '',
                 "GESTOR TIM": (lancamento.os || {}).gestorTim || '', "REGIONAL": (lancamento.os || {}).regional || '', "LOTE": (lancamento.os || {}).lote || '', "BOQ": (lancamento.os || {}).boq || '', "PO": (lancamento.os || {}).po || '', "ITEM": (lancamento.os || {}).item || '', "OBJETO CONTRATADO": (lancamento.os || {}).objetoContratado || '', "UNIDADE": (lancamento.os || {}).unidade || '', "QUANTIDADE": (lancamento.os || {}).quantidade || '', "VALOR TOTAL": formatarMoeda((lancamento.os || {}).valorTotal),
                 "OBSERVAÇÕES": (lancamento.os || {}).observacoes || '', "DATA PO": (lancamento.os || {}).dataPo || '',
                 "LPU": (lancamento.lpu) ? `${lancamento.lpu.codigo} - ${lancamento.lpu.nome}` : '', "EQUIPE": lancamento.equipe || '', "VISTORIA": lancamento.vistoria || '', "PLANO DE VISTORIA": formatarData(lancamento.planoVistoria) || '', "DESMOBILIZAÇÃO": lancamento.desmobilizacao || '', "PLANO DE DESMOBILIZAÇÃO": formatarData(lancamento.planoDesmobilizacao) || '',

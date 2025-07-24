@@ -138,4 +138,22 @@ public class LancamentoController {
         LancamentoResponseDTO responseDTO = new LancamentoResponseDTO(lancamentoSalvo);
         return ResponseEntity.ok(responseDTO);
     }
+
+    @GetMapping("/pendentes/{usuarioId}")
+    public ResponseEntity<List<LancamentoResponseDTO>> getPendentesPorUsuario(@PathVariable Long usuarioId) {
+        List<Lancamento> pendentes = lancamentoService.listarPendentesPorUsuario(usuarioId);
+        List<LancamentoResponseDTO> responseList = pendentes.stream()
+                .map(LancamentoResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responseList);
+    }
+
+    @GetMapping("/historico/{usuarioId}")
+    public ResponseEntity<List<LancamentoResponseDTO>> getHistoricoPorUsuario(@PathVariable Long usuarioId) {
+        List<Lancamento> historico = lancamentoService.getHistoricoPorUsuario(usuarioId);
+        List<LancamentoResponseDTO> responseList = historico.stream()
+                .map(LancamentoResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responseList);
+    }
 }

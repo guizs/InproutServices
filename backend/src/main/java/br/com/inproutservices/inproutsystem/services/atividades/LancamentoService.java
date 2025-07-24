@@ -13,6 +13,10 @@ public interface LancamentoService {
 
     Lancamento rejeitarPeloController(Long lancamentoId, AcaoControllerDTO dto);
 
+    List<Lancamento> listarPendentesPorUsuario(Long usuarioId);
+
+    List<Lancamento> getHistoricoPorUsuario(Long usuarioId);
+
     Lancamento atualizarLancamento(Long id, LancamentoRequestDTO dto);
 
     Lancamento reenviarParaAprovacao(Long lancamentoId, Long managerId);

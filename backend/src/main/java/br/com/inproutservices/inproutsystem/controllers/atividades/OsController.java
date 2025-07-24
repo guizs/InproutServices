@@ -28,6 +28,20 @@ public class OsController {
     }
 
     /**
+     * Endpoint para buscar Ordens de Serviço filtradas por usuário.
+     * HTTP Method: GET
+     * URL: /os/por-usuario/{usuarioId}
+     */
+    @GetMapping("/por-usuario/{usuarioId}")
+    public ResponseEntity<List<OsResponseDto>> getOsPorUsuario(@PathVariable Long usuarioId) {
+        List<OS> osDoUsuario = osService.getAllOsByUsuario(usuarioId);
+        List<OsResponseDto> responseList = osDoUsuario.stream()
+                .map(OsResponseDto::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responseList);
+    }
+
+    /**
      * Endpoint para criar uma nova Ordem de Serviço.
      * HTTP Method: POST
      * URL: /api/os

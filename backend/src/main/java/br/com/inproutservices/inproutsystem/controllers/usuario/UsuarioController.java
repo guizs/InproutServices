@@ -7,12 +7,14 @@ import br.com.inproutservices.inproutsystem.repositories.usuarios.UsuarioReposit
 import br.com.inproutservices.inproutsystem.services.usuarios.PasswordService;
 import br.com.inproutservices.inproutsystem.services.usuarios.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -113,7 +115,10 @@ public class UsuarioController {
                 response.put("usuario", usuario.getNome());
                 response.put("email", usuario.getEmail());
                 response.put("role", usuario.getRole());
+                List<Long> segmentoIds = usuario.getSegmentos().stream().map(Segmento::getId).collect(Collectors.toList());
+                response.put("segmentos", segmentoIds);
                 return ResponseEntity.ok(response);
+
             }
         }
 

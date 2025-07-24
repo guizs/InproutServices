@@ -16,6 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.show();
     }
 
+    function toggleLoader(ativo = true) {
+        const overlay = document.getElementById("overlay-loader");
+        if (overlay) {
+            if (ativo) {
+                overlay.classList.remove("d-none");
+            } else {
+                overlay.classList.add("d-none");
+            }
+        }
+    }
+
     // ==========================================================
     // SEÇÃO 1: LÓGICA DO PAINEL "VISÃO GERAL" (RECOLHÍVEL)
     // ==========================================================
@@ -222,19 +233,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function carregarLancamentos() {
+        toggleLoader(true); // <-- MOSTRA O LOADER
         try {
             const response = await fetch('http://localhost:8080/lancamentos');
             if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
 
-            todosLancamentos = await response.json();
+            const lancamentosDaApi = await response.json();
 
-            // ADICIONE A CHAMADA DA NOVA FUNÇÃO AQUI!
+            todosLancamentos = filtrarLancamentosParaUsuario(lancamentosDaApi);
+
             renderizarCardsDashboard(todosLancamentos);
             popularFiltroOS();
             renderizarTodasAsTabelas();
         } catch (error) {
             console.error('Falha ao buscar lançamentos:', error);
             mostrarToast('Falha ao carregar dados do servidor.', 'error');
+        } finally {
+            toggleLoader(false); // <-- ESCONDE O LOADER (no sucesso ou no erro)
         }
     }
 
@@ -471,26 +486,31 @@ document.addEventListener('DOMContentLoaded', () => {
             // Busca na API só acontece uma vez para otimizar
             if (todasAsOS.length === 0) {
                 try {
-                    const response = await fetch('http://localhost:8080/os');
+                    // --- INÍCIO DA ALTERAÇÃO ---
+                    const usuarioId = localStorage.getItem('usuarioId'); // Pega o ID do usuário logado
+                    if (!usuarioId) {
+                        throw new Error('ID do usuário não encontrado no localStorage.');
+                    }
+
+                    // Chama o novo endpoint filtrado
+                    const response = await fetch(`http://localhost:8080/os/por-usuario/${usuarioId}`);
+                    // --- FIM DA ALTERAÇÃO ---
+
                     if (!response.ok) throw new Error('Falha ao carregar Ordens de Serviço.');
                     const osData = await response.json();
 
-                    // --- INÍCIO DA CORREÇÃO DE UNICIDADE ---
-                    // Remove duplicatas usando um Map, garantindo que cada OS apareça uma única vez
+                    // O resto da função continua igual...
                     const osUnicas = [...new Map(osData.map(os => [os.id, os])).values()];
-                    todasAsOS = osUnicas.sort((a, b) => a.os.localeCompare(b.os)); // Guarda a lista única e ordenada
+                    todasAsOS = osUnicas.sort((a, b) => a.os.localeCompare(b.os));
 
-                    // Limpa o select antes de popular
                     selectOS.innerHTML = `<option value="" selected disabled>Selecione...</option>`;
 
-                    // Popula o select com a lista de OSs únicas
                     todasAsOS.forEach(item => {
                         const option = document.createElement('option');
                         option.value = item.id;
                         option.textContent = item.os;
                         selectOS.appendChild(option);
                     });
-                    // --- FIM DA CORREÇÃO DE UNICIDADE ---
 
                 } catch (error) {
                     console.error('Erro ao popular o select de OS:', error);
@@ -609,6 +629,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!formAdicionar.dataset.editingId) {
                 modalTitle.innerHTML = '<i class="bi bi-plus-circle"></i> Adicionar Nova Atividade';
+
+                // --- INÍCIO DA CORREÇÃO ---
+                document.getElementById('btnSubmitAdicionar').style.display = 'inline-block';
+                document.getElementById('btnSalvarRascunho').style.display = 'none';
+                document.getElementById('btnSalvarEEnviar').style.display = 'none';
+                // --- FIM DA CORREÇÃO ---
+
                 submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Salvar Lançamento';
                 document.getElementById('osId').disabled = false;
                 document.getElementById('dataAtividade').disabled = false;
@@ -1083,7 +1110,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Popula o select de OS
             try {
-                const response = await fetch('http://localhost:8080/os');
+                // --- INÍCIO DA ALTERAÇÃO ---
+                const usuarioId = localStorage.getItem('usuarioId');
+                if (!usuarioId) {
+                    throw new Error('ID do usuário não encontrado para filtrar as OSs.');
+                }
+                // Altera a URL para o endpoint que filtra por usuário
+                const response = await fetch(`http://localhost:8080/os/por-usuario/${usuarioId}`);
+                // --- FIM DA ALTERAÇÃO ---
+
                 const oss = await response.json();
                 selectOS.innerHTML = '<option value="" selected disabled>Selecione a OS...</option>';
                 oss.forEach(os => {

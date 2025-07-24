@@ -431,6 +431,10 @@ public class LancamentoServiceImpl implements LancamentoService {
             userEmail = principal.toString();
         }
 
+        if ("anonymousUser".equals(userEmail)) {
+            return lancamentoRepository.findAllWithDetails();
+        }
+
         Usuario usuarioLogado = usuarioRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário '" + userEmail + "' não encontrado no banco de dados."));
 
@@ -443,7 +447,7 @@ public class LancamentoServiceImpl implements LancamentoService {
 
         if (role == Role.MANAGER || role == Role.COORDINATOR) {
             Set<Long> segmentosDoUsuario = usuarioLogado.getSegmentos().stream()
-                    .map(Segmento::getId) // Agora esta linha funciona!
+                    .map(Segmento::getId)
                     .collect(Collectors.toSet());
 
             if (segmentosDoUsuario.isEmpty()) {
@@ -458,6 +462,57 @@ public class LancamentoServiceImpl implements LancamentoService {
         }
 
         return List.of();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Lancamento> getHistoricoPorUsuario(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
+
+        Role role = usuario.getRole();
+        List<SituacaoAprovacao> statusHistorico = List.of(SituacaoAprovacao.APROVADO, SituacaoAprovacao.RECUSADO_COORDENADOR, SituacaoAprovacao.RECUSADO_CONTROLLER);
+
+        if (role == Role.ADMIN || role == Role.CONTROLLER || role == Role.ASSISTANT) {
+            return lancamentoRepository.findBySituacaoAprovacaoIn(statusHistorico);
+        }
+
+        if (role == Role.MANAGER || role == Role.COORDINATOR) {
+            Set<Segmento> segmentosDoUsuario = usuario.getSegmentos();
+            if (segmentosDoUsuario.isEmpty()) {
+                return List.of();
+            }
+            return lancamentoRepository.findBySituacaoAprovacaoInAndOsSegmentoIn(statusHistorico, segmentosDoUsuario);
+        }
+
+        return List.of();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Lancamento> listarPendentesPorUsuario(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
+
+        Role role = usuario.getRole();
+
+        if (role == Role.COORDINATOR) {
+            List<SituacaoAprovacao> statusPendentes = List.of(SituacaoAprovacao.PENDENTE_COORDENADOR);
+            Set<Segmento> segmentosDoUsuario = usuario.getSegmentos();
+            if (segmentosDoUsuario.isEmpty()) {
+                return List.of();
+            }
+            return lancamentoRepository.findBySituacaoAprovacaoInAndOsSegmentoIn(statusPendentes, segmentosDoUsuario);
+        } else if (role == Role.CONTROLLER || role == Role.ADMIN) {
+            List<SituacaoAprovacao> statusPendentes = List.of(
+                    SituacaoAprovacao.PENDENTE_CONTROLLER,
+                    SituacaoAprovacao.AGUARDANDO_EXTENSAO_PRAZO,
+                    SituacaoAprovacao.PRAZO_VENCIDO
+            );
+            return lancamentoRepository.findBySituacaoAprovacaoIn(statusPendentes);
+        }
+
+        return List.of(); // Retorna lista vazia para outras roles
     }
 
     @Override

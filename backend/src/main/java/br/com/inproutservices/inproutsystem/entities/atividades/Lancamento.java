@@ -15,8 +15,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "lancamento")
@@ -54,7 +53,7 @@ public class Lancamento {
     private LocalDate dataPrazoProposta;
 
     @OneToMany(mappedBy = "lancamento", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comentario> comentarios = new ArrayList<>();
+    private Set<Comentario> comentarios = new HashSet<>();
 
     // --- CAMPOS REFATORADOS PARA RELACIONAMENTOS ---
     @ManyToOne(fetch = FetchType.LAZY)
@@ -180,11 +179,11 @@ public class Lancamento {
         this.dataPrazoProposta = dataPrazoProposta;
     }
 
-    public List<Comentario> getComentarios() {
+    public Set<Comentario> getComentarios() {
         return comentarios;
     }
 
-    public void setComentarios(List<Comentario> comentarios) {
+    public void setComentarios(Set<Comentario> comentarios) {
         this.comentarios = comentarios;
     }
 
@@ -355,5 +354,18 @@ public class Lancamento {
 
     public void setStatus(StatusEtapa status) {
         this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Lancamento that = (Lancamento) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

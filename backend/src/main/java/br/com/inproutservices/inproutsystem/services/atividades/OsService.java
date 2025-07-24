@@ -20,6 +20,14 @@ public interface OsService {
     OS createOs(OsRequestDto osDto);
 
     /**
+     * Retorna uma lista de Ordens de Serviço filtradas pelos segmentos
+     * do usuário especificado.
+     * @param usuarioId O ID do usuário.
+     * @return Lista de entidades OS filtradas.
+     */
+    List<OS> getAllOsByUsuario(Long usuarioId);
+
+    /**
      * Busca uma Ordem de Serviço pelo seu ID.
      * @param id O ID da OS.
      * @return A entidade OS encontrada. Lança uma exceção se não encontrar.

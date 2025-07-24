@@ -5,17 +5,21 @@ import br.com.inproutservices.inproutsystem.entities.index.Contrato;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
 import br.com.inproutservices.inproutsystem.entities.index.Segmento;
 import br.com.inproutservices.inproutsystem.entities.atividades.OS;
+import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.repositories.atividades.OsRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.ContratoRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.LpuRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.SegmentoRepository;
+import br.com.inproutservices.inproutsystem.repositories.usuarios.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class OsServiceImpl implements OsService {
@@ -24,12 +28,14 @@ public class OsServiceImpl implements OsService {
     private final LpuRepository lpuRepository;
     private final ContratoRepository contratoRepository;
     private final SegmentoRepository segmentoRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public OsServiceImpl(OsRepository osRepository, LpuRepository lpuRepository, ContratoRepository contratoRepository, SegmentoRepository segmentoRepository) {
+    public OsServiceImpl(OsRepository osRepository, LpuRepository lpuRepository, ContratoRepository contratoRepository, SegmentoRepository segmentoRepository, UsuarioRepository usuarioRepository) {
         this.osRepository = osRepository;
         this.lpuRepository = lpuRepository;
         this.contratoRepository = contratoRepository;
         this.segmentoRepository = segmentoRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
@@ -83,6 +89,21 @@ public class OsServiceImpl implements OsService {
     public OS getOsById(Long id) {
         return osRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new EntityNotFoundException("OS não encontrada com o ID: " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OS> getAllOsByUsuario(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
+
+        Set<Segmento> segmentosDoUsuario = usuario.getSegmentos();
+
+        if (segmentosDoUsuario.isEmpty()) {
+            return Collections.emptyList(); // Retorna lista vazia se o usuário não tiver segmentos
+        }
+
+        return osRepository.findAllBySegmentoIn(segmentosDoUsuario);
     }
 
     @Override

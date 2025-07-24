@@ -4,8 +4,11 @@ function mostrarMensagem(texto, tipo = 'success') {
       mensagemEl.classList.add('alert', tipo === 'success' ? 'alert-success' : 'alert-error');
       mensagemEl.textContent = texto;
     }
+    
+    // ALTERAÇÃO: O listener agora está no formulário e escuta o evento 'submit'
+    document.getElementById('formLogin').addEventListener('submit', async (event) => {
+    event.preventDefault(); // Impede que a página recarregue
 
-    document.getElementById('btnLogin').addEventListener('click', async () => {
     const email = document.getElementById('email').value;
     const senha = document.getElementById('senha').value;
 

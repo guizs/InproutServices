@@ -17,11 +17,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record LancamentoResponseDTO(
-        // ... (outros campos do record principal não mudam)
         Long id,
         SituacaoAprovacao situacaoAprovacao,
         ManagerDTO manager,
@@ -50,7 +50,7 @@ public record LancamentoResponseDTO(
         SituacaoOperacional situacao,
         String detalheDiario,
         BigDecimal valor,
-        List<ComentarioDTO> comentarios
+        Set<ComentarioDTO> comentarios
 ) {
     public LancamentoResponseDTO(Lancamento lancamento) {
         this(
@@ -82,7 +82,7 @@ public record LancamentoResponseDTO(
                 lancamento.getSituacao(),
                 lancamento.getDetalheDiario(),
                 lancamento.getValor(),
-                (lancamento.getComentarios() != null) ? lancamento.getComentarios().stream().map(ComentarioDTO::new).collect(Collectors.toList()) : null
+                (lancamento.getComentarios() != null) ? lancamento.getComentarios().stream().map(ComentarioDTO::new).collect(Collectors.toSet()) : null
         );
     }
 

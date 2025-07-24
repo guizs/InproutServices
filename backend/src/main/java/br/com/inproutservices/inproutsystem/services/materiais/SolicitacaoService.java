@@ -2,12 +2,14 @@ package br.com.inproutservices.inproutsystem.services.materiais;
 
 import br.com.inproutservices.inproutsystem.dtos.materiais.SolicitacaoRequestDTO;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento;
 import br.com.inproutservices.inproutsystem.entities.materiais.ItemSolicitacao;
 import br.com.inproutservices.inproutsystem.entities.materiais.Material;
 import br.com.inproutservices.inproutsystem.entities.materiais.Solicitacao;
 import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.enums.materiais.StatusSolicitacao;
+import br.com.inproutservices.inproutsystem.enums.usuarios.Role;
 import br.com.inproutservices.inproutsystem.exceptions.materiais.BusinessException;
 import br.com.inproutservices.inproutsystem.exceptions.materiais.ResourceNotFoundException;
 import br.com.inproutservices.inproutsystem.repositories.atividades.OsRepository;
@@ -23,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class SolicitacaoService {
@@ -43,6 +46,27 @@ public class SolicitacaoService {
         this.osRepository = osRepository;
         this.lpuRepository = lpuRepository;
         this.usuarioRepository = usuarioRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Solicitacao> listarHistorico(Long usuarioId) { // Agora recebe o ID do usuário
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
+
+        Role role = usuario.getRole();
+        List<StatusSolicitacao> statuses = List.of(StatusSolicitacao.APROVADA, StatusSolicitacao.REJEITADA);
+
+        // Se for Admin ou Controller, retorna tudo
+        if (role == Role.ADMIN || role == Role.CONTROLLER) {
+            return solicitacaoRepository.findByStatusIn(statuses);
+        }
+
+        // Se for Manager, filtra pelo segmento
+        Set<Segmento> segmentosDoUsuario = usuario.getSegmentos();
+        if (segmentosDoUsuario.isEmpty()) {
+            return List.of();
+        }
+        return solicitacaoRepository.findByStatusInAndOsSegmentoIn(statuses, segmentosDoUsuario);
     }
 
     @Transactional
@@ -100,18 +124,18 @@ public class SolicitacaoService {
     }
 
     @Transactional
-    public Solicitacao aprovarPeloCoordenador(Long solicitacaoId, Long coordenadorId) {
+    public Solicitacao aprovarPeloCoordenador(Long solicitacaoId, Long aprovadorId) {
         Solicitacao solicitacao = solicitacaoRepository.findById(solicitacaoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Solicitação não encontrada com o ID: " + solicitacaoId));
-        Usuario coordenador = usuarioRepository.findById(coordenadorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário Coordenador não encontrado com o ID: " + coordenadorId));
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitação não encontrada..."));
+        Usuario aprovador = usuarioRepository.findById(aprovadorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário Coordenador não encontrado..."));
 
-        if (solicitacao.getStatus() != StatusSolicitacao.PENDENTE_COORDENADOR) {
+        if (aprovador.getRole() != Role.ADMIN && solicitacao.getStatus() != StatusSolicitacao.PENDENTE_COORDENADOR) {
             throw new BusinessException("Apenas solicitações com status PENDENTE_COORDENADOR podem ser aprovadas.");
         }
 
         solicitacao.setStatus(StatusSolicitacao.PENDENTE_CONTROLLER);
-        solicitacao.setAprovadorCoordenador(coordenador); // CORREÇÃO: Seta o objeto Usuario
+        solicitacao.setAprovadorCoordenador(aprovador);
         solicitacao.setDataAcaoCoordenador(LocalDateTime.now());
 
         return solicitacaoRepository.save(solicitacao);
