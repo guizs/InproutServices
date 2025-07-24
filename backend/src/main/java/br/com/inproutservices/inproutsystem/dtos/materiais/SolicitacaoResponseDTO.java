@@ -74,15 +74,25 @@ public record SolicitacaoResponseDTO(
         }
     }
 
-    public record OsSimpleDTO(Long id, String os) {
+    public record OsSimpleDTO(Long id, String os, SegmentoSimpleDTO segmento) {
         public OsSimpleDTO(OS osEntity) {
-            this(osEntity.getId(), osEntity.getOs());
+            this(
+                    osEntity.getId(),
+                    osEntity.getOs(),
+                    osEntity.getSegmento() != null ? new SegmentoSimpleDTO(osEntity.getSegmento()) : null
+            );
         }
     }
 
     public record LpuSimpleDTO(Long id, String codigoLpu) {
         public LpuSimpleDTO(Lpu lpuEntity) {
             this(lpuEntity.getId(), lpuEntity.getCodigoLpu());
+        }
+    }
+
+    public record SegmentoSimpleDTO(Long id, String nome) {
+        public SegmentoSimpleDTO(br.com.inproutservices.inproutsystem.entities.index.Segmento segmento) {
+            this(segmento.getId(), segmento.getNome());
         }
     }
 }

@@ -175,7 +175,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const painelAprovacaoMateriais = document.getElementById('materiais-pane');
 
         // Esconde os botões das abas
-        if (abaAprovacaoAtividades) abaAprovacaoAtividades.style.display = 'none';
+        if (abaAprovacaoAtividades) {
+            abaAprovacaoAtividades.style.display = 'none';
+            abaAprovacaoAtividades.classList.remove('active'); // <-- ADICIONE ESTA LINHA
+        }
         if (abaAprovacaoMateriais) abaAprovacaoMateriais.style.display = 'none';
 
         // Esconde os painéis
@@ -562,14 +565,14 @@ document.addEventListener('DOMContentLoaded', function () {
             <th>Data Solicitação</th>
             <th>Solicitante</th>
             <th>OS</th>
-            <th>LPU</th>
+            <th>Segmento</th> <th>LPU</th>
             <th>Item Solicitado</th>
             <th class="text-center">Unidade</th>
             <th class="text-center">Qtd. Solicitada</th>
             <th>Aprovador</th>
             <th>Motivo Recusa</th>
         </tr>
-   `;
+    `;
 
         if (!solicitacoes || solicitacoes.length === 0) {
             tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted">Nenhum histórico encontrado.</td></tr>`;
@@ -599,18 +602,18 @@ document.addEventListener('DOMContentLoaded', function () {
             const nomeAprovador = s.nomeAprovadorController || s.nomeAprovadorCoordenador;
 
             tr.innerHTML = `
-            <td data-label="Data Ação">${new Date(dataAcao).toLocaleString('pt-BR')}</td>
-            <td data-label="Status">${statusBadge}</td>
-            <td data-label="Data Solicitação">${new Date(s.dataSolicitacao).toLocaleString('pt-BR')}</td>
-            <td data-label="Solicitante">${s.nomeSolicitante || 'N/A'}</td>
-            <td data-label="OS">${s.os.os}</td>
-            <td data-label="LPU">${s.lpu.codigoLpu}</td>
-            <td data-label="Item Solicitado">${item.material.descricao}</td>
-            <td data-label="Unidade" class="text-center">${item.material.unidadeMedida}</td>
-            <td data-label="Qtd. Solicitada" class="text-center">${item.quantidadeSolicitada}</td>
-            <td data-label="Aprovador">${nomeAprovador || 'N/A'}</td>
-            <td data-label="Motivo Recusa">${s.motivoRecusa || '—'}</td>
-       `;
+                <td data-label="Data Ação">${new Date(dataAcao).toLocaleString('pt-BR')}</td>
+                <td data-label="Status">${statusBadge}</td>
+                <td data-label="Data Solicitação">${new Date(s.dataSolicitacao).toLocaleString('pt-BR')}</td>
+                <td data-label="Solicitante">${s.nomeSolicitante || 'N/A'}</td>
+                <td data-label="OS">${s.os.os}</td>
+                <td data-label="Segmento">${s.os.segmento ? s.os.segmento.nome : 'N/A'}</td> <td data-label="LPU">${s.lpu.codigoLpu}</td>
+                <td data-label="Item Solicitado">${item.material.descricao}</td>
+                <td data-label="Unidade" class="text-center">${item.material.unidadeMedida}</td>
+                <td data-label="Qtd. Solicitada" class="text-center">${item.quantidadeSolicitada}</td>
+                <td data-label="Aprovador">${nomeAprovador || 'N/A'}</td>
+                <td data-label="Motivo Recusa">${s.motivoRecusa || '—'}</td>
+            `;
             tbody.appendChild(tr);
         });
     }
