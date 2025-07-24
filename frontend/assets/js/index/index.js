@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function carregarLancamentos() {
         toggleLoader(true); // <-- MOSTRA O LOADER
         try {
-            const response = await fetch('http://localhost:8080/lancamentos');
+            const response = await fetch('http://3.128.248.3:8080/lancamentos');
             if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
 
             const lancamentosDaApi = await response.json();
@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 lpuContainer.classList.remove('d-none'); // Mostra o container
 
                 // Busca as LPUs para a OS selecionada
-                const response = await fetch(`http://localhost:8080/os/${osId}/lpus`);
+                const response = await fetch(`http://3.128.248.3:8080/os/${osId}/lpus`);
                 if (!response.ok) {
                     throw new Error('Falha ao buscar LPUs para esta OS.');
                 }
@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     // Chama o novo endpoint filtrado
-                    const response = await fetch(`http://localhost:8080/os/por-usuario/${usuarioId}`);
+                    const response = await fetch(`http://3.128.248.3:8080/os/por-usuario/${usuarioId}`);
                     // --- FIM DA ALTERAÇÃO ---
 
                     if (!response.ok) throw new Error('Falha ao carregar Ordens de Serviço.');
@@ -595,10 +595,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             if (selectPrestador.options.length <= 1) {
-                await popularSelect(selectPrestador, 'http://localhost:8080/index/prestadores', 'id', (item) => `${item.codigoPrestador} - ${item.prestador}`);
+                await popularSelect(selectPrestador, 'http://3.128.248.3:8080/index/prestadores', 'id', (item) => `${item.codigoPrestador} - ${item.prestador}`);
             }
             if (todasAsEtapas.length === 0) {
-                todasAsEtapas = await popularSelect(selectEtapaGeral, 'http://localhost:8080/index/etapas', 'id', (item) => `${item.codigo} - ${item.nome}`);
+                todasAsEtapas = await popularSelect(selectEtapaGeral, 'http://3.128.248.3:8080/index/etapas', 'id', (item) => `${item.codigo} - ${item.nome}`);
             }
         }
 
@@ -801,7 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectLPU.disabled = true;
                 lpuContainer.classList.remove('d-none');
 
-                const response = await fetch(`http://localhost:8080/os/${osId}/lpus`);
+                const response = await fetch(`http://3.128.248.3:8080/os/${osId}/lpus`);
                 if (!response.ok) {
                     throw new Error('Falha ao buscar LPUs para esta OS.');
                 }
@@ -862,7 +862,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmButton.disabled = true;
                 confirmButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Enviando...`;
 
-                const resposta = await fetch(`http://localhost:8080/lancamentos/${id}/submeter`, { method: 'POST' });
+                const resposta = await fetch(`http://3.128.248.3:8080/lancamentos/${id}/submeter`, { method: 'POST' });
                 if (!resposta.ok) {
                     const erroData = await resposta.json();
                     throw new Error(erroData.message || 'Erro ao submeter.');
@@ -899,7 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const response = await fetch(`http://localhost:8080/os/${osId}/lpus`);
+                const response = await fetch(`http://3.128.248.3:8080/os/${osId}/lpus`);
                 if (!response.ok) throw new Error('Falha ao buscar LPUs para esta OS.');
 
                 const lpus = await response.json();
@@ -958,20 +958,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Define o status de aprovação e o método HTTP com base na ação
             let method = 'POST';
-            let url = 'http://localhost:8080/lancamentos';
+            let url = 'http://3.128.248.3:8080/lancamentos';
 
             if (acao === 'salvar') { // Salvar alterações de um Rascunho
                 dadosParaEnviar.situacaoAprovacao = 'RASCUNHO';
                 method = 'PUT';
-                url = `http://localhost:8080/lancamentos/${editingId}`;
+                url = `http://3.128.248.3:8080/lancamentos/${editingId}`;
             } else if (acao === 'enviar') { // Salvar e Enviar um Rascunho
                 dadosParaEnviar.situacaoAprovacao = 'PENDENTE_COORDENADOR';
                 method = 'PUT';
-                url = `http://localhost:8080/lancamentos/${editingId}`;
+                url = `http://3.128.248.3:8080/lancamentos/${editingId}`;
             } else if (acao === 'reenviar') { // Reenviar um item Rejeitado
                 dadosParaEnviar.situacaoAprovacao = 'PENDENTE_COORDENADOR';
                 method = 'PUT';
-                url = `http://localhost:8080/lancamentos/${editingId}`;
+                url = `http://3.128.248.3:8080/lancamentos/${editingId}`;
             }
             // Se a acao for 'criar' (Retomar ou Novo), o método e URL padrão são usados
 
@@ -1147,7 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             selectElement.innerHTML = '<option value="" selected disabled>Carregando...</option>';
             if (todosOsMateriais.length === 0) {
                 // Busca materiais da API apenas se o cache estiver vazio
-                fetch('http://localhost:8080/materiais')
+                fetch('http://3.128.248.3:8080/materiais')
                     .then(res => res.json())
                     .then(data => {
                         todosOsMateriais = data; // Armazena no cache
@@ -1194,7 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('ID do usuário não encontrado para filtrar as OSs.');
                 }
                 // Altera a URL para o endpoint que filtra por usuário
-                const response = await fetch(`http://localhost:8080/os/por-usuario/${usuarioId}`);
+                const response = await fetch(`http://3.128.248.3:8080/os/por-usuario/${usuarioId}`);
                 // --- FIM DA ALTERAÇÃO ---
 
                 const oss = await response.json();
@@ -1222,7 +1222,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const response = await fetch(`http://localhost:8080/os/${osId}/lpus`);
+                const response = await fetch(`http://3.128.248.3:8080/os/${osId}/lpus`);
                 const lpus = await response.json();
                 selectLPU.innerHTML = '<option value="" selected disabled>Selecione a LPU...</option>';
 
@@ -1294,7 +1294,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // ==========================================================
 
             try {
-                const response = await fetch('http://localhost:8080/solicitacoes', {
+                const response = await fetch('http://3.128.248.3:8080/solicitacoes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

@@ -9,7 +9,8 @@ const modalComentarios = document.getElementById('modalComentarios') ? new boots
 const modalAprovarMaterial = document.getElementById('modalAprovarMaterial') ? new bootstrap.Modal(document.getElementById('modalAprovarMaterial')) : null;
 const modalRecusarMaterial = document.getElementById('modalRecusarMaterial') ? new bootstrap.Modal(document.getElementById('modalRecusarMaterial')) : null;
 let todosOsLancamentosGlobais = [];
-const API_BASE_URL = 'http://localhost:8080';
+//const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'http://3.128.248.3:8080';
 
 // Funções para abrir modais (sem alterações)
 function aprovarLancamento(id) {
