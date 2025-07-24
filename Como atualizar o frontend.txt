@@ -1,0 +1,11 @@
+Na pasta Versão 0.2025.0.1: scp -i "C:\Users\gferr\Documents\lunuxapplication.pem" -r .\frontend ubuntu@3.128.248.3:~/
+
+# Apague o que quer que esteja no diretório do Nginx
+sudo rm -rf /var/www/html
+
+# Mova a pasta 'frontend' que você acabou de enviar para se tornar a nova 'html'
+sudo mv ~/frontend /var/www/html
+
+# Ajuste as permissões para que o Nginx possa ler os arquivos
+sudo chown -R ubuntu:ubuntu /var/www/html
+sudo chmod -R 755 /var/www/html
