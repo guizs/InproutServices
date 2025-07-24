@@ -13,9 +13,19 @@ public interface LancamentoService {
 
     Lancamento rejeitarPeloController(Long lancamentoId, AcaoControllerDTO dto);
 
+    List<Lancamento> listarPendentesPorUsuario(Long usuarioId);
+
+    List<Lancamento> getHistoricoPorUsuario(Long usuarioId);
+
+    Lancamento atualizarLancamento(Long id, LancamentoRequestDTO dto);
+
     Lancamento reenviarParaAprovacao(Long lancamentoId, Long managerId);
 
+    Lancamento salvarComoRascunho(Long id, LancamentoRequestDTO dto);
+
     Lancamento criarLancamento(LancamentoRequestDTO dto, Long managerId);
+
+    Lancamento submeterLancamentoManualmente(Long lancamentoId, Long managerId);
 
     void submeterLancamentosDiarios();
 

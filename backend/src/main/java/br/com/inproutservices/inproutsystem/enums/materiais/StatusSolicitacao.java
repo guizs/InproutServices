@@ -1,7 +1,8 @@
 package br.com.inproutservices.inproutsystem.enums.materiais;
 
 public enum StatusSolicitacao {
-    PENDENTE,
+    PENDENTE_COORDENADOR,
+    PENDENTE_CONTROLLER,
     APROVADA,
     REJEITADA
 }

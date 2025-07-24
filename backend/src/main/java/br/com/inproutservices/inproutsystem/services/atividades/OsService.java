@@ -1,7 +1,7 @@
 package br.com.inproutservices.inproutsystem.services.atividades;
 
 import br.com.inproutservices.inproutsystem.dtos.atividades.OsRequestDto;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 
 import java.util.List;
 
@@ -18,6 +18,14 @@ public interface OsService {
      * @return A entidade OS criada e salva no banco de dados.
      */
     OS createOs(OsRequestDto osDto);
+
+    /**
+     * Retorna uma lista de Ordens de Serviço filtradas pelos segmentos
+     * do usuário especificado.
+     * @param usuarioId O ID do usuário.
+     * @return Lista de entidades OS filtradas.
+     */
+    List<OS> getAllOsByUsuario(Long usuarioId);
 
     /**
      * Busca uma Ordem de Serviço pelo seu ID.

@@ -1,19 +1,22 @@
-package br.com.inproutservices.inproutsystem.entities.os;
+package br.com.inproutservices.inproutsystem.entities.atividades;
 
 // Garanta que este import aponte para o pacote onde sua classe Lpu está
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
 import br.com.inproutservices.inproutsystem.entities.atividades.Lancamento;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "os")
@@ -26,17 +29,24 @@ public class OS {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "os_lpus", // Nome da tabela de junção
+            joinColumns = @JoinColumn(name = "os_id"),
+            inverseJoinColumns = @JoinColumn(name = "lpu_id")
+    )
+    private Set<Lpu> lpus = new HashSet<>();
+
     private String os;
     private String site;
     private String contrato;
-    private String segmento;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "segmento_id")
+    private Segmento segmento;
     private String projeto;
     private String gestorTim;
     private String regional;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lpu_id")
-    private Lpu lpu;
     private String lote;
     private String boq;
     private String po;
@@ -46,9 +56,15 @@ public class OS {
     private Integer quantidade;
     private BigDecimal valorTotal;
     private String observacoes;
+
+    // --- CAMPO ADICIONADO ---
+    @Column(name = "custo_total_materiais", precision = 10, scale = 2)
+    private BigDecimal custoTotalMateriais;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dataPo;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "os", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<Lancamento> lancamentos;
 
@@ -72,8 +88,29 @@ public class OS {
     private String usuarioAtualizacao;
     private String statusRegistro;
 
+    // --- GETTERS E SETTERS ---
+
+    // ... (todos os getters e setters existentes) ...
+
+    // --- MÉTODOS ADICIONADOS ---
+    public BigDecimal getCustoTotalMateriais() {
+        return custoTotalMateriais;
+    }
+
+    public void setCustoTotalMateriais(BigDecimal custoTotalMateriais) {
+        this.custoTotalMateriais = custoTotalMateriais;
+    }
+
     public Long getId() {
         return id;
+    }
+
+    public Set<Lpu> getLpus() {
+        return lpus;
+    }
+
+    public void setLpus(Set<Lpu> lpus) {
+        this.lpus = lpus;
     }
 
     public void setId(Long id) {
@@ -104,11 +141,11 @@ public class OS {
         this.contrato = contrato;
     }
 
-    public String getSegmento() {
+    public Segmento getSegmento() {
         return segmento;
     }
 
-    public void setSegmento(String segmento) {
+    public void setSegmento(Segmento segmento) {
         this.segmento = segmento;
     }
 
@@ -134,14 +171,6 @@ public class OS {
 
     public void setRegional(String regional) {
         this.regional = regional;
-    }
-
-    public Lpu getLpu() {
-        return lpu;
-    }
-
-    public void setLpu(Lpu lpu) {
-        this.lpu = lpu;
     }
 
     public String getLote() {

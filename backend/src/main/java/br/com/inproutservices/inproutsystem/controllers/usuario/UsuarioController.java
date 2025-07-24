@@ -1,16 +1,20 @@
 package br.com.inproutservices.inproutsystem.controllers.usuario;
 
 import br.com.inproutservices.inproutsystem.dtos.login.LoginRequest;
+import br.com.inproutservices.inproutsystem.dtos.usuario.UsuarioRequestDTO;
 import br.com.inproutservices.inproutsystem.entities.usuario.Usuario;
 import br.com.inproutservices.inproutsystem.repositories.usuarios.UsuarioRepository;
 import br.com.inproutservices.inproutsystem.services.usuarios.PasswordService;
+import br.com.inproutservices.inproutsystem.services.usuarios.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -19,17 +23,18 @@ public class UsuarioController {
 
     private final UsuarioRepository usuarioRepo;
     private final PasswordService passwordService;
+    private final UsuarioService usuarioService;
 
-    public UsuarioController(UsuarioRepository usuarioRepo, PasswordService passwordService) {
+    public UsuarioController(UsuarioRepository usuarioRepo, PasswordService passwordService, UsuarioService usuarioService) {
         this.usuarioRepo = usuarioRepo;
         this.passwordService = passwordService;
+        this.usuarioService = usuarioService;
     }
 
     // Criar usuário
     @PostMapping
-    public Usuario criar(@RequestBody Usuario usuario) {
-        usuario.setSenha(passwordService.encode(usuario.getSenha()));
-        return usuarioRepo.save(usuario);
+    public Usuario criar(@RequestBody UsuarioRequestDTO usuarioDTO) {
+        return usuarioService.criarUsuario(usuarioDTO);
     }
 
     // Listar usuários ativos
@@ -105,11 +110,15 @@ public class UsuarioController {
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             if (encoder.matches(loginRequest.getSenha(), usuario.getSenha())) {
                 Map<String, Object> response = new HashMap<>();
+                response.put("id", usuario.getId());
                 response.put("token", UUID.randomUUID().toString());
                 response.put("usuario", usuario.getNome());
                 response.put("email", usuario.getEmail());
                 response.put("role", usuario.getRole());
+                List<Long> segmentoIds = usuario.getSegmentos().stream().map(Segmento::getId).collect(Collectors.toList());
+                response.put("segmentos", segmentoIds);
                 return ResponseEntity.ok(response);
+
             }
         }
 

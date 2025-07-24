@@ -2,15 +2,15 @@ package br.com.inproutservices.inproutsystem.dtos.atividades;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class OsRequestDto {
     private String os;
     private String site;
-    private Long contratoId;
-    private String segmento;
+    private String contrato;
+    private Long segmentoId;
     private String projeto;
-    private String codigoLpu;
-
+    private List<Long> lpuIds;
     private String gestorTim;
     private String regional;
     private String lote;
@@ -28,6 +28,14 @@ public class OsRequestDto {
         return os;
     }
 
+    public List<Long> getLpuIds() {
+        return lpuIds;
+    }
+
+    public void setLpuIds(List<Long> lpuIds) {
+        this.lpuIds = lpuIds;
+    }
+
     public void setOs(String os) {
         this.os = os;
     }
@@ -40,20 +48,16 @@ public class OsRequestDto {
         this.site = site;
     }
 
-    public Long getContratoId() {
-        return contratoId;
+    public String getContrato() { return contrato; }
+
+    public void setContrato(String contrato) { this.contrato = contrato; }
+
+    public Long getSegmentoId() {
+        return segmentoId;
     }
 
-    public void setContratoId(Long contratoId) {
-        this.contratoId = contratoId;
-    }
-
-    public String getSegmento() {
-        return segmento;
-    }
-
-    public void setSegmento(String segmento) {
-        this.segmento = segmento;
+    public void setSegmentoId(Long segmentoId) {
+        this.segmentoId = segmentoId;
     }
 
     public String getProjeto() {
@@ -62,14 +66,6 @@ public class OsRequestDto {
 
     public void setProjeto(String projeto) {
         this.projeto = projeto;
-    }
-
-    public String getCodigoLpu() {
-        return codigoLpu;
-    }
-
-    public void setCodigoLpu(String codigoLpu) {
-        this.codigoLpu = codigoLpu;
     }
 
     public String getGestorTim() {

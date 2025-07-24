@@ -252,6 +252,20 @@ tr.selected {
   transition: background-color 0.2s ease-in-out;
 }
 
+.overlay-loader {
+  position: fixed; /* Garante que ele flutue sobre a página */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8); /* Fundo branco semitransparente */
+  z-index: 9999; /* Z-index altíssimo para ficar na frente de tudo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease; /* Transição suave */
+}
+
 @keyframes pulse {
   0% { opacity: 0.4; }
   50% { opacity: 1; }

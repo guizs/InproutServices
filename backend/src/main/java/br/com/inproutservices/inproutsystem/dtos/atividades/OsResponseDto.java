@@ -1,23 +1,26 @@
 package br.com.inproutservices.inproutsystem.dtos.atividades;
 
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
+import br.com.inproutservices.inproutsystem.entities.index.Segmento; // ADICIONE ESTE IMPORT
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public record OsResponseDto(
         Long id,
         String os,
         String site,
         String contrato,
-        String segmento,
+        SegmentoSimpleDTO segmento, // ALTERADO DE String PARA SegmentoSimpleDTO
+        Set<LpuSimpleDTO> lpus,
         String projeto,
         String gestorTim,
         String regional,
-        LpuSimpleDTO lpu,
         String lote,
         String boq,
         String po,
@@ -54,11 +57,14 @@ public record OsResponseDto(
                 os.getOs(),
                 os.getSite(),
                 os.getContrato(),
-                os.getSegmento(),
+                // LÓGICA DE MAPEAMENTO DO SEGMENTO
+                os.getSegmento() != null ? new SegmentoSimpleDTO(os.getSegmento()) : null,
+                os.getLpus().stream()
+                        .map(LpuSimpleDTO::new)
+                        .collect(Collectors.toSet()),
                 os.getProjeto(),
                 os.getGestorTim(),
                 os.getRegional(),
-                (os.getLpu() != null) ? new LpuSimpleDTO(os.getLpu()) : null,
                 os.getLote(),
                 os.getBoq(),
                 os.getPo(),
@@ -88,11 +94,20 @@ public record OsResponseDto(
     }
 
     /**
-     * DTO aninhado e simplificado para LPU, para evitar mais loops.
+     * DTO aninhado e simplificado para LPU, para evitar loops de serialização.
      */
     public record LpuSimpleDTO(Long id, String codigo, String nome) {
         public LpuSimpleDTO(Lpu lpu) {
             this(lpu.getId(), lpu.getCodigoLpu(), lpu.getNomeLpu());
+        }
+    }
+
+    /**
+     * NOVO DTO ANINHADO: DTO simplificado para Segmento.
+     */
+    public record SegmentoSimpleDTO(Long id, String nome) {
+        public SegmentoSimpleDTO(Segmento segmento) {
+            this(segmento.getId(), segmento.getNome());
         }
     }
 }

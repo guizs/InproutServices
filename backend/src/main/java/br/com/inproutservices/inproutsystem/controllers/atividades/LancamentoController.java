@@ -27,10 +27,9 @@ public class LancamentoController {
 
     @PostMapping
     public ResponseEntity<LancamentoResponseDTO> criarLancamento(@RequestBody LancamentoRequestDTO dto) {
-        Long managerId = 1L;
-        Lancamento lancamentoSalvo = lancamentoService.criarLancamento(dto, managerId);
 
-        // Converte a entidade salva para o DTO de resposta
+        Lancamento lancamentoSalvo = lancamentoService.criarLancamento(dto, dto.managerId());
+
         LancamentoResponseDTO responseDTO = new LancamentoResponseDTO(lancamentoSalvo);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
@@ -75,10 +74,25 @@ public class LancamentoController {
         return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<LancamentoResponseDTO> atualizarLancamento(@PathVariable Long id, @RequestBody LancamentoRequestDTO dto) {
+        Lancamento lancamentoAtualizado = lancamentoService.atualizarLancamento(id, dto);
+        LancamentoResponseDTO responseDTO = new LancamentoResponseDTO(lancamentoAtualizado);
+        return ResponseEntity.ok(responseDTO);
+    }
+
     @PostMapping("/{id}/prazo/rejeitar")
     public ResponseEntity<LancamentoResponseDTO> rejeitarExtensaoPrazo(@PathVariable Long id, @RequestBody AcaoControllerDTO dto) {
         Lancamento lancamento = lancamentoService.rejeitarExtensaoPrazo(id, dto);
         return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
+    }
+
+    @PostMapping("/{id}/submeter")
+    public ResponseEntity<LancamentoResponseDTO> submeterManualmente(@PathVariable Long id) {
+        // No futuro, o ID do manager virá do usuário autenticado
+        Long managerId = 1L;
+        Lancamento lancamentoSubmetido = lancamentoService.submeterLancamentoManualmente(id, managerId);
+        return ResponseEntity.ok(new LancamentoResponseDTO(lancamentoSubmetido));
     }
 
     @GetMapping
@@ -114,5 +128,31 @@ public class LancamentoController {
         Long managerId = 1L;
         Lancamento lancamento = lancamentoService.reenviarParaAprovacao(id, managerId);
         return ResponseEntity.ok(new LancamentoResponseDTO(lancamento));
+    }
+
+    @PutMapping("/{id}/rascunho")
+    public ResponseEntity<LancamentoResponseDTO> salvarRascunho(@PathVariable Long id, @RequestBody LancamentoRequestDTO dto) {
+        Lancamento lancamentoSalvo = lancamentoService.salvarComoRascunho(id, dto);
+
+        LancamentoResponseDTO responseDTO = new LancamentoResponseDTO(lancamentoSalvo);
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @GetMapping("/pendentes/{usuarioId}")
+    public ResponseEntity<List<LancamentoResponseDTO>> getPendentesPorUsuario(@PathVariable Long usuarioId) {
+        List<Lancamento> pendentes = lancamentoService.listarPendentesPorUsuario(usuarioId);
+        List<LancamentoResponseDTO> responseList = pendentes.stream()
+                .map(LancamentoResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responseList);
+    }
+
+    @GetMapping("/historico/{usuarioId}")
+    public ResponseEntity<List<LancamentoResponseDTO>> getHistoricoPorUsuario(@PathVariable Long usuarioId) {
+        List<Lancamento> historico = lancamentoService.getHistoricoPorUsuario(usuarioId);
+        List<LancamentoResponseDTO> responseList = historico.stream()
+                .map(LancamentoResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responseList);
     }
 }

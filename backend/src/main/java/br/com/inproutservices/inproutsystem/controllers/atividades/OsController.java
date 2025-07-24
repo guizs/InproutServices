@@ -2,8 +2,10 @@ package br.com.inproutservices.inproutsystem.controllers.atividades;
 
 import br.com.inproutservices.inproutsystem.dtos.atividades.OsRequestDto;
 import br.com.inproutservices.inproutsystem.dtos.atividades.OsResponseDto;
-import br.com.inproutservices.inproutsystem.entities.os.OS;
-import br.com.inproutservices.inproutsystem.services.atividades.OsService; // Importe a interface do serviço
+import br.com.inproutservices.inproutsystem.dtos.index.LpuResponseDTO;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
+import br.com.inproutservices.inproutsystem.services.atividades.OsService;
+import br.com.inproutservices.inproutsystem.services.index.LpuService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +19,26 @@ import java.util.stream.Collectors;
 public class OsController {
 
     private final OsService osService;
+    private final LpuService lpuService;
 
     // Injeção de dependência do serviço via construtor
-    public OsController(OsService osService) {
+    public OsController(OsService osService, LpuService lpuService) {
         this.osService = osService;
+        this.lpuService = lpuService;
+    }
+
+    /**
+     * Endpoint para buscar Ordens de Serviço filtradas por usuário.
+     * HTTP Method: GET
+     * URL: /os/por-usuario/{usuarioId}
+     */
+    @GetMapping("/por-usuario/{usuarioId}")
+    public ResponseEntity<List<OsResponseDto>> getOsPorUsuario(@PathVariable Long usuarioId) {
+        List<OS> osDoUsuario = osService.getAllOsByUsuario(usuarioId);
+        List<OsResponseDto> responseList = osDoUsuario.stream()
+                .map(OsResponseDto::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responseList);
     }
 
     /**
@@ -86,4 +104,11 @@ public class OsController {
         // Retorna uma resposta vazia com status 204 (No Content), indicando sucesso na exclusão
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{osId}/lpus")
+    public ResponseEntity<List<LpuResponseDTO>> getLpusPorOs(@PathVariable Long osId) {
+        List<LpuResponseDTO> lpus = lpuService.findLpusByOsId(osId);
+        return ResponseEntity.ok(lpus);
+    }
+
 }

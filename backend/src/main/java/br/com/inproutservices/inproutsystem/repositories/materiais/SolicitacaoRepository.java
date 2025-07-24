@@ -1,5 +1,6 @@
 package br.com.inproutservices.inproutsystem.repositories.materiais;
 
+import br.com.inproutservices.inproutsystem.entities.index.Segmento;
 import br.com.inproutservices.inproutsystem.entities.materiais.Solicitacao;
 import br.com.inproutservices.inproutsystem.enums.materiais.StatusSolicitacao;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Repositório para a entidade Solicitacao.
@@ -40,4 +42,6 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
      */
     @Query("SELECT CASE WHEN COUNT(i) > 0 THEN true ELSE false END FROM ItemSolicitacao i WHERE i.material.id = :materialId")
     boolean existsByItensMaterialId(@Param("materialId") Long materialId);
+
+    List<Solicitacao> findByStatusInAndOsSegmentoIn(List<StatusSolicitacao> statuses, Set<Segmento> segmentos);
 }

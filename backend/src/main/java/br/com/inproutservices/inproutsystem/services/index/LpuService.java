@@ -4,25 +4,40 @@ import br.com.inproutservices.inproutsystem.dtos.index.ContratoResponseDTO;
 import br.com.inproutservices.inproutsystem.dtos.index.LpuResponseDTO;
 import br.com.inproutservices.inproutsystem.entities.index.Contrato;
 import br.com.inproutservices.inproutsystem.entities.index.Lpu;
+import br.com.inproutservices.inproutsystem.repositories.atividades.OsRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.ContratoRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.LpuRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.com.inproutservices.inproutsystem.entities.atividades.OS;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class LpuService {
 
     private final LpuRepository lpuRepository;
     private final ContratoRepository contratoRepository;
+    private final OsRepository osRepository;
 
-    public LpuService(LpuRepository lpuRepository, ContratoRepository contratoRepository) {
+    public LpuService(LpuRepository lpuRepository, ContratoRepository contratoRepository, OsRepository osRepository) {
         this.lpuRepository = lpuRepository;
         this.contratoRepository = contratoRepository;
+        this.osRepository = osRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<LpuResponseDTO> findLpusByOsId(Long osId) {
+        OS os = osRepository.findById(osId)
+                .orElseThrow(() -> new EntityNotFoundException("OS não encontrada com o ID: " + osId));
+
+        return os.getLpus().stream()
+                .map(lpu -> new LpuResponseDTO(lpu))
+                .collect(Collectors.toList());
     }
 
     // --- NOVO MÉTODO PARA LISTAGEM FLEXÍVEL ---
@@ -71,9 +86,7 @@ public class LpuService {
      */
     @Transactional
     public Lpu criarLpu(Lpu lpu, Long contratoId) {
-
         lpuRepository.findByCodigoLpuAndContratoId(lpu.getCodigoLpu(), contratoId).ifPresent(l -> {
-            // A mensagem de erro agora pode ser mais clara.
             throw new IllegalArgumentException(
                     "Já existe uma LPU com o código: " + lpu.getCodigoLpu() + " para este contrato."
             );

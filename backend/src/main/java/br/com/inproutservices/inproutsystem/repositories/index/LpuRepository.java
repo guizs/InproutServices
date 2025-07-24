@@ -23,12 +23,6 @@ public interface LpuRepository extends JpaRepository<Lpu, Long> {
     @Query("SELECT l FROM Lpu l WHERE :ativo IS NULL OR l.ativo = :ativo ORDER BY l.id ASC")
     List<Lpu> findByStatus(@Param("ativo") Boolean ativo);
 
-
-    // --- Seus outros métodos específicos continuam aqui, sem alteração ---
-
-    /**
-     * Busca uma LPU pelo seu código único.
-     */
     Optional<Lpu> findByCodigoLpuAndContratoId(String codigoLpu, Long contratoId);
 
     /**

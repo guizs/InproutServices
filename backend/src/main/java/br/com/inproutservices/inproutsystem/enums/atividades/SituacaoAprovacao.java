@@ -7,5 +7,6 @@ public enum SituacaoAprovacao {
     PENDENTE_CONTROLLER,      // Aguardando ação do Controller.
     APROVADO,                 // Fluxo finalizado com sucesso.
     RECUSADO_COORDENADOR,
-    RECUSADO_CONTROLLER
+    RECUSADO_CONTROLLER,
+    PRAZO_VENCIDO
 }
