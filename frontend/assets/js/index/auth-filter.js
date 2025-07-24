@@ -20,14 +20,9 @@ function filtrarLancamentosParaUsuario(lancamentos) {
             return [];
         }
 
-        // Retorna apenas os lançamentos cujo ID do segmento está na lista de segmentos do usuário.
-        return lancamentos.filter(lancamento => {
-            // Verificação de segurança para garantir que os dados existem antes de tentar acessá-los
-            return lancamento &&
-                   lancamento.os &&
-                   lancamento.os.segmento &&
-                   userSegmentos.includes(lancamento.os.segmento.id);
-        });
+        return lancamentos.filter(lancamento => 
+            lancamento?.os?.segmento && userSegmentos.includes(lancamento.os.segmento.id)
+        );
     }
 
     // Se não tiver nenhuma das roles acima, não vê nada por padrão.

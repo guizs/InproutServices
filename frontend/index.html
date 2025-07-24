@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="assets/css/root.css" />
   <link rel="stylesheet" href="assets/css/global.css" />
   <link rel="stylesheet" href="assets/css/index.css" />
-  
+
 </head>
 
 <body>
@@ -184,12 +184,12 @@
 
       <div class="d-flex align-items-center gap-2">
 
-        <a href="#" class="btn btn-dropdown" data-bs-toggle="modal" data-bs-target="#modalSolicitarMaterial">
-          <i class="bi bi-box-seam me-1"></i> Solicitar material
+        <a href="#" class="btn btn-dropdown" data-bs-toggle="modal" data-bs-target="#modalSolicitarMaterial"
+          id="btnSolicitarMaterial"> <i class="bi bi-box-seam me-1"></i> Solicitar material
         </a>
 
-        <a href="#" class="btn btn-dropdown" data-bs-toggle="modal" data-bs-target="#modalAdicionar">
-          <i class="bi bi-plus-circle me-1"></i> Novo lançamento
+        <a href="#" class="btn btn-dropdown" data-bs-toggle="modal" data-bs-target="#modalAdicionar"
+          id="btnNovoLancamento"> <i class="bi bi-plus-circle me-1"></i> Novo lançamento
         </a>
 
         <!-- <div class="dropdown">
@@ -220,7 +220,7 @@
 
     <ul class="nav nav-tabs mb-3" id="lancamentosTab" role="tablist">
 
-      <li class="nav-item" role="presentation">
+      <li class="nav-item" role="presentation" id="nav-item-minhas-pendencias">
         <button class="nav-link position-relative" id="minhasPendencias-tab" data-bs-toggle="tab"
           data-bs-target="#minhasPendencias-pane" type="button" role="tab" aria-controls="minhasPendencias-pane"
           aria-selected="false">
@@ -232,28 +232,28 @@
         </button>
       </li>
 
-      <li class="nav-item" role="presentation">
+      <li class="nav-item" role="presentation" id="nav-item-lancamentos">
         <button class="nav-link active" id="lancamentos-tab" data-bs-toggle="tab" data-bs-target="#lancamentos-pane"
           type="button" role="tab" aria-controls="lancamentos-pane" aria-selected="true">
           Lançamentos
         </button>
       </li>
 
-      <li class="nav-item" role="presentation">
+      <li class="nav-item" role="presentation" id="nav-item-pendentes">
         <button class="nav-link" id="pendentes-tab" data-bs-toggle="tab" data-bs-target="#pendentes-pane" type="button"
           role="tab" aria-controls="pendentes-pane" aria-selected="false">
           Pendente aprovação
         </button>
       </li>
 
-      <li class="nav-item" role="presentation">
+      <li class="nav-item" role="presentation" id="nav-item-paralisados">
         <button class="nav-link" id="paralisados-tab" data-bs-toggle="tab" data-bs-target="#paralisados-pane"
           type="button" role="tab" aria-controls="paralisados-pane" aria-selected="false">
           Paralisados
         </button>
       </li>
 
-      <li class="nav-item" role="presentation">
+      <li class="nav-item" role="presentation" id="nav-item-historico">
         <button class="nav-link" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico-pane" type="button"
           role="tab" aria-controls="historico-pane" aria-selected="false">
           Histórico
@@ -420,7 +420,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Modal Minha Conta -->
   <div class="modal fade" id="modalMinhaConta" tabindex="-1" aria-labelledby="modalMinhaContaLabel">
     <div class="modal-dialog modal-md modal-dialog-centered">

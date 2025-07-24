@@ -26,7 +26,12 @@ body {
 /* Coluna da Esquerda - Branding (Apenas Gradiente) */
 .login-branding {
     flex-basis: 40%;
-    background-image: linear-gradient(135deg, #e1f3eb, var(--primary-color));
+    /* Gradiente mais forte e diagonal usando as cores da marca */
+    background-image: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
 }
 
 /* Coluna da Direita - Formulário */

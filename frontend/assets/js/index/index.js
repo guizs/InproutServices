@@ -27,6 +27,82 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function configurarVisibilidadePorRole() {
+        const userRole = (localStorage.getItem("role") || "").trim().toUpperCase();
+
+        // Seleciona os ITENS (<li>) da navegação por aba
+        const navMinhasPendencias = document.getElementById('nav-item-minhas-pendencias');
+        const navLancamentos = document.getElementById('nav-item-lancamentos');
+        const navPendentes = document.getElementById('nav-item-pendentes');
+        const navParalisados = document.getElementById('nav-item-paralisados');
+        const navHistorico = document.getElementById('nav-item-historico');
+
+        // Seleciona os BOTÕES de ação principais
+        const btnNovoLancamento = document.getElementById('btnNovoLancamento');
+        const btnSolicitarMaterial = document.getElementById('btnSolicitarMaterial');
+
+        // Seletores para ativar a aba correta
+        const tabLancamentos = document.getElementById('lancamentos-tab');
+        const paneLancamentos = document.getElementById('lancamentos-pane');
+        const tabHistorico = document.getElementById('historico-tab');
+        const paneHistorico = document.getElementById('historico-pane');
+        const tabMinhasPendencias = document.getElementById('minhasPendencias-tab');
+        const paneMinhasPendencias = document.getElementById('minhasPendencias-pane');
+
+        // Oculta tudo por padrão para começar do zero
+        [navMinhasPendencias, navLancamentos, navPendentes, navParalisados, navHistorico, btnNovoLancamento, btnSolicitarMaterial].forEach(el => {
+            if (el) el.style.display = 'none';
+        });
+
+        // Aplica as regras de visibilidade para cada cargo
+        switch (userRole) {
+            case 'MANAGER':
+                // Mostra todas as abas e os botões de ação
+                [navMinhasPendencias, navLancamentos, navPendentes, navParalisados, navHistorico, btnNovoLancamento, btnSolicitarMaterial].forEach(el => {
+                    if (el) el.style.display = 'block';
+                });
+                // Define a aba padrão como "Minhas Pendências"
+                tabLancamentos.classList.remove('active');
+                paneLancamentos.classList.remove('show', 'active');
+                tabMinhasPendencias.classList.add('active');
+                paneMinhasPendencias.classList.add('show', 'active');
+                break;
+
+            case 'COORDINATOR':
+                // Mostra apenas "Paralisados" e "Histórico"
+                [navParalisados, navHistorico].forEach(el => {
+                    if (el) el.style.display = 'block';
+                });
+                // Define a aba padrão como "Histórico"
+                tabLancamentos.classList.remove('active');
+                paneLancamentos.classList.remove('show', 'active');
+                tabHistorico.classList.add('active');
+                paneHistorico.classList.add('show', 'active');
+                break;
+
+            case 'CONTROLLER':
+                // Mostra todas as abas, exceto "Minhas Pendências"
+                [navLancamentos, navPendentes, navParalisados, navHistorico].forEach(el => {
+                    if (el) el.style.display = 'block';
+                });
+                break;
+
+            case 'ADMIN':
+                // Mostra todas as abas, exceto "Minhas Pendências", e mostra os botões de ação
+                [navLancamentos, navPendentes, navParalisados, navHistorico, btnNovoLancamento, btnSolicitarMaterial].forEach(el => {
+                    if (el) el.style.display = 'block';
+                });
+                break;
+
+            default:
+                // Comportamento padrão para outros cargos (se houver)
+                [navLancamentos, navPendentes, navParalisados, navHistorico].forEach(el => {
+                    if (el) el.style.display = 'block';
+                });
+                break;
+        }
+    }
+
     // ==========================================================
     // SEÇÃO 1: LÓGICA DO PAINEL "VISÃO GERAL" (RECOLHÍVEL)
     // ==========================================================
@@ -141,6 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const formatarMoeda = (valor) => valor ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor) : '';
+        const userRole = (localStorage.getItem("role") || "").trim().toUpperCase();
 
         dados.forEach(lancamento => {
             const tr = document.createElement('tr');
@@ -153,22 +230,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 td.dataset.label = nomeColuna;
 
                 if (nomeColuna === 'AÇÃO') {
-
                     let buttonsHtml = '';
-                    if (tbodyElement.id === 'tbody-minhas-pendencias') {
-                        buttonsHtml = `
-                            <button class="btn btn-sm btn-info btn-ver-comentarios" data-id="${lancamento.id}" title="Ver Comentários" data-bs-toggle="modal" data-bs-target="#modalComentarios"><i class="bi bi-chat-left-text"></i></button>
-                            <button class="btn btn-sm btn-success btn-reenviar" data-id="${lancamento.id}" title="Corrigir e Reenviar"><i class="bi bi-pencil-square"></i></button>
-                        `;
-                    } else if (tbodyElement.id === 'tbody-lancamentos') {
-                        buttonsHtml = `
-                            <button class="btn btn-sm btn-secondary btn-editar-rascunho" data-id="${lancamento.id}" title="Editar Rascunho"><i class="bi bi-pencil"></i></button>
-                        `;
-                    } else if (tbodyElement.id === 'tbody-paralisados') {
-                        buttonsHtml = `
-                            <button class="btn btn-sm btn-warning btn-retomar" data-id="${lancamento.id}" title="Retomar Lançamento"><i class="bi bi-play-circle"></i></button>
-                        `;
+
+                    // Regra: Apenas ADMIN e MANAGER podem ver os botões de fluxo
+                    if (userRole === 'ADMIN' || userRole === 'MANAGER') {
+                        if (tbodyElement.id === 'tbody-minhas-pendencias') {
+                            buttonsHtml += `<button class="btn btn-sm btn-success btn-reenviar" data-id="${lancamento.id}" title="Corrigir e Reenviar"><i class="bi bi-pencil-square"></i></button>`;
+                        } else if (tbodyElement.id === 'tbody-lancamentos') {
+                            buttonsHtml += `<button class="btn btn-sm btn-secondary btn-editar-rascunho" data-id="${lancamento.id}" title="Editar Rascunho"><i class="bi bi-pencil"></i></button>`;
+                        } else if (tbodyElement.id === 'tbody-paralisados') {
+                            buttonsHtml += `<button class="btn btn-sm btn-warning btn-retomar" data-id="${lancamento.id}" title="Retomar Lançamento"><i class="bi bi-play-circle"></i></button>`;
+                        }
                     }
+
+                    // Regra: Todos os cargos podem ver os comentários
+                    buttonsHtml += ` <button class="btn btn-sm btn-info btn-ver-comentarios" data-id="${lancamento.id}" title="Ver Comentários" data-bs-toggle="modal" data-bs-target="#modalComentarios"><i class="bi bi-chat-left-text"></i></button>`;
+
                     td.innerHTML = `<div class="btn-group" role="group">${buttonsHtml}</div>`;
                 } else {
                     td.innerHTML = mapaDeCelulas[nomeColuna];
@@ -856,6 +933,7 @@ document.addEventListener('DOMContentLoaded', () => {
             submitButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Carregando...`;
 
             const dadosParaEnviar = {
+                managerId: localStorage.getItem('usuarioId'),
                 osId: document.getElementById('osId').value,
                 lpuId: document.getElementById('lpuId').value,
                 dataAtividade: document.getElementById('dataAtividade').value,
@@ -1255,4 +1333,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     inicializarCabecalhos();
     carregarLancamentos();
+    configurarVisibilidadePorRole();
 });

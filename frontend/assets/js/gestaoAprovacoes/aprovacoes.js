@@ -669,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // O resto da lógica de título da tabela permanece igual...
             if (userRole === 'COORDINATOR') {
-                document.getElementById('titulo-tabela').innerHTML = '<i class="bi bi-clock-history me-2"></i> Pendências do Meu Segmento';
+                document.getElementById('titulo-tabela').innerHTML = '<i class="bi bi-clock-history me-2"></i> Pendências';
             } else if (userRole === 'CONTROLLER') {
                 document.getElementById('titulo-tabela').innerHTML = '<i class="bi bi-shield-check me-2"></i> Pendências do Controller';
             }

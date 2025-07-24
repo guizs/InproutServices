@@ -27,10 +27,9 @@ public class LancamentoController {
 
     @PostMapping
     public ResponseEntity<LancamentoResponseDTO> criarLancamento(@RequestBody LancamentoRequestDTO dto) {
-        Long managerId = 1L;
-        Lancamento lancamentoSalvo = lancamentoService.criarLancamento(dto, managerId);
 
-        // Converte a entidade salva para o DTO de resposta
+        Lancamento lancamentoSalvo = lancamentoService.criarLancamento(dto, dto.managerId());
+
         LancamentoResponseDTO responseDTO = new LancamentoResponseDTO(lancamentoSalvo);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")

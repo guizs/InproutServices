@@ -50,6 +50,7 @@ public record LancamentoRequestDTO(
         StatusEtapa status,
         SituacaoOperacional situacao,
         String detalheDiario,
-        BigDecimal valor
+        BigDecimal valor,
+        Long managerId
 ) {
 }
