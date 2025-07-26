@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const headers = {
             codigo: 'Código',
             descricao: 'Descrição',
+            empresa: 'Empresa',
             unidadeMedida: 'Unidade',
             saldoFisico: 'Qtd. em Estoque',
             custoMedioPonderado: 'Custo Médio',
@@ -122,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <tr>
             <th>${headers.codigo}</th>
             <th>${headers.descricao}</th>
+            <th>${headers.empresa}</th>
             <th class="text-center">${headers.unidadeMedida}</th> 
             <th class="text-center">${headers.saldoFisico}</th> 
             <th class="text-center">${headers.custoMedioPonderado}</th>
@@ -130,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
         if (materiais.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Nenhum material encontrado.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Nenhum material encontrado.</td></tr>`;
             return;
         }
 
@@ -144,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
             <td data-label="${headers.codigo}">${material.codigo}</td>
             <td data-label="${headers.descricao}">${material.descricao}</td>
+            <td data-label="${headers.empresa}">${material.empresa}</td>
             <td data-label="${headers.unidadeMedida}" class="text-center">${material.unidadeMedida}</td>
             <td data-label="${headers.saldoFisico}" class="text-center">${new Intl.NumberFormat('pt-BR').format(material.saldoFisico)}</td>
             <td data-label="${headers.custoMedioPonderado}" class="text-center">${formatarMoeda(material.custoMedioPonderado)}</td>
@@ -164,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             detalhesPane.innerHTML = `
                 <p><strong>Código:</strong> ${material.codigo}</p>
                 <p><strong>Descrição:</strong> ${material.descricao}</p>
+                <p><strong>Empresa:</strong> ${material.empresa}</p>
                 <p><strong>Unidade:</strong> ${material.unidadeMedida}</p>
                 <p><strong>Quantidade em Estoque:</strong> ${material.saldoFisico}</p>
                 <p><strong>Custo Médio Ponderado:</strong> ${formatarMoeda(material.custoMedioPonderado)}</p>
@@ -237,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             codigo: document.getElementById('materialCodigo').value,
             descricao: document.getElementById('materialDescricao').value,
             unidadeMedida: document.getElementById('materialUnidade').value,
+            empresa: document.getElementById('materialEmpresa').value,
             saldoFisicoInicial: document.getElementById('materialSaldo').value,
             custoUnitarioInicial: parseFloat(document.getElementById('materialCustoUnitario').value.replace(/\./g, '').replace(',', '.')),
             observacoes: document.getElementById('materialObservacoes').value,

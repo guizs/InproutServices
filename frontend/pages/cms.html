@@ -226,9 +226,19 @@
                 <input type="number" class="form-control" id="materialSaldo" required min="0" step="1">
               </div>
             </div>
-            <div class="mb-3">
-              <label for="materialCustoUnitario" class="form-label">Custo Unitário Inicial (R$)</label>
-              <input type="text" class="form-control" id="materialCustoUnitario" required>
+             <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="materialEmpresa" class="form-label">Empresa</label>
+                    <select class="form-select" id="materialEmpresa" required>
+                      <option value="">Selecione...</option>
+                      <option value="INPROUT">INPROUT</option>
+                      <option value="CLIENTE">CLIENTE</option>
+                    </select>
+                </div>
+                 <div class="col-md-6 mb-3">
+                    <label for="materialCustoUnitario" class="form-label">Custo Unitário Inicial (R$)</label>
+                    <input type="text" class="form-control" id="materialCustoUnitario" required>
+                </div>
             </div>
             <div class="mb-3">
               <label for="materialObservacoes" class="form-label">Observações</label>
@@ -280,7 +290,6 @@
     </div>
   </div>
 
-  <!-- Modal Minha Conta -->
   <div class="modal fade" id="modalMinhaConta" tabindex="-1" aria-labelledby="modalMinhaContaLabel">
     <div class="modal-dialog modal-md modal-dialog-centered">
       <div class="modal-content">

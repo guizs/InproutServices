@@ -48,6 +48,7 @@ public class MaterialService {
         material.setCodigo(dto.codigo());
         material.setDescricao(dto.descricao());
         material.setUnidadeMedida(dto.unidadeMedida());
+        material.setEmpresa(dto.empresa());
         material.setSaldoFisico(dto.saldoFisicoInicial());
         material.setObservacoes(dto.observacoes());
 

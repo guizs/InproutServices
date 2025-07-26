@@ -25,6 +25,9 @@ public class Material {
     @Column(name = "unidade_medida", nullable = false, length = 10)
     private String unidadeMedida;
 
+    @Column(length = 50)
+    private String empresa;
+
     @Column(name = "saldo_fisico", nullable = false, precision = 10, scale = 2)
     private BigDecimal saldoFisico;
 
@@ -65,6 +68,14 @@ public class Material {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(String empresa) {
+        this.empresa = empresa;
     }
 
     public String getCodigo() {

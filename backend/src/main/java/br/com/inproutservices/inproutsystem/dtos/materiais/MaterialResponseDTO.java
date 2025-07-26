@@ -12,6 +12,7 @@ public record MaterialResponseDTO(
         String codigo,
         String descricao,
         String unidadeMedida,
+        String empresa,
         BigDecimal saldoFisico,
         BigDecimal custoMedioPonderado,
         BigDecimal custoTotal,
@@ -24,6 +25,7 @@ public record MaterialResponseDTO(
                 entity.getCodigo(),
                 entity.getDescricao(),
                 entity.getUnidadeMedida(),
+                entity.getEmpresa(),
                 entity.getSaldoFisico(),
                 entity.getCustoMedioPonderado(),
                 (entity.getSaldoFisico() != null && entity.getCustoMedioPonderado() != null)
