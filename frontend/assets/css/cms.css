@@ -3,43 +3,43 @@
  * =============================================== */
 
 .bloco-etapas-header {
-  padding: 1rem 1.5rem;
-  background-color: #ffffff;
-  border: 1px solid #e2e8e4;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.03);
+    padding: 1rem 1.5rem;
+    background-color: #ffffff;
+    border: 1px solid #e2e8e4;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.03);
 }
 
 .titulo-etapas {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #4a665a;
-  margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #4a665a;
+    margin: 0;
 }
 
 .btn-adicionar-etapa {
-  font-size: 0.9rem;
-  padding: 0.5rem 1.25rem;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    font-size: 0.9rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
 .btn-outline--success {
-  --btn-color-borda: #4cae8c;
-  --btn-color-fundo-hover: #4cae8c;
-  --btn-color-texto-hover: white;
-  background-color: transparent;
-  border: 1px solid var(--btn-color-borda);
-  color: var(--btn-color-borda);
+    --btn-color-borda: #4cae8c;
+    --btn-color-fundo-hover: #4cae8c;
+    --btn-color-texto-hover: white;
+    background-color: transparent;
+    border: 1px solid var(--btn-color-borda);
+    color: var(--btn-color-borda);
 }
 
 .btn-outline--success:hover {
-  background-color: var(--btn-color-fundo-hover);
-  color: var(--btn-color-texto-hover);
+    background-color: var(--btn-color-fundo-hover);
+    color: var(--btn-color-texto-hover);
 }
 
 
@@ -130,52 +130,54 @@
 
 @media (max-width: 768px) {
     .modern-table thead {
-        display: none;
+        display: none; /* Oculta o cabeçalho da tabela */
     }
 
     .modern-table tbody,
     .modern-table tr,
     .modern-table td {
-        display: block;
+        display: block; /* Faz cada célula ocupar a linha inteira */
         width: 100%;
     }
 
-    .modern-table tbody tr {
-        margin-bottom: 1rem;
-        border: 1px solid var(--bs-border-color-translucent);
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-        background-color: #fff !important;
+     .modern-table tbody tr {
+        margin-bottom: 1rem;                     /* Mantém o espaço entre os cards */
+        border: 1px solid #e9ecef;               /* Borda sutil para definir o contorno */
+        border-radius: 0.5rem;                   /* Cantos arredondados */
+        overflow: hidden;
+        
+        /* --- Divisão adicionada aqui --- */
+        background-color: #ffffff;               /* Garante um fundo branco para o card */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.07); /* Adiciona uma sombra para "elevar" o card */
     }
-
+    
     .modern-table td {
-        padding-left: 50%;
         position: relative;
+        padding-left: 45% !important;
         text-align: right;
-        border-top: 1px solid #eee !important;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        padding-right: 1rem;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        border-top: 1px solid #f0f0f0;
     }
 
     .modern-table tr td:first-child {
-        border-top: none !important;
-    }
-
-    .modern-table td:last-child {
-        border-bottom: none !important;
+        border-top: none; /* Remove a borda do primeiro item do card */
     }
 
     .modern-table td::before {
         content: attr(data-label);
         position: absolute;
-        left: 1.25rem;
-        width: calc(50% - 2rem);
+        left: 1rem;
+        width: 40%;
         text-align: left;
         font-weight: 600;
-        color: var(--bs-secondary-color);
         text-transform: uppercase;
         font-size: 0.75rem;
-    }
-
-    .modern-table .text-center {
-        text-align: right !important;
+        color: #555;
     }
 }

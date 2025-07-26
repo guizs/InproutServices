@@ -287,35 +287,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (userRole === 'COORDINATOR') {
                 acoesHtml = `
-                    <div class="d-flex justify-content-center gap-1">
-                        <button class="btn btn-sm btn-outline-success" title="Aprovar" onclick="aprovarLancamento(${lancamento.id})"><i class="bi bi-check-lg"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" title="Recusar" onclick="recusarLancamento(${lancamento.id})"><i class="bi bi-x-lg"></i></button>
-                        <button class="btn btn-sm btn-outline-warning" title="Comentar/Solicitar Prazo" onclick="comentarLancamento(${lancamento.id})"><i class="bi bi-chat-left-text"></i></button>
-                        <button class="btn btn-sm btn-outline-secondary" title="Ver Comentários" onclick="verComentarios(${lancamento.id})" ${!lancamento.comentarios || lancamento.comentarios.length === 0 ? 'disabled' : ''}><i class="bi bi-eye"></i></button>
-                    </div>`;
+                <div class="d-flex justify-content-center gap-1">
+                    <button class="btn btn-sm btn-outline-success" title="Aprovar" onclick="aprovarLancamento(${lancamento.id})"><i class="bi bi-check-lg"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" title="Recusar" onclick="recusarLancamento(${lancamento.id})"><i class="bi bi-x-lg"></i></button>
+                    <button class="btn btn-sm btn-outline-warning" title="Comentar/Solicitar Prazo" onclick="comentarLancamento(${lancamento.id})"><i class="bi bi-chat-left-text"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary" title="Ver Comentários" onclick="verComentarios(${lancamento.id})" ${!lancamento.comentarios || lancamento.comentarios.length === 0 ? 'disabled' : ''}><i class="bi bi-eye"></i></button>
+                </div>`;
             } else if (userRole === 'CONTROLLER') {
                 switch (lancamento.situacaoAprovacao) {
                     case 'PENDENTE_CONTROLLER':
                         acoesHtml = `
-                <div class="d-flex justify-content-center gap-1">
-                    <button class="btn btn-sm btn-outline-success" title="Aprovar Lançamento" onclick="aprovarLancamentoController(${lancamento.id})"><i class="bi bi-check-lg"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" title="Recusar Lançamento" onclick="recusarLancamentoController(${lancamento.id})"><i class="bi bi-x-lg"></i></button>
-                    <button class="btn btn-sm btn-outline-secondary" title="Ver Comentários" onclick="verComentarios(${lancamento.id})" ${!lancamento.comentarios || lancamento.comentarios.length === 0 ? 'disabled' : ''}><i class="bi bi-eye"></i></button>
-                </div>`;
+            <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-sm btn-outline-success" title="Aprovar Lançamento" onclick="aprovarLancamentoController(${lancamento.id})"><i class="bi bi-check-lg"></i></button>
+                <button class="btn btn-sm btn-outline-danger" title="Recusar Lançamento" onclick="recusarLancamentoController(${lancamento.id})"><i class="bi bi-x-lg"></i></button>
+                <button class="btn btn-sm btn-outline-secondary" title="Ver Comentários" onclick="verComentarios(${lancamento.id})" ${!lancamento.comentarios || lancamento.comentarios.length === 0 ? 'disabled' : ''}><i class="bi bi-eye"></i></button>
+            </div>`;
                         break;
                     case 'AGUARDANDO_EXTENSAO_PRAZO':
                         acoesHtml = `
-                <div class="d-flex justify-content-center gap-1">
-                    <button class="btn btn-sm btn-outline-success" title="Aprovar Novo Prazo" onclick="aprovarPrazoController(${lancamento.id})"><i class="bi bi-calendar-check"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" title="Recusar Novo Prazo" onclick="recusarPrazoController(${lancamento.id})"><i class="bi bi-calendar-x"></i></button>
-                    <button class="btn btn-sm btn-outline-secondary" title="Ver Comentários" onclick="verComentarios(${lancamento.id})" ${!lancamento.comentarios || lancamento.comentarios.length === 0 ? 'disabled' : ''}><i class="bi bi-eye"></i></button>
-                </div>`;
+            <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-sm btn-outline-success" title="Aprovar Novo Prazo" onclick="aprovarPrazoController(${lancamento.id})"><i class="bi bi-calendar-check"></i></button>
+                <button class="btn btn-sm btn-outline-danger" title="Recusar Novo Prazo" onclick="recusarPrazoController(${lancamento.id})"><i class="bi bi-calendar-x"></i></button>
+                <button class="btn btn-sm btn-outline-secondary" title="Ver Comentários" onclick="verComentarios(${lancamento.id})" ${!lancamento.comentarios || lancamento.comentarios.length === 0 ? 'disabled' : ''}><i class="bi bi-eye"></i></button>
+            </div>`;
                         break;
                     case 'PRAZO_VENCIDO':
                         acoesHtml = `
-                <div class="d-flex justify-content-center gap-1">
-                     <button class="btn btn-sm btn-outline-warning" title="Estabelecer Novo Prazo" onclick="recusarPrazoController(${lancamento.id})"><i class="bi bi-calendar-plus"></i></button>
-                </div>`;
+            <div class="d-flex justify-content-center gap-1">
+                 <button class="btn btn-sm btn-outline-warning" title="Estabelecer Novo Prazo" onclick="recusarPrazoController(${lancamento.id})"><i class="bi bi-calendar-plus"></i></button>
+            </div>`;
                         break;
                     default:
                         acoesHtml = ''; // Nenhum botão para outros status
@@ -483,17 +483,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Define as colunas com base no perfil do usuário
         let colunasHtml = `
-        <th>Ações</th>
-        <th>Data Solicitação</th>
-        <th>Solicitante</th>
-        <th>OS</th>
-        <th>LPU</th>
-        <th>Item Solicitado</th>
-        <th class="text-center">Unidade</th>
-        <th class="text-center">Qtd. Solicitada</th>
-        <th class="text-center">Qtd. em Estoque</th>
-        <th>Justificativa</th>
-    `;
+    <th>Ações</th>
+    <th>Data Solicitação</th>
+    <th>Solicitante</th>
+    <th>OS</th>
+    <th>LPU</th>
+    <th>Item Solicitado</th>
+    <th class="text-center">Unidade</th>
+    <th class="text-center">Qtd. Solicitada</th>
+    <th class="text-center">Qtd. em Estoque</th>
+    <th>Justificativa</th>
+`;
         if (userRole === 'CONTROLLER') {
             colunasHtml += '<th>Status</th>';
         }
@@ -519,8 +519,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (s.status === 'PENDENTE_CONTROLLER') {
                     // Se a pendência está com o Controller, mostra os botões de ação
                     acoesHtml = `
-                    <button class="btn btn-sm btn-outline-success" title="Aprovar" onclick="aprovarMaterial(${s.id})"><i class="bi bi-check-lg"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" title="Recusar" onclick="recusarMaterial(${s.id})"><i class="bi bi-x-lg"></i></button>`;
+                <button class="btn btn-sm btn-outline-success" title="Aprovar" onclick="aprovarMaterial(${s.id})"><i class="bi bi-check-lg"></i></button>
+                <button class="btn btn-sm btn-outline-danger" title="Recusar" onclick="recusarMaterial(${s.id})"><i class="bi bi-x-lg"></i></button>`;
                     statusHtml = `<span class="badge rounded-pill text-bg-warning">PENDENTE CONTROLLER</span>`;
                 } else {
                     // Se está com o Coordenador, não mostra nenhuma ação
@@ -529,8 +529,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } else { // Lógica para o Coordenador
                 acoesHtml = `
-                <button class="btn btn-sm btn-outline-success" title="Aprovar" onclick="aprovarMaterial(${s.id})"><i class="bi bi-check-lg"></i></button>
-                <button class="btn btn-sm btn-outline-danger" title="Recusar" onclick="recusarMaterial(${s.id})"><i class="bi bi-x-lg"></i></button>`;
+            <button class="btn btn-sm btn-outline-success" title="Aprovar" onclick="aprovarMaterial(${s.id})"><i class="bi bi-check-lg"></i></button>
+            <button class="btn btn-sm btn-outline-danger" title="Recusar" onclick="recusarMaterial(${s.id})"><i class="bi bi-x-lg"></i></button>`;
             }
 
             tr.innerHTML = `
@@ -550,6 +550,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+
     function renderizarTabelaHistoricoMateriais(solicitacoes) {
         const tbody = tbodyHistoricoMateriais;
         if (!tbody) return;
@@ -560,23 +561,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Novas colunas, alinhadas com a tabela de pendências + colunas de histórico
         thead.innerHTML = `
-        <tr>
-            <th>Data Ação</th>
-            <th>Status</th>
-            <th>Data Solicitação</th>
-            <th>Solicitante</th>
-            <th>OS</th>
-            <th>Segmento</th> <th>LPU</th>
-            <th>Item Solicitado</th>
-            <th class="text-center">Unidade</th>
-            <th class="text-center">Qtd. Solicitada</th>
-            <th>Aprovador</th>
-            <th>Motivo Recusa</th>
-        </tr>
-    `;
+    <tr>
+        <th>Data Ação</th>
+        <th>Status</th>
+        <th>Data Solicitação</th>
+        <th>Solicitante</th>
+        <th>OS</th>
+        <th>Segmento</th>
+        <th>LPU</th>
+        <th>Item Solicitado</th>
+        <th class="text-center">Unidade</th>
+        <th class="text-center">Qtd. Solicitada</th>
+        <th>Aprovador</th>
+        <th>Motivo Recusa</th>
+    </tr>
+`;
 
         if (!solicitacoes || solicitacoes.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted">Nenhum histórico encontrado.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="12" class="text-center text-muted">Nenhum histórico encontrado.</td></tr>`;
             return;
         }
 
@@ -608,7 +610,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td data-label="Data Solicitação">${new Date(s.dataSolicitacao).toLocaleString('pt-BR')}</td>
                 <td data-label="Solicitante">${s.nomeSolicitante || 'N/A'}</td>
                 <td data-label="OS">${s.os.os}</td>
-                <td data-label="Segmento">${s.os.segmento ? s.os.segmento.nome : 'N/A'}</td> <td data-label="LPU">${s.lpu.codigoLpu}</td>
+                <td data-label="Segmento">${s.os.segmento ? s.os.segmento.nome : 'N/A'}</td>
+                <td data-label="LPU">${s.lpu.codigoLpu}</td>
                 <td data-label="Item Solicitado">${item.material.descricao}</td>
                 <td data-label="Unidade" class="text-center">${item.material.unidadeMedida}</td>
                 <td data-label="Qtd. Solicitada" class="text-center">${item.quantidadeSolicitada}</td>
@@ -726,10 +729,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const mapaDeCelulas = {
                 // Célula do botão de comentários
                 "COMENTÁRIOS": `
-                <button class="btn btn-sm btn-outline-secondary" onclick="verComentarios(${lancamento.id})" ${!lancamento.comentarios || lancamento.comentarios.length === 0 ? 'disabled' : ''}>
-                    <i class="bi bi-eye"></i>
-                </button>
-            `,
+            <button class="btn btn-sm btn-outline-secondary" onclick="verComentarios(${lancamento.id})" ${!lancamento.comentarios || lancamento.comentarios.length === 0 ? 'disabled' : ''}>
+                <i class="bi bi-eye"></i>
+            </button>
+        `,
                 "STATUS APROVAÇÃO": statusBadge,
                 "DATA ATIVIDADE": formatarData(lancamento.dataAtividade) || '',
                 "OS": (lancamento.os || {}).os || '', "SITE": (lancamento.os || {}).site || '', "CONTRATO": (lancamento.os || {}).contrato || '', "SEGMENTO": (lancamento.os && lancamento.os.segmento) ? lancamento.os.segmento.nome : '', "PROJETO": (lancamento.os || {}).projeto || '',

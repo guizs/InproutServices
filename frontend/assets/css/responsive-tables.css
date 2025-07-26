@@ -1,0 +1,52 @@
+/* Estilos para transformar QUALQUER tabela responsiva em cards no celular */
+@media (max-width: 767px) {
+
+    /* Seleciona qualquer tabela dentro de um .table-responsive */
+    .table-responsive > .modern-table thead {
+        display: none; /* Esconde o cabeçalho original da tabela no mobile */
+    }
+
+    .table-responsive > .modern-table table,
+    .table-responsive > .modern-table tbody,
+    .table-responsive > .modern-table tr,
+    .table-responsive > .modern-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .table-responsive > .modern-table tr {
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .table-responsive > .modern-table td {
+        position: relative;
+        padding-left: 50%; /* Deixa espaço para o texto do "label" */
+        text-align: right; /* Alinha o valor da célula */
+        border: none;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .table-responsive > .modern-table td::before {
+        content: attr(data-label); /* Pega o texto do nosso atributo personalizado */
+        position: absolute;
+        left: 0.75rem;
+        width: 45%;
+        font-weight: 600; /* Negrito para o label */
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    /* Ajustes para a primeira célula não ter o label (ex: checkbox) */
+    .table-responsive > .modern-table td:first-child {
+        padding-left: 0.75rem;
+        text-align: left;
+    }
+    
+    .table-responsive > .modern-table td:first-child::before {
+        content: "";
+    }
+}

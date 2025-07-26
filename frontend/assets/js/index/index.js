@@ -143,45 +143,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderizarCardsDashboard(lancamentos) {
         // --- LÓGICA GERAL ---
-        const hoje = new Date().toLocaleDateString('pt-BR'); // Formato "dd/MM/yyyy"
+        const hoje = new Date().toLocaleDateString('pt-BR');
         const statusPendenteAprovacao = ['PENDENTE_COORDENADOR', 'AGUARDANDO_EXTENSAO_PRAZO', 'PENDENTE_CONTROLLER'];
         const statusRecusado = ['RECUSADO_COORDENADOR', 'RECUSADO_CONTROLLER'];
 
         // --- CÁLCULO DOS CARDS ---
-
-        // 1. Lançamentos para Hoje: Rascunhos cuja data da atividade é hoje.
         const totalLancamentosHoje = lancamentos.filter(l =>
             l.situacaoAprovacao === 'RASCUNHO' && l.dataAtividade === hoje
         ).length;
 
-        // 2. Aguardando Aprovação
         const totalPendentesAprovacao = lancamentos.filter(l =>
             statusPendenteAprovacao.includes(l.situacaoAprovacao)
         ).length;
 
-        // 3. Recusados para Correção
         const totalRecusados = lancamentos.filter(l =>
             statusRecusado.includes(l.situacaoAprovacao)
         ).length;
 
-        // 4. Projetos em Andamento: Contagem de projetos únicos (OS+LPU) cujo último status NÃO é Paralisado ou Finalizado.
         const projetosAtivos = new Set();
         lancamentos.forEach(l => {
-            if (l.situacao !== 'Paralisado' && l.situacao !== 'Finalizado') {
+            // --- AQUI ESTÁ A CORREÇÃO ---
+            // Agora, só tentamos criar a chave se 'l.os' e 'l.lpu' existirem.
+            if (l.situacao !== 'Paralisado' && l.situacao !== 'Finalizado' && l.os && l.lpu) {
                 const chaveProjeto = `${l.os.id}-${l.lpu.id}`;
                 projetosAtivos.add(chaveProjeto);
             }
         });
         const totalEmAndamento = projetosAtivos.size;
+        // --- FIM DA CORREÇÃO ---
 
-        // 5. Projetos Paralisados: Reutiliza a função que já existe.
         const totalParalisadas = getProjetosParalisados().length;
 
-        // 6. Finalizados Hoje: Lançamentos com situação "Finalizado" e data da atividade de hoje.
         const totalFinalizadasHoje = lancamentos.filter(l =>
             l.situacao === 'Finalizado' && l.dataAtividade === hoje
         ).length;
-
 
         // --- ATUALIZAÇÃO DO HTML ---
         document.getElementById('card-lancamentos-hoje').textContent = totalLancamentosHoje;

@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnLimparFiltro = document.getElementById('materiais_btnLimparFiltro');
     const checkUnitPC = document.getElementById('materiais_checkUnitPC');
     const checkUnitMT = document.getElementById('materiais_checkUnitMT');
-    
+
     let todosOsMateriais = [];
     const API_BASE_URL = 'http://3.128.248.3:8080';
 
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function aplicarFiltrosErenderizar() {
         let materiaisFiltrados = [...todosOsMateriais];
-        
+
         const termoBusca = inputBuscaMaterial.value.toLowerCase().trim();
         if (termoBusca) {
             materiaisFiltrados = materiaisFiltrados.filter(material =>
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const unidadesSelecionadas = [];
         if (checkUnitPC.checked) unidadesSelecionadas.push('PÇ');
         if (checkUnitMT.checked) unidadesSelecionadas.push('MT');
-        
+
         if (unidadesSelecionadas.length > 0) {
             materiaisFiltrados = materiaisFiltrados.filter(material =>
                 unidadesSelecionadas.includes(material.unidadeMedida)
@@ -104,20 +104,30 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderizarTabelaMateriais(materiais) {
         const tbody = tbodyMateriais;
         const thead = tbody.previousElementSibling;
-        
+
         thead.innerHTML = '';
         tbody.innerHTML = '';
 
+        // Define os cabeçalhos que serão usados tanto no thead quanto nos data-labels
+        const headers = {
+            codigo: 'Código',
+            descricao: 'Descrição',
+            unidadeMedida: 'Unidade',
+            saldoFisico: 'Qtd. em Estoque',
+            custoMedioPonderado: 'Custo Médio',
+            custoTotal: 'Custo Total'
+        };
+
         thead.innerHTML = `
-            <tr>
-                <th>Código</th>
-                <th>Descrição</th>
-                <th class="text-center">Unidade</th> 
-                <th class="text-center">Quantidade em Estoque</th> 
-                <th class="text-center">Custo Médio</th>
-                <th class="text-center">Custo Total</th>
-            </tr>
-        `;
+        <tr>
+            <th>${headers.codigo}</th>
+            <th>${headers.descricao}</th>
+            <th class="text-center">${headers.unidadeMedida}</th> 
+            <th class="text-center">${headers.saldoFisico}</th> 
+            <th class="text-center">${headers.custoMedioPonderado}</th>
+            <th class="text-center">${headers.custoTotal}</th>
+        </tr>
+    `;
 
         if (materiais.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Nenhum material encontrado.</td></tr>`;
@@ -130,14 +140,15 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.id = material.id;
             tr.style.cursor = 'pointer';
 
+            // AQUI ESTÁ A MUDANÇA: Adicionamos o atributo data-label em cada <td>
             tr.innerHTML = `
-                <td>${material.codigo}</td>
-                <td>${material.descricao}</td>
-                <td class="text-center">${material.unidadeMedida}</td>
-                <td class="text-center">${new Intl.NumberFormat('pt-BR').format(material.saldoFisico)}</td>
-                <td class="text-center">${formatarMoeda(material.custoMedioPonderado)}</td>
-                <td class="text-center">${formatarMoeda(material.custoTotal)}</td>
-            `;
+            <td data-label="${headers.codigo}">${material.codigo}</td>
+            <td data-label="${headers.descricao}">${material.descricao}</td>
+            <td data-label="${headers.unidadeMedida}" class="text-center">${material.unidadeMedida}</td>
+            <td data-label="${headers.saldoFisico}" class="text-center">${new Intl.NumberFormat('pt-BR').format(material.saldoFisico)}</td>
+            <td data-label="${headers.custoMedioPonderado}" class="text-center">${formatarMoeda(material.custoMedioPonderado)}</td>
+            <td data-label="${headers.custoTotal}" class="text-center">${formatarMoeda(material.custoTotal)}</td>
+        `;
             tbody.appendChild(tr);
         });
     }
@@ -159,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p><strong>Custo Total em Estoque:</strong> ${formatarMoeda(material.custoTotal)}</p>
                 <p><strong>Observações:</strong> ${material.observacoes || 'N/A'}</p>
             `;
-            
+
             // --- CONTROLE DE ACESSO PARA ABAS E BOTÕES DO MODAL ---
             const tabHistorico = document.getElementById('historico-tab');
             const btnExcluir = modalDetalhesEl.querySelector('.btn-excluir-modal');
@@ -186,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnExcluir.style.display = 'none'; // Esconde o botão
                 btnRegistrarEntrada.style.display = 'none'; // Esconde o botão
             }
-             // --- FIM DO CONTROLE DE ACESSO ---
+            // --- FIM DO CONTROLE DE ACESSO ---
 
 
             btnExcluir.dataset.id = id;
@@ -210,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Lógica dos Modais ---
-    
+
     btnNovoMaterial.addEventListener('click', () => {
         formMaterial.reset();
         modalMaterial.show();
@@ -299,10 +310,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btnConfirmarExclusao.addEventListener('click', async () => {
         const id = btnConfirmarExclusao.dataset.id;
         if (!id) return;
-    
+
         btnConfirmarExclusao.disabled = true;
         btnConfirmarExclusao.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Excluindo...`;
-    
+
         try {
             const response = await fetch(`${API_BASE_URL}/materiais/${id}`, { method: 'DELETE' });
             if (!response.ok) {
@@ -319,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnConfirmarExclusao.disabled = false;
             btnConfirmarExclusao.innerHTML = "Sim, Excluir";
         }
-    }); 
+    });
 
     // --- Event Listeners para os filtros ---
     inputBuscaMaterial.addEventListener('input', aplicarFiltrosErenderizar);
