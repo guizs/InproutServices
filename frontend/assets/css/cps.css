@@ -1,92 +1,161 @@
-/* Estilos reaproveitados do seu layout para manter a consistência */
+/* Estilos para a página de Apuração de CPS */
+
+:root {
+    --primary-color: #198754; /* Verde principal */
+    --secondary-color: #6c757d;
+    --light-gray: #f8f9fa;
+    --dark-text: #212529;
+    --light-text: #ffffff;
+    --border-color: #dee2e6;
+    --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--light-gray);
+}
+
+.logo-navbar {
+    height: 30px;
+}
+
+/* Banner de Resumo */
 .overview-banner {
-  background-color: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e9ecef;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow);
 }
 
 .kpi-total {
-  background-color: var(--inprout-green-dark, #2a8a65);
-  border-radius: 12px;
-  padding: 1rem;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-.kpi-total .kpi-label {
-  font-size: 1.1rem;
-  color: white;
-  font-weight: 500;
+.kpi-label {
+    font-size: 1rem;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
 }
 
-.kpi-total .kpi-value {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: white;
+.kpi-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
 }
 
+/* Grid de Segmentos */
 .segment-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
 }
 
 .segment-card {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 1rem;
-  text-align: center;
-  border: 1px solid #dee2e6;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    background: linear-gradient(145deg, #f9f9f9, #e6e6e6);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
 .segment-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    border-color: var(--primary-color);
+}
+
+.segment-card.active {
+    background: var(--primary-color);
+    color: var(--light-text);
+    box-shadow: 0 8px 15px rgba(25, 135, 84, 0.3);
+    transform: translateY(-5px);
 }
 
 .segment-card i {
-  font-size: 1.8rem;
-  color: var(--inprout-green-dark, #2a8a65);
-  margin-bottom: 0.5rem;
-  display: block;
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--primary-color);
+    transition: color 0.3s ease;
 }
 
-.segment-card .segmento-nome {
+.segment-card:hover i,
+.segment-card.active i {
+    color: inherit; /* Herda a cor do pai (branco no estado ativo) */
+}
+
+.segmento-nome {
     font-weight: 600;
-    color: #495057;
-    margin-bottom: 0.25rem;
     font-size: 0.9rem;
+    margin-bottom: 0.5rem;
 }
 
-.segment-card .segmento-valor {
-    font-weight: 700;
-    color: #212529;
-    font-size: 1.2rem;
-}
-
-/* Estilos para as abas, seguindo o padrão do gestao.css */
-.nav-tabs {
-    border-bottom: 1px solid #dee2e6;
-}
-
-.nav-tabs .nav-link {
-    border: none;
-    border-bottom: 3px solid transparent;
-    color: #6c757d;
+.segmento-valor {
     font-weight: 500;
-    transition: all 0.2s ease-in-out;
+    font-size: 1.1rem;
 }
 
-.nav-tabs .nav-link:hover:not(.active) {
-    border-bottom-color: #e9ecef;
+.segment-card.active .segmento-valor {
+    font-weight: 700;
 }
 
-.nav-tabs .nav-link.active,
-.nav-tabs .nav-item.show .nav-link {
-    border-bottom: 3px solid var(--inprout-green-dark, #2a8a65);
-    color: var(--inprout-green-dark, #2a8a65);
+/* Abas */
+.nav-tabs .nav-link {
     font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    border-color: var(--border-color) var(--border-color) #fff;
+    border-bottom: 3px solid var(--primary-color);
+}
+
+/* Tabela Moderna */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modern-table thead th {
+    background-color: var(--light-gray);
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
+    padding: 1rem;
+    text-align: left;
+    color: var(--dark-text);
+}
+
+.modern-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.modern-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.modern-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.modern-table td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .kpi-value {
+        font-size: 2rem;
+    }
+    .segment-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    .modern-table td, .modern-table th {
+        padding: 0.75rem;
+    }
 }
