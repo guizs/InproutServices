@@ -1,6 +1,8 @@
 package br.com.inproutservices.inproutsystem.dtos.materiais;
 
 import br.com.inproutservices.inproutsystem.entities.materiais.Material;
+import br.com.inproutservices.inproutsystem.enums.materiais.Empresa;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -9,6 +11,11 @@ import java.util.stream.Collectors;
 
 public record MaterialResponseDTO(
         Long id,
+
+        // A anotação @JsonFormat garante que o Enum seja convertido para texto no JSON
+        @JsonFormat(shape = JsonFormat.Shape.STRING)
+        Empresa empresa,
+
         String codigo,
         String descricao,
         String unidadeMedida,
@@ -16,11 +23,12 @@ public record MaterialResponseDTO(
         BigDecimal custoMedioPonderado,
         BigDecimal custoTotal,
         String observacoes,
-        List<EntradaMaterialResponseDTO> entradas // NOVO CAMPO
+        List<EntradaMaterialResponseDTO> entradas
 ) {
     public MaterialResponseDTO(Material entity) {
         this(
                 entity.getId(),
+                entity.getEmpresa(), // Garante que o valor da entidade seja passado para o DTO
                 entity.getCodigo(),
                 entity.getDescricao(),
                 entity.getUnidadeMedida(),
@@ -30,7 +38,6 @@ public record MaterialResponseDTO(
                         ? entity.getSaldoFisico().multiply(entity.getCustoMedioPonderado()).setScale(2, RoundingMode.HALF_UP)
                         : BigDecimal.ZERO,
                 entity.getObservacoes(),
-                // Mapeia a lista de entidades para a lista de DTOs
                 entity.getEntradas() != null ?
                         entity.getEntradas().stream()
                                 .map(EntradaMaterialResponseDTO::new)

@@ -1165,7 +1165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const preencherOpcoes = (selectElement) => {
             selectElement.innerHTML = '<option value="" selected disabled>Selecione o material...</option>';
             todosOsMateriais.forEach(material => {
-                const option = new Option(`${material.codigo} - ${material.descricao}`, material.codigo);
+                const option = new Option(`${material.empresa} - ${material.codigo} - ${material.descricao}`, material.codigo);
                 selectElement.add(option);
             });
         };

@@ -42,7 +42,7 @@
 
     <div id="gerenciar-pane">
       <div class="bloco-etapas-header d-flex justify-content-between align-items-center mb-3">
-        <h4 class="titulo-etapas mb-0"><i class="bi bi-box-seam me-2"></i>Controle de Estoque</h4>
+        <h4 class="titulo-etapas mb-0"><i class="bi bi-box-seam me-2"></i>Controle de material aplicado</h4>
         <button type="button" id="btnNovoMaterial" class="btn btn-outline--success btn-adicionar-etapa">
           <i class="bi bi-plus-circle me-1"></i> Novo material
         </button>
@@ -204,6 +204,14 @@
         </div>
         <div class="modal-body">
           <form id="formMaterial">
+            <div class="mb-3">
+              <label for="materialEmpresa" class="form-label">Empresa</label>
+              <select class="form-select" id="materialEmpresa" required>
+                <option value="" selected disabled>Selecione...</option>
+                <option value="INPROUT">INPROUT</option>
+                <option value="TLP">TLP</option>
+              </select>
+            </div>
             <div class="mb-3">
               <label for="materialCodigo" class="form-label">Código</label>
               <input type="text" class="form-control" id="materialCodigo" required>

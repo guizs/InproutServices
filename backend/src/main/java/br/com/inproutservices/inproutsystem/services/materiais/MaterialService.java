@@ -45,6 +45,7 @@ public class MaterialService {
         });
 
         Material material = new Material();
+        material.setEmpresa(dto.empresa());
         material.setCodigo(dto.codigo());
         material.setDescricao(dto.descricao());
         material.setUnidadeMedida(dto.unidadeMedida());

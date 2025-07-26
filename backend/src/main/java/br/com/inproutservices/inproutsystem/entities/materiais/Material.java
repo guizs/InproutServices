@@ -1,5 +1,6 @@
 package br.com.inproutservices.inproutsystem.entities.materiais;
 
+import br.com.inproutservices.inproutsystem.enums.materiais.Empresa;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -18,6 +19,10 @@ public class Material {
 
     @Column(nullable = false, unique = true, length = 50)
     private String codigo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Empresa empresa;
 
     @Column(nullable = false, length = 255)
     private String descricao;
@@ -89,6 +94,14 @@ public class Material {
 
     public void setUnidadeMedida(String unidadeMedida) {
         this.unidadeMedida = unidadeMedida;
+    }
+
+    public Empresa getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Empresa empresa) {
+        this.empresa = empresa;
     }
 
     public BigDecimal getSaldoFisico() {

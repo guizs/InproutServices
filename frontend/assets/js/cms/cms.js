@@ -110,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         thead.innerHTML = `
             <tr>
+                <th>Empresa</th>
                 <th>Código</th>
                 <th>Descrição</th>
                 <th class="text-center">Unidade</th> 
@@ -131,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.style.cursor = 'pointer';
 
             tr.innerHTML = `
+                <td>${material.empresa}</td>
                 <td>${material.codigo}</td>
                 <td>${material.descricao}</td>
                 <td class="text-center">${material.unidadeMedida}</td>
@@ -223,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Salvando...`;
 
         const materialData = {
+            empresa: document.getElementById('materialEmpresa').value,
             codigo: document.getElementById('materialCodigo').value,
             descricao: document.getElementById('materialDescricao').value,
             unidadeMedida: document.getElementById('materialUnidade').value,
