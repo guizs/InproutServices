@@ -98,6 +98,9 @@ public class Lancamento {
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
+    @Column(name = "cps_contabilizado", nullable = false)
+    private boolean cpsContabilizado = false;
+
 
     // Construtor padrão exigido pelo JPA
     public Lancamento() {
@@ -129,6 +132,14 @@ public class Lancamento {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public boolean isCpsContabilizado() {
+        return cpsContabilizado;
+    }
+
+    public void setCpsContabilizado(boolean cpsContabilizado) {
+        this.cpsContabilizado = cpsContabilizado;
     }
 
     public OS getOs() {

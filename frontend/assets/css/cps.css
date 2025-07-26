@@ -1,95 +1,92 @@
+/* Estilos reaproveitados do seu layout para manter a consistência */
 .overview-banner {
   background-color: white;
-  border-left: 6px solid var(--accent-color);
-  border-radius: 8px;
-  padding: 1rem 1.2rem;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #ddd;
-}
-
-.overview-banner .icon {
-  font-size: 1.6rem;
-  color: var(--accent-color);
-}
-
-.dashboard-total {
-  background-color: var(--card-success);
   border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.dashboard-total .total-label {
-  font-size: 1.1rem;
-  color: var(--text-color);
-  margin-bottom: 0.2rem;
-}
-
-.dashboard-total .total-value {
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--text-color);
-}
-
-.segment-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-  text-align: center;
-  transition: transform 0.2s ease-in-out;
-}
-
-.segment-card:hover {
-  transform: translateY(-2px);
-}
-
-.segment-card i {
-  font-size: 1.5rem;
-  color: var(--accent-color);
-  margin-bottom: 0.5rem;
-}
-
-.segment-card span {
-  font-weight: 600;
-  color: var(--text-color);
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e9ecef;
 }
 
 .kpi-total {
-  background-color: var(--card-success);
+  background-color: var(--inprout-green-dark, #2a8a65);
   border-radius: 12px;
   padding: 1rem;
   text-align: center;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .kpi-total .kpi-label {
   font-size: 1.1rem;
-  color: var(--text-color);
+  color: white;
+  font-weight: 500;
 }
 
 .kpi-total .kpi-value {
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: white;
 }
 
 .segment-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
 }
 
-@media (max-width: 992px) {
-  .dashboard-cards {
-    overflow-x: auto;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  }
+.segment-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid #dee2e6;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
 
-  .dashboard-cards .card {
-    flex: 0 0 auto;
-    min-width: 180px;
-  }
+.segment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.segment-card i {
+  font-size: 1.8rem;
+  color: var(--inprout-green-dark, #2a8a65);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.segment-card .segmento-nome {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.segment-card .segmento-valor {
+    font-weight: 700;
+    color: #212529;
+    font-size: 1.2rem;
+}
+
+/* Estilos para as abas, seguindo o padrão do gestao.css */
+.nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #6c757d;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+    border-bottom-color: #e9ecef;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+    border-bottom: 3px solid var(--inprout-green-dark, #2a8a65);
+    color: var(--inprout-green-dark, #2a8a65);
+    font-weight: 600;
 }

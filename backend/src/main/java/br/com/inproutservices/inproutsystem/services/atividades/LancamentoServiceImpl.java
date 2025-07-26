@@ -17,6 +17,7 @@ import br.com.inproutservices.inproutsystem.exceptions.materiais.BusinessExcepti
 import br.com.inproutservices.inproutsystem.repositories.atividades.ComentarioRepository;
 import br.com.inproutservices.inproutsystem.repositories.atividades.LancamentoRepository;
 import br.com.inproutservices.inproutsystem.repositories.atividades.OsRepository;
+import br.com.inproutservices.inproutsystem.repositories.cps.FechamentoCpsPrestadorRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.EtapaDetalhadaRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.LpuRepository;
 import br.com.inproutservices.inproutsystem.repositories.index.PrestadorRepository;
@@ -48,11 +49,13 @@ public class LancamentoServiceImpl implements LancamentoService {
     private final PrestadorRepository prestadorRepository;
     private final EtapaDetalhadaRepository etapaDetalhadaRepository;
     private final LpuRepository lpuRepository;
+    private final FechamentoCpsPrestadorRepository fechamentoCpsPrestadorRepository;
 
     public LancamentoServiceImpl(LancamentoRepository lancamentoRepository, OsRepository osRepository,
                                  UsuarioRepository usuarioRepository, PrazoService prazoService,
                                  ComentarioRepository comentarioRepository, PrestadorRepository prestadorRepository,
-                                 EtapaDetalhadaRepository etapaDetalhadaRepository, LpuRepository lpuRepository) {
+                                 EtapaDetalhadaRepository etapaDetalhadaRepository, LpuRepository lpuRepository,
+                                 FechamentoCpsPrestadorRepository fechamentoCpsPrestadorRepository) {
         this.lancamentoRepository = lancamentoRepository;
         this.osRepository = osRepository;
         this.usuarioRepository = usuarioRepository;
@@ -61,6 +64,7 @@ public class LancamentoServiceImpl implements LancamentoService {
         this.prestadorRepository = prestadorRepository;
         this.etapaDetalhadaRepository = etapaDetalhadaRepository;
         this.lpuRepository = lpuRepository;
+        this.fechamentoCpsPrestadorRepository = fechamentoCpsPrestadorRepository; // E AQUI
     }
 
     @Override

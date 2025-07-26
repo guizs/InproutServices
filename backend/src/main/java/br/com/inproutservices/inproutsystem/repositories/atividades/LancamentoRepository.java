@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -58,4 +59,27 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
             "WHERE l.situacaoAprovacao NOT IN ('RASCUNHO', 'PENDENTE_COORDENADOR', 'PENDENTE_CONTROLLER', 'AGUARDANDO_EXTENSAO_PRAZO', 'PRAZO_VENCIDO') " +
             "AND (l.manager.id = :usuarioId OR c.autor.id = :usuarioId)")
     List<Lancamento> findHistoricoByUsuarioId(@Param("usuarioId") Long usuarioId);
+
+    @Query("SELECT l FROM Lancamento l WHERE l.situacaoAprovacao = :status AND FUNCTION('EXTRACT', MONTH FROM l.dataAtividade) = :mes AND FUNCTION('EXTRACT', YEAR FROM l.dataAtividade) = :ano")
+    List<Lancamento> findByStatusAndDataAtividadeMonthAndDataAtividadeYear(
+            @Param("status") SituacaoAprovacao status,
+            @Param("mes") int mes,
+            @Param("ano") int ano
+    );
+
+    @Query("SELECT new map(os.segmento.nome as segmentoNome, SUM(l.valor) as valorTotal) " +
+            "FROM Lancamento l JOIN l.os os " +
+            "WHERE l.situacaoAprovacao = :status " +
+            "AND FUNCTION('EXTRACT', MONTH FROM l.dataAtividade) = :mes " +
+            "AND FUNCTION('EXTRACT', YEAR FROM l.dataAtividade) = :ano " +
+            "GROUP BY os.segmento.nome")
+    List<Map<String, Object>> sumValorBySegmentoAndData(
+            @Param("status") SituacaoAprovacao status,
+            @Param("mes") int mes,
+            @Param("ano") int ano
+    );
+
+    default List<Lancamento> findAprovadosByMesAndAno(int mes, int ano) {
+        return findByStatusAndDataAtividadeMonthAndDataAtividadeYear(SituacaoAprovacao.APROVADO, mes, ano);
+    }
 }

@@ -57,9 +57,11 @@ public class OS {
     private BigDecimal valorTotal;
     private String observacoes;
 
-    // --- CAMPO ADICIONADO ---
     @Column(name = "custo_total_materiais", precision = 10, scale = 2)
     private BigDecimal custoTotalMateriais;
+
+    @Column(name = "cps_contabilizado", nullable = false)
+    private boolean cpsContabilizado = false;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dataPo;
@@ -90,9 +92,6 @@ public class OS {
 
     // --- GETTERS E SETTERS ---
 
-    // ... (todos os getters e setters existentes) ...
-
-    // --- MÉTODOS ADICIONADOS ---
     public BigDecimal getCustoTotalMateriais() {
         return custoTotalMateriais;
     }
@@ -103,6 +102,14 @@ public class OS {
 
     public Long getId() {
         return id;
+    }
+
+    public boolean isCpsContabilizado() {
+        return cpsContabilizado;
+    }
+
+    public void setCpsContabilizado(boolean cpsContabilizado) {
+        this.cpsContabilizado = cpsContabilizado;
     }
 
     public Set<Lpu> getLpus() {
