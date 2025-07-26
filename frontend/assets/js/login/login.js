@@ -46,18 +46,16 @@ document.getElementById('formLogin').addEventListener('submit', async (event) =>
     const payload = JSON.stringify({ email, senha, lembrarMe });
 
     try {
-        const response = await fetch(`${BASE_URL}/login`, {
+        const response = await fetch('http://3.128.248.3:8080/usuarios/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload,
+            credentials: 'include' // <-- ADICIONE ESTA LINHA
         });
 
         if (response.ok) {
             const data = await response.json();
-
+            
             localStorage.setItem('usuarioId', data.id);
             localStorage.setItem('usuario', data.usuario);
             localStorage.setItem('email', data.email);
